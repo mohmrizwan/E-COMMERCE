@@ -1,10 +1,24 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 const Header = () => {
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 5);
+    }
+
+    window.addEventListener("scroll", handleScroll);
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
     <>
-      <div className="header-top border-b border-gray-200 bg-[#FFFFFF] sticky top-0 z-50 backdrop-blur-xl transition-all duration-300">
+      <div
+        className={`header-top border-b bg-[#FFFFFF] border-gray-200  sticky top-0 z-50 backdrop-blur-xl transition-all duration-300  `}
+      >
         <div className="mx-auto flex items-center justify-between gap-4 px-10 py-2 sm:px-6 lg:px-5">
           <p className="font-[Inter] text-[11px] text-gray-500 sm:text-xs">
             Free shipping on orders over $50 · 30-day returns
@@ -35,7 +49,13 @@ const Header = () => {
         </div>
       </div>
 
-      <header className="header-wrapper  bg-[#FFFFFF] sticky top-0 z-50 border-b  border-gray-200 backdrop-blur-xl transition-all duration-300">
+      <header
+        className={`header-wrapper  sticky top-0 z-50 border-b  border-gray-200 backdrop-blur-xl transition-all duration-300 ${
+          scrolled
+            ? "border-gray-200/60 bg-white/70 backdrop-blur-xl"
+            : "bg-[#ffffff]"
+        }`}
+      >
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
             <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
@@ -53,9 +73,7 @@ const Header = () => {
             />
           </div>
 
-    
           <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
-    
             <Link
               to="/sell"
               className="hidden items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff] sm:flex lg:px-4 lg:py-2.5"
@@ -64,7 +82,6 @@ const Header = () => {
               <span>Sell</span>
             </Link>
 
-
             <Link
               to="/account"
               className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:h-10 sm:w-10"
@@ -72,7 +89,6 @@ const Header = () => {
               <i className="fa-regular fa-user"></i>
             </Link>
 
-          
             <Link
               to="/wishlist"
               className="hidden h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:flex"
@@ -80,7 +96,6 @@ const Header = () => {
               <i className="fa-regular fa-heart"></i>
             </Link>
 
-           
             <Link
               to="/cart"
               className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:h-10 sm:w-10"
@@ -94,7 +109,6 @@ const Header = () => {
           </div>
         </div>
 
- 
         <div className="mx-auto overflow-x-auto px-4 pb-3 scrollbar-hide sm:px-6 lg:px-10">
           <nav className="flex min-w-max items-center gap-6 sm:gap-7">
             <Link
