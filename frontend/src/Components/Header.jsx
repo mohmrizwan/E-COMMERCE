@@ -35,7 +35,7 @@ const Header = () => {
         </div>
       </div>
 
-      <header className="header-wrapper border-b border-gray-200 bg-white sticky top-0 z-50 border-b border-gray-200/70 bg-white/75 backdrop-blur-xl transition-all duration-300">
+      <header className="header-wrapper  bg-white sticky top-0 z-50 border-b  border-gray-200 bg-white/75 backdrop-blur-xl transition-all duration-300">
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
             <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
