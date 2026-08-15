@@ -25,7 +25,7 @@ export default function App() {
         className="mySwiper"
       >
         <SwiperSlide>
-          <div className="flex flex-col-reverse gap-8 px-5 py-8 sm:px-8 md:px-10 lg:flex-row lg:items-center lg:gap-10 lg:px-15 lg:py-15">
+          <div className="flex flex-col-reverse gap-8 px-8 py-8 sm:px-8 md:px-10 lg:flex-row lg:items-center lg:gap-10 lg:px-15 lg:py-15">
 
             {/* LEFT CONTENT */}
             <div className="banner-ls w-full lg:w-1/2">
