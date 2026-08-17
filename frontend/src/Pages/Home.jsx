@@ -5,6 +5,10 @@ import Banner from "../Components/Banner";
 import Category from "../Components/Category";
 import Features from "../Components/Features";
 import Product from "../Components/Product";
+import Sesssion from "../Components/Sesssion";
+import Trending from "../Components/Trending";
+import Vendors from "../Components/Vendors";
+import Subscribe from "../Components/Subscribe";
 
 const Home = () => {
   return (
@@ -14,6 +18,10 @@ const Home = () => {
       <Category />
       <Features />
       <Product />
+      <Sesssion />
+      <Trending />
+      <Vendors />
+      <Subscribe/>
       <Footer />
     </>
   );
