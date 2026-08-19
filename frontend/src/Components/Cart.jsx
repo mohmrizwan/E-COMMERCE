@@ -1,5 +1,6 @@
 import React from "react";
 import img from "../assets/images/close-up-futuristic-sneakers-showcase.jpg";
+import { Link } from "react-router-dom";
 
 const Cart = () => {
   return (
@@ -351,10 +352,13 @@ const Cart = () => {
               </div>
 
               {/* Checkout */}
-              <button className="mt-5 w-full rounded-xl bg-[#6C3BFF] py-3 font-[inter] text-sm font-semibold text-white transition duration-150 hover:bg-[#5427d6]">
+              <Link
+                to="/checkout"
+                className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#6C3BFF] py-3 font-[inter] text-sm font-semibold text-white transition duration-150 hover:bg-[#5427d6]"
+              >
                 Proceed to Checkout
                 <i className="fa-solid fa-arrow-right ml-2"></i>
-              </button>
+              </Link>
 
               {/* Secure Checkout */}
               <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#6B7280]">

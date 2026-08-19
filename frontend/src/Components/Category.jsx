@@ -8,7 +8,7 @@ const Category = () => {
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 lg:gap-4">
 
           <Link
-            to="/category/electronics"
+            to="/products?category=electronics"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
@@ -18,7 +18,7 @@ const Category = () => {
           </Link>
 
           <Link
-            to="/category/fashion"
+            to="/products?category=fashion"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
@@ -28,7 +28,17 @@ const Category = () => {
           </Link>
 
           <Link
-            to="/category/home-living"
+            to="/products?category=shoes"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+          >
+            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
+              <i className="fa-solid fa-shoe-prints text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            </div>
+            <p className="mt-2 font-[inter] text-sm font-bold">Shoes</p>
+          </Link>
+
+          <Link
+            to="/products?category=home-living"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
@@ -38,7 +48,7 @@ const Category = () => {
           </Link>
 
           <Link
-            to="/category/beauty"
+            to="/products?category=beauty"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
@@ -48,7 +58,7 @@ const Category = () => {
           </Link>
 
           <Link
-            to="/category/sports"
+            to="/products?category=sports"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
@@ -58,7 +68,7 @@ const Category = () => {
           </Link>
 
           <Link
-            to="/category/accessories"
+            to="/products?category=accessories"
             className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
           >
             <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
