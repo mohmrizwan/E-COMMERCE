@@ -4,8 +4,8 @@ import img from "../../assets/images/close-up-futuristic-sneakers-showcase.jpg";
 const Address = () => {
   return (
     <>
-      <div className="address-wrapper  py-4 bg-[white]">
-        <div className="mx-auto px-15">
+      <div className="address-wrapper bg-[white] py-4">
+        <div className="mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-15">
           <div className="address-header flex justify-between  items-center ">
             <Link to="/" className="shrink-0">
               <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
@@ -20,10 +20,10 @@ const Address = () => {
         </div>
       </div>
 
-      <div className="address-conetnt my-10">
-        <div className="mx-auto px-15 flex justify-between">
-          <div className="addrss-left w-[60%]">
-            <div className="status flex justify-between items-center my-10">
+      <div className="address-conetnt my-6 sm:my-8 lg:my-10">
+        <div className="mx-auto flex w-full flex-col gap-6 px-4 sm:gap-8 sm:px-6 md:px-8 lg:flex-row lg:items-start lg:justify-between lg:gap-10 lg:px-10 xl:px-15">
+          <div className="addrss-left w-full lg:w-[60%]">
+            <div className="status my-6 flex w-full items-center justify-between gap-1 overflow-hidden sm:my-10 sm:gap-2">
               {/* Address */}
               <div className="address flex gap-3 items-center">
                 <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] border-2 text-[inter] text-[#6C3BFF] font-bold text-xs border-[#6C3BFF]">
@@ -37,7 +37,7 @@ const Address = () => {
               </div>
 
               {/* Line */}
-              <div className="flex-1 h-px bg-gray-300 mx-4"></div>
+              <div className="h-px min-w-2 flex-1 bg-gray-300 sm:mx-2 md:mx-4"></div>
 
               {/* Delivery */}
               <div className="Delivery flex gap-3 items-center">
@@ -52,7 +52,7 @@ const Address = () => {
               </div>
 
               {/* Line */}
-              <div className="flex-1 h-px bg-gray-300 mx-4"></div>
+              <div className="h-px min-w-2 flex-1 bg-gray-300 sm:mx-2 md:mx-4"></div>
 
               {/* Payment */}
               <div className="Delivery flex gap-3 items-center">
@@ -67,7 +67,7 @@ const Address = () => {
               </div>
 
               {/* Line */}
-              <div className="flex-1 h-px bg-gray-300 mx-4"></div>
+              <div className="h-px min-w-2 flex-1 bg-gray-300 sm:mx-2 md:mx-4"></div>
 
               {/* Confirmation */}
               <div className="Delivery flex gap-3 items-center">
@@ -81,10 +81,10 @@ const Address = () => {
                 </div>
               </div>
             </div>
-            <div className="address-form bg-[#FFFFFF] rounded-2xl p-7">
+            <div className="address-form rounded-2xl bg-[#FFFFFF] p-4 sm:p-6 md:p-7">
               <div className="product-head flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-[inter] text-2xl font-bold text-[#00000">
+                  <h3 className="font-[inter] text-xl font-bold text-[#00000] sm:text-2xl">
                     Shipping address
                   </h3>
 
@@ -95,7 +95,7 @@ const Address = () => {
               </div>
               <div>
                 <form action="" className="my-3">
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     {/* First Name */}
                     <div className="form-control flex flex-1 flex-col">
                       <label
@@ -131,7 +131,7 @@ const Address = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     {/* Email */}
                     <div className="form-control flex flex-1 flex-col">
                       <label htmlFor="email" className="text-xs font-[inter]">
@@ -148,7 +148,7 @@ const Address = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     {/* Email */}
                     <div className="form-control flex flex-1 flex-col">
                       <label htmlFor="email" className="text-xs font-[inter]">
@@ -165,7 +165,7 @@ const Address = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     {/* Email */}
                     <div className="form-control flex flex-1 flex-col">
                       <label htmlFor="email" className="text-xs font-[inter]">
@@ -182,7 +182,7 @@ const Address = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     <div className="form-control flex flex-1 flex-col">
                       <label
                         htmlFor="firstName"
@@ -216,7 +216,7 @@ const Address = () => {
                       </div>
                     </div>
                   </div>
-                  <div className="flex gap-5">
+                  <div className="flex flex-col gap-0 sm:flex-row sm:gap-5">
                     <div className="form-control flex flex-1 flex-col">
                       <label
                         htmlFor="firstName"
@@ -251,7 +251,7 @@ const Address = () => {
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center mt-5">
+                  <div className="mt-5 flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
                     <Link className="text-gray-300 hover:text-gray-700 transition text-sm duration-150">
                       {" "}
                       <i className="fa-solid fa-arrow-left"></i>&nbsp;Back To
@@ -259,7 +259,7 @@ const Address = () => {
                     </Link>
                     <Link
                       to="/"
-                      className="rounded-2xl bg-[#6C3BFF] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:px-6"
+                      className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:px-6"
                     >
                       Continue
                     </Link>
@@ -268,9 +268,9 @@ const Address = () => {
               </div>
             </div>
           </div>
-          <div className="address-right w-[35%] mt-28">
+          <div className="address-right mt-0 w-full lg:mt-28 lg:w-[35%]">
             {/* ORDER SUMMARY */}
-            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-6">
+            <div className="rounded-2xl border border-[#E5E7EB] bg-white p-4 sm:p-6">
               {/* Heading */}
               <div className="mb-6">
                 <h2 className="font-[inter] text-lg font-bold text-[#111827]">
@@ -283,8 +283,8 @@ const Address = () => {
               </div>
 
               {/* Product 1 */}
-              <div className="flex items-center gap-4">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#F5F5F5]">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F5F5F5] sm:h-20 sm:w-20">
                   <img
                     src={img}
                     alt="Nike Air Max"
@@ -302,14 +302,14 @@ const Address = () => {
                   </p>
                 </div>
 
-                <p className="font-[inter] text-sm font-semibold text-[#111827]">
+                <p className="shrink-0 font-[inter] text-sm font-semibold text-[#111827]">
                   ₹4,999
                 </p>
               </div>
 
               {/* Product 2 */}
-              <div className="mt-5 flex items-center gap-4">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-[#F5F5F5]">
+              <div className="mt-5 flex min-w-0 items-center gap-3 sm:gap-4">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-xl bg-[#F5F5F5] sm:h-20 sm:w-20">
                   <img
                     src={img}
                     alt="Adidas Runner"
@@ -327,7 +327,7 @@ const Address = () => {
                   </p>
                 </div>
 
-                <p className="font-[inter] text-sm font-semibold text-[#111827]">
+                <p className="shrink-0 font-[inter] text-sm font-semibold text-[#111827]">
                   ₹3,998
                 </p>
               </div>
