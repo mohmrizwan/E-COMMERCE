@@ -5,6 +5,7 @@ import AddToCart from "./Pages/Addtocart";
 import Products from "./Pages/Products";
 import Checkout from "./Pages/Checkout";
 
+
 const App = () => {
   return (
     <>
@@ -13,6 +14,7 @@ const App = () => {
         <Route path="/cart" element={<AddToCart />} />
         <Route path="/products" element={<Products />} />
         <Route path="/checkout" element={<Checkout />} />
+  
       </Routes>
     </>
   );
