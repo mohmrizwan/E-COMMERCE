@@ -85,6 +85,7 @@ const CreateAccount = () => {
           autoComplete="new-password"
           required
         />
+
         <fieldset className="account-choice">
           <legend>How do you want to use VendorAflame?</legend>
           <p className="choice-help">
@@ -118,6 +119,19 @@ const CreateAccount = () => {
             ))}
           </div>
         </fieldset>
+        <div>
+          <label className="field-label" htmlFor="confirm-password">
+            One Time Password (OTP)
+          </label>
+          <input
+            className="auth-input"
+            id="confirm-password"
+            placeholder="One Time Password"
+            autoComplete="new-password"
+            required
+          />
+          <Link className="text-xs p-3 text-[#6C3BFF] font-[inter] font-bold hover:text-[#8c6cec] transition duration-100">Send OTP</Link>
+        </div>
         <label className="terms-label">
           <input type="checkbox" required />{" "}
           <span>
@@ -136,11 +150,8 @@ const CreateAccount = () => {
         <span>OR</span>
       </div>
       <div className="social-actions">
-        <button className="social-button" type="button">
+        <button className="social-button w-100" type="button">
           <strong className="google-icon">G</strong> Continue with Google
-        </button>
-        <button className="social-button" type="button">
-          <strong className="github-icon">GH</strong> Continue with GitHub
         </button>
       </div>
     </AuthShell>

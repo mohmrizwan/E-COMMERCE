@@ -9,6 +9,8 @@ import Sesssion from "../Components/Sesssion";
 import Trending from "../Components/Trending";
 import Vendors from "../Components/Vendors";
 import Subscribe from "../Components/Subscribe";
+import Loader from "../Components/Loader";
+import Dotter from "../Components/Dotter";
 
 const Home = () => {
   return (
@@ -21,7 +23,7 @@ const Home = () => {
       <Sesssion />
       <Trending />
       <Vendors />
-      <Subscribe/>
+      <Subscribe />
       <Footer />
     </>
   );

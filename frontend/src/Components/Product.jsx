@@ -2,302 +2,172 @@ import React from "react";
 import Shoes from "../assets/images/close-up-futuristic-sneakers-showcase.jpg";
 import { Link } from "react-router-dom";
 
+const products = [
+  {
+    id: 1,
+    name: "AeroGlide Pro Running Sneakers",
+    store: "Ksetra",
+    price: "$999",
+    oldPrice: "$1200",
+    discount: "-26% OFF",
+    rating: "4.8",
+    reviews: "2,413",
+  },
+  {
+    id: 2,
+    name: "AeroGlide Pro Running Sneakers",
+    store: "Ksetra",
+    price: "$999",
+    oldPrice: "$1200",
+    discount: "-26% OFF",
+    rating: "4.8",
+    reviews: "2,413",
+  },
+  {
+    id: 3,
+    name: "AeroGlide Pro Running Sneakers",
+    store: "Ksetra",
+    price: "$999",
+    oldPrice: "$1200",
+    discount: "-26% OFF",
+    rating: "4.8",
+    reviews: "2,413",
+  },
+  {
+    id: 4,
+    name: "AeroGlide Pro Running Sneakers",
+    store: "Ksetra",
+    price: "$999",
+    oldPrice: "$1200",
+    discount: "-26% OFF",
+    rating: "4.8",
+    reviews: "2,413",
+  },
+];
+
 const Product = () => {
   return (
-    <div className="product-wrapper my-10 sm:my-12 md:my-15">
-      <div className="mx-auto px-4 sm:px-6 md:px-10 lg:px-15">
-        {/* Product Header */}
-        <div className="product-head flex items-center justify-between gap-4">
+    <div className="product-wrapper my-8 sm:my-12 md:my-15">
+      <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
+        
+        {/* ================= PRODUCT HEADER ================= */}
+        <div className="product-head flex items-end justify-between gap-3">
           <div>
-            <h3 className="font-[inter] text-2xl font-bold text-[#000000] sm:text-3xl">
+            <h3 className="font-[inter] text-xl font-bold text-[#000000] sm:text-2xl md:text-3xl">
               Deals of the Day
             </h3>
 
-            <p className="my-2 font-[inter] text-xs text-[#6B7280] sm:text-sm">
+            <p className="mt-1 font-[inter] text-[11px] text-[#6B7280] sm:mt-2 sm:text-sm">
               Limited-time offers, refreshed every 24 hours
             </p>
           </div>
 
-          <div className="shrink-0">
-            <Link
-              to="/"
-              className="font-[inter] text-xs font-semibold text-[#6C3BFF] transition duration-150 hover:text-[#421db3] sm:text-sm"
-            >
-              View All&nbsp;
-              <i className="fa-solid fa-arrow-right"></i>
-            </Link>
-          </div>
+          <Link
+            to="/products"
+            className="flex shrink-0 items-center gap-1 font-[inter] text-[11px] font-semibold text-[#6C3BFF] transition duration-200 hover:text-[#421db3] sm:text-sm"
+          >
+            View All
+            <i className="fa-solid fa-arrow-right text-[10px] sm:text-xs"></i>
+          </Link>
         </div>
 
-        {/* Product Cards */}
-        <div className="product-cards my-8 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {/* Product 1 */}
+        {/* ================= PRODUCT CARDS ================= */}
+        <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
+          
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
+            >
+              
+              {/* ================= PRODUCT IMAGE ================= */}
+              <div className="relative overflow-hidden">
+                <img
+                  src={Shoes}
+                  alt={product.name}
+                  className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
+                />
 
-          <div className="product-card group relative w-full overflow-hidden rounded-[20px] border border-[#dde3f0] transition duration-150 hover:border-[#b6a5e7]">
-            <div className="overflow-hidden">
-              <img
-                src={Shoes}
-                alt="product-image"
-                className="relative h-80 w-full rounded-tl-[20px] rounded-tr-[20px] object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-90"
-              />
-            </div>
+                {/* Badges */}
+                <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
+                  <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
+                    BestSeller
+                  </span>
 
-            <div className="absolute left-3 top-3 z-10">
-              <p className="w-fit rounded-2xl bg-[#6C3BFF] px-3 py-1 font-[inter] text-xs text-white">
-                BestSeller
-              </p>
-
-              <p className="my-2 w-fit rounded-2xl bg-[#FFB020] px-3 py-1 font-[inter] text-xs font-semibold text-[#000000]">
-                -26% OFF
-              </p>
-            </div>
-
-            <div className="absolute right-3 top-3 z-10 rounded-[50%] bg-white p-2">
-              <i className="fa-regular fa-heart cursor-pointer text-sm font-semibold text-[#6B7280] transition duration-100 hover:text-red-500"></i>
-            </div>
-
-            <div className="bg-[#FFFFFF] p-3">
-              <a className="font-[inter] text-xs text-[#6B7280]">Ksetra</a>
-
-              <p className="font-[inter] text-sm font-bold transition duration-200 hover:text-[#6C3BFF]">
-                AeroGlide Pro Running Sneakers
-              </p>
-
-              <div className="mt-1">
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-regular fa-star text-xs text-[gold]"></i>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">4.8</span>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">(2,413)</span>
-              </div>
-
-              <div className="my-5 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-[inter] text-sm font-bold">$999</span>
-
-                  <span className="font-[inter] text-xs text-[#6B7280] line-through">
-                    $1200
+                  <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
+                    {product.discount}
                   </span>
                 </div>
 
-                <Link
-                  to="/"
-                  className="shrink-0 rounded-xl bg-[#6C3BFF] p-2 font-bold text-white transition duration-300 hover:bg-[#421db3]"
+                {/* Wishlist */}
+                <button
+                  type="button"
+                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 hover:bg-[#6C3BFF] hover:text-white sm:right-3 sm:top-3 sm:h-9 sm:w-9"
                 >
-                  <i className="fa-solid fa-bag-shopping text-sm"></i>
-                </Link>
+                  <i className="fa-regular fa-heart text-[11px] sm:text-sm"></i>
+                </button>
               </div>
 
-              <p className="font-[inter] text-xs text-green-600">
-                Free shipping
-              </p>
-            </div>
-          </div>
-          {/* Product 2 */}
-          <div className="product-card group relative w-full overflow-hidden rounded-[20px] border border-[#dde3f0] transition duration-150 hover:border-[#b6a5e7]">
-            <div className="overflow-hidden">
-              <img
-                src={Shoes}
-                alt="product-image"
-                className="relative h-80 w-full rounded-tl-[20px] rounded-tr-[20px] object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-90"
-              />
-            </div>
+              {/* ================= PRODUCT CONTENT ================= */}
+              <div className="flex flex-1 flex-col p-2.5 sm:p-3 md:p-4">
+                
+                {/* Store */}
+                <span className="font-[inter] text-[9px] text-[#6B7280] sm:text-xs">
+                  {product.store}
+                </span>
 
-            <div className="absolute left-3 top-3 z-10">
-              <p className="w-fit rounded-2xl bg-[#6C3BFF] px-3 py-1 font-[inter] text-xs text-white">
-                BestSeller
-              </p>
+                {/* Product Name */}
+                <h4 className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-[40px] sm:text-sm sm:leading-5">
+                  {product.name}
+                </h4>
 
-              <p className="my-2 w-fit rounded-2xl bg-[#FFB020] px-3 py-1 font-[inter] text-xs font-semibold text-[#000000]">
-                -26% OFF
-              </p>
-            </div>
+                {/* Rating */}
+                <div className="mt-1.5 flex items-center gap-1 sm:mt-2 sm:gap-1.5">
+                  <div className="flex items-center">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <i
+                        key={star}
+                        className="fa-solid fa-star text-[8px] text-[#FFB020] sm:text-[10px]"
+                      ></i>
+                    ))}
+                  </div>
 
-            <div className="absolute right-3 top-3 z-10 rounded-[50%] bg-white p-2">
-              <i className="fa-regular fa-heart cursor-pointer text-sm font-semibold text-[#6B7280] transition duration-100 hover:text-red-500"></i>
-            </div>
+                  <span className="font-[inter] text-[9px] font-medium text-[#111827] sm:text-xs">
+                    {product.rating}
+                  </span>
 
-            <div className="bg-[#FFFFFF] p-3">
-              <a className="font-[inter] text-xs text-[#6B7280]">Ksetra</a>
-
-              <p className="font-[inter] text-sm font-bold transition duration-200 hover:text-[#6C3BFF]">
-                AeroGlide Pro Running Sneakers
-              </p>
-
-              <div className="mt-1">
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-regular fa-star text-xs text-[gold]"></i>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">4.8</span>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">(2,413)</span>
-              </div>
-
-              <div className="my-5 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-[inter] text-sm font-bold">$999</span>
-
-                  <span className="font-[inter] text-xs text-[#6B7280] line-through">
-                    $1200
+                  <span className="font-[inter] text-[8px] text-[#6B7280] sm:text-xs">
+                    ({product.reviews})
                   </span>
                 </div>
 
-                <Link
-                  to="/"
-                  className="shrink-0 rounded-xl bg-[#6C3BFF] p-2 font-bold text-white transition duration-300 hover:bg-[#421db3]"
-                >
-                  <i className="fa-solid fa-bag-shopping text-sm"></i>
-                </Link>
-              </div>
+                {/* Price + Cart */}
+                <div className="mt-3 flex items-center justify-between gap-1 sm:mt-5">
+                  <div className="flex min-w-0 items-center gap-1 sm:gap-2">
+                    <span className="font-[inter] text-xs font-bold text-[#111827] sm:text-sm md:text-base">
+                      {product.price}
+                    </span>
 
-              <p className="font-[inter] text-xs text-green-600">
-                Free shipping
-              </p>
-            </div>
-          </div>
+                    <span className="truncate font-[inter] text-[8px] text-[#6B7280] line-through sm:text-xs">
+                      {product.oldPrice}
+                    </span>
+                  </div>
 
-          {/* Product 3 */}
-          <div className="product-card group relative w-full overflow-hidden rounded-[20px] border border-[#dde3f0] transition duration-150 hover:border-[#b6a5e7]">
-            <div className="overflow-hidden">
-              <img
-                src={Shoes}
-                alt="product-image"
-                className="relative h-80 w-full rounded-tl-[20px] rounded-tr-[20px] object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-90"
-              />
-            </div>
-
-            <div className="absolute left-3 top-3 z-10">
-              <p className="w-fit rounded-2xl bg-[#6C3BFF] px-3 py-1 font-[inter] text-xs text-white">
-                BestSeller
-              </p>
-
-              <p className="my-2 w-fit rounded-2xl bg-[#FFB020] px-3 py-1 font-[inter] text-xs font-semibold text-[#000000]">
-                -26% OFF
-              </p>
-            </div>
-
-            <div className="absolute right-3 top-3 z-10 rounded-[50%] bg-white p-2">
-              <i className="fa-regular fa-heart cursor-pointer text-sm font-semibold text-[#6B7280] transition duration-100 hover:text-red-500"></i>
-            </div>
-
-            <div className="bg-[#FFFFFF] p-3">
-              <a className="font-[inter] text-xs text-[#6B7280]">Ksetra</a>
-
-              <p className="font-[inter] text-sm font-bold transition duration-200 hover:text-[#6C3BFF]">
-                AeroGlide Pro Running Sneakers
-              </p>
-
-              <div className="mt-1">
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-regular fa-star text-xs text-[gold]"></i>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">4.8</span>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">(2,413)</span>
-              </div>
-
-              <div className="my-5 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-[inter] text-sm font-bold">$999</span>
-
-                  <span className="font-[inter] text-xs text-[#6B7280] line-through">
-                    $1200
-                  </span>
+                  <Link
+                    to="/cart"
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#6C3BFF] text-white transition duration-200 hover:bg-[#421db3] sm:h-9 sm:w-9 sm:rounded-xl"
+                  >
+                    <i className="fa-solid fa-bag-shopping text-[10px] sm:text-sm"></i>
+                  </Link>
                 </div>
 
-                <Link
-                  to="/"
-                  className="shrink-0 rounded-xl bg-[#6C3BFF] p-2 font-bold text-white transition duration-300 hover:bg-[#421db3]"
-                >
-                  <i className="fa-solid fa-bag-shopping text-sm"></i>
-                </Link>
+                {/* Shipping */}
+                <p className="mt-2 font-[inter] text-[9px] font-medium text-green-600 sm:mt-3 sm:text-xs">
+                  Free shipping
+                </p>
               </div>
-
-              <p className="font-[inter] text-xs text-green-600">
-                Free shipping
-              </p>
             </div>
-          </div>
-
-          {/* Product 4 */}
-          <div className="product-card group relative w-full overflow-hidden rounded-[20px] border border-[#dde3f0] transition duration-150 hover:border-[#b6a5e7]">
-            <div className="overflow-hidden">
-              <img
-                src={Shoes}
-                alt="product-image"
-                className="relative h-80 w-full rounded-tl-[20px] rounded-tr-[20px] object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-90"
-              />
-            </div>
-
-            <div className="absolute left-3 top-3 z-10">
-              <p className="w-fit rounded-2xl bg-[#6C3BFF] px-3 py-1 font-[inter] text-xs text-white">
-                BestSeller
-              </p>
-
-              <p className="my-2 w-fit rounded-2xl bg-[#FFB020] px-3 py-1 font-[inter] text-xs font-semibold text-[#000000]">
-                -26% OFF
-              </p>
-            </div>
-
-            <div className="absolute right-3 top-3 z-10 rounded-[50%] bg-white p-2">
-              <i className="fa-regular fa-heart cursor-pointer text-sm font-semibold text-[#6B7280] transition duration-100 hover:text-red-500"></i>
-            </div>
-
-            <div className="bg-[#FFFFFF] p-3">
-              <a className="font-[inter] text-xs text-[#6B7280]">Ksetra</a>
-
-              <p className="font-[inter] text-sm font-bold transition duration-200 hover:text-[#6C3BFF]">
-                AeroGlide Pro Running Sneakers
-              </p>
-
-              <div className="mt-1">
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-solid fa-star text-xs text-[gold]"></i>
-                <i className="fa-regular fa-star text-xs text-[gold]"></i>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">4.8</span>
-                &nbsp;&nbsp;
-                <span className="font-[inter] text-xs">(2,413)</span>
-              </div>
-
-              <div className="my-5 flex items-center justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="font-[inter] text-sm font-bold">$999</span>
-
-                  <span className="font-[inter] text-xs text-[#6B7280] line-through">
-                    $1200
-                  </span>
-                </div>
-
-                <Link
-                  to="/"
-                  className="shrink-0 rounded-xl bg-[#6C3BFF] p-2 font-bold text-white transition duration-300 hover:bg-[#421db3]"
-                >
-                  <i className="fa-solid fa-bag-shopping text-sm"></i>
-                </Link>
-              </div>
-
-              <p className="font-[inter] text-xs text-green-600">
-                Free shipping
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </div>

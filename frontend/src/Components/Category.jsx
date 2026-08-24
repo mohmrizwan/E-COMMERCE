@@ -47,15 +47,7 @@ const Category = () => {
             <p className="mt-2 text-center font-[inter] text-sm font-bold">Home & Living</p>
           </Link>
 
-          <Link
-            to="/products?category=beauty"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
-          >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-person-dress text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
-            </div>
-            <p className="mt-2 font-[inter] text-sm font-bold">Beauty</p>
-          </Link>
+       
 
           <Link
             to="/products?category=sports"
