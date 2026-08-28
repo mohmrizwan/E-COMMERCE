@@ -73,7 +73,7 @@ const Header = () => {
             />
           </div>
 
-          <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2">
             <Link
               to="/login"
               className="hidden items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff] sm:flex lg:px-4 lg:py-2.5"
