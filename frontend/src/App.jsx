@@ -8,6 +8,8 @@ import Login from "./Components/Login";
 import CreateAccount from "./Components/CreateAccount";
 import FavoriteCard from "./Pages/FavoriteCard";
 import Account from "./Pages/Account";
+import TermsAndConditions from "./Pages/Terms&Condition";
+import ContactUs from "./Pages/ContactUs";
 
 const App = () => {
   return (
@@ -21,6 +23,8 @@ const App = () => {
         <Route path="/create" element={<CreateAccount />} />
         <Route path="/favorite" element={<FavoriteCard />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/term&condition" element={<TermsAndConditions />} />
+        <Route path="/contact" element={<ContactUs />} />
       </Routes>
     </>
   );

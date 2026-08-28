@@ -457,7 +457,7 @@ const Account = () => {
   return (
     <>
       <Header />
-      <main className="min-h-[70vh] bg-[#f7f8fc] py-7 sm:py-10">
+      <main className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
             <Link to="/" className="hover:text-[#6C3BFF]">

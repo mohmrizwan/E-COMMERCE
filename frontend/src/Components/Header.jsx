@@ -20,7 +20,7 @@ const Header = () => {
         className={`header-top border-b bg-[#FFFFFF] border-gray-200  sticky top-0 z-50 backdrop-blur-xl transition-all duration-300  `}
       >
         <div className="mx-auto flex items-center justify-between gap-4 px-10 py-2 sm:px-6 lg:px-5">
-          <p className="font-[Inter] text-[11px] text-gray-500 sm:text-xs">
+          <p className="font-[inter] text-[11px] text-gray-500 sm:text-xs">
             Free shipping on orders over $50 · 30-day returns
           </p>
 
@@ -58,7 +58,7 @@ const Header = () => {
       >
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
-            <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
+            <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
               Vendor<span className="text-[#6c3bff]">Aflame</span>
             </p>
           </Link>
@@ -113,7 +113,7 @@ const Header = () => {
           <nav className="flex min-w-max items-center gap-6 sm:gap-7">
             <Link
               to="/categories"
-              className="whitespace-nowrap font-[Inter] text-sm font-semibold text-[#6c3bff]"
+              className="whitespace-nowrap font-[inter] text-sm font-semibold text-[#6c3bff]"
             >
               All Categories
             </Link>

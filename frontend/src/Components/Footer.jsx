@@ -128,7 +128,7 @@ const Footer = () => {
               </Link>
 
               <Link
-                to="/terms"
+                to="/term&condition"
                 className="font-[Inter] text-xs text-[#9CA3AF] transition-colors duration-300 hover:text-[#6c3bff]"
               >
                 Terms of Service
