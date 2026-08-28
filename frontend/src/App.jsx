@@ -7,6 +7,7 @@ import Checkout from "./Pages/Checkout";
 import Login from "./Components/Login";
 import CreateAccount from "./Components/CreateAccount";
 import FavoriteCard from "./Pages/FavoriteCard";
+import Account from "./Pages/Account";
 
 const App = () => {
   return (
@@ -19,6 +20,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/create" element={<CreateAccount />} />
         <Route path="/favorite" element={<FavoriteCard />} />
+        <Route path="/account" element={<Account />} />
       </Routes>
     </>
   );
