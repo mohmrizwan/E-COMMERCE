@@ -90,7 +90,7 @@ const Footer = () => {
                 <Link className="footer-link" to="/">Track Order</Link>
                 <Link className="footer-link" to="/">Returns & Refunds</Link>
                 <Link className="footer-link" to="/">Shipping Info</Link>
-                <Link className="footer-link" to="/">Contact Us</Link>
+                <Link className="footer-link" to="/contact">Contact Us</Link>
               </div>
             </div>
 
