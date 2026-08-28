@@ -6,6 +6,7 @@ import Products from "./Pages/Products";
 import Checkout from "./Pages/Checkout";
 import Login from "./Components/Login";
 import CreateAccount from "./Components/CreateAccount";
+import FavoriteCard from "./Pages/FavoriteCard";
 
 const App = () => {
   return (
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="/checkout" element={<Checkout />} />
         <Route path="/login" element={<Login />} />
         <Route path="/create" element={<CreateAccount />} />
+        <Route path="/favorite" element={<FavoriteCard />} />
       </Routes>
     </>
   );
