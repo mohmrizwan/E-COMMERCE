@@ -91,7 +91,7 @@ const Header = () => {
 
             <Link
               to="/favorite"
-              className="hidden h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:flex"
+              className="h-10 w-10 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:flex"
             >
               <i className="fa-regular fa-heart"></i>
             </Link>
