@@ -1,0 +1,29 @@
+@import "tailwindcss";
+.vendor-layout {
+  min-height: 100vh;
+}
+
+.vendor-main {
+  margin-left: 256px;
+  min-height: 100vh;
+}
+
+.vendor-content {
+  padding: 24px;
+  background: #f8f9fa;
+  min-height: calc(100vh - 60px);
+}
+
+@media (max-width: 991px) {
+  .vendor-main {
+    margin-left: 0;
+  }
+}
+.sidebar-nav::-webkit-scrollbar {
+  display: none;
+}
+
+.sidebar-nav {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}

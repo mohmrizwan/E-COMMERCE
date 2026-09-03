@@ -1,0 +1,15 @@
+/* Products group */
+.products-menu .nav-group-toggle {
+  color: white !important;
+}
+
+/* Products icon */
+.products-menu .nav-group-toggle .nav-icon {
+  color: #7c3aed !important;
+}
+
+/* Hover */
+.products-menu .nav-group-toggle:hover {
+  color: white !important;
+  background-color: #241A42 !important;
+}
