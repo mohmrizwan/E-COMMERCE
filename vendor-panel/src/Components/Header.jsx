@@ -110,13 +110,13 @@ function Header({ onMenuClick }) {
 
               {/* Settings */}
 
-              <CDropdownItem
+              {/* <CDropdownItem
                 href="/settings"
                 className="!flex !items-center !gap-2 !rounded-lg !px-3 !py-2.5 !text-[#374151] hover:!bg-[#F3E8FF] hover:!text-[#6D28D9] transition duration-150"
               >
                 <CIcon icon={cilSettings} className="!text-[#6D28D9]" />
                 Settings
-              </CDropdownItem>
+              </CDropdownItem> */}
 
               {/* Divider */}
 

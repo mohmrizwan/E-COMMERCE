@@ -265,7 +265,7 @@ function Sidebar({ visible, setVisible }) {
 
         {/* Settings */}
 
-        <CNavItem
+        {/* <CNavItem
           href="/settings"
           className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
         >
@@ -274,7 +274,7 @@ function Sidebar({ visible, setVisible }) {
             customClassName="nav-icon !text-violet-400"
           />
           Settings
-        </CNavItem>
+        </CNavItem> */}
       </CSidebarNav>
     </CSidebar>
   );
