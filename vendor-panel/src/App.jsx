@@ -15,6 +15,7 @@ import Transaction from "./Pages/Finance/Transaction";
 import Message from "./Pages/Messages/Message";
 import Profile from "./Pages/Profile/Profile";
 import Setting from "./Pages/Setting/Setting";
+import Update from "./Pages/Products/Update";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="products" element={<AllProducts />} />
         <Route path="products/add" element={<AddProduct />} />
         <Route path="products/inventory" element={<Inventory />} />
+        <Route path="products/update" element={<Update />} />
         <Route path="/orders" element={<AllOrders />} />
         <Route path="/orders/processing" element={<Processing />} />
         <Route path="/orders/shipped" element={<Shipped />} />
@@ -39,6 +41,7 @@ function App() {
         <Route path="/messages" element={<Message />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/settings" element={<Setting />} />
+        
 
       </Route>
     </Routes>

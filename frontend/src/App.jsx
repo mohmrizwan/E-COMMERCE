@@ -10,6 +10,7 @@ import FavoriteCard from "./Pages/FavoriteCard";
 import Account from "./Pages/Account";
 import TermsAndConditions from "./Pages/Terms&Condition";
 import ContactUs from "./Pages/ContactUs";
+import MyOrders from "./Pages/MyOrders";
 
 const App = () => {
   return (
@@ -23,6 +24,8 @@ const App = () => {
         <Route path="/create" element={<CreateAccount />} />
         <Route path="/favorite" element={<FavoriteCard />} />
         <Route path="/account" element={<Account />} />
+        <Route path="/orders" element={<MyOrders />} />
+        <Route path="/track-order" element={<MyOrders />} />
         <Route path="/term&condition" element={<TermsAndConditions />} />
         <Route path="/contact" element={<ContactUs />} />
       </Routes>

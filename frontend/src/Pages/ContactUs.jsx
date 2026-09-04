@@ -29,7 +29,7 @@ const ContactUs = () => {
   return (
     <>
       <Header />
-      <div className="min-h-screen bg-gray-50 font-[Inter]">
+      <div className="min-h-screen bg-gray-50 font-[inter]">
         {/* Header */}
         <header className="bg-white shadow-sm border-b border-gray-200 p-6 text-center">
           <h1 className="text-2xl md:text-3xl font-bold text-[#6C3BFF]">

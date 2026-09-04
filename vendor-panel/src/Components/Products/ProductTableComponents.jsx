@@ -192,7 +192,7 @@ const ProductTable = () => {
                   </CDropdownItem>
 
                   <CDropdownItem 
-                  href="/products/add">
+                  href="/products/update">
                     <CIcon icon={cilPencil} className="me-2" />
                     Edit
                   </CDropdownItem>

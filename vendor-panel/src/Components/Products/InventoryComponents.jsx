@@ -218,7 +218,7 @@ const Inventory = () => {
                   <CTableDataCell className="text-end pe-4">
 
                     <CButton
-                      href="/products/add"
+                      href="/products/update"
                       color="light"
                       size="sm"
                       className="border"

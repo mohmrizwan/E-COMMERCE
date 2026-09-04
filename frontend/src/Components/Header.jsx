@@ -90,6 +90,14 @@ const Header = () => {
             </Link>
 
             <Link
+              to="/orders"
+              aria-label="My orders"
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:h-10 sm:w-10"
+            >
+              <i className="fa-solid fa-box" />
+            </Link>
+
+            <Link
               to="/favorite"
               className="h-10 flex w-10 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:flex"
             >

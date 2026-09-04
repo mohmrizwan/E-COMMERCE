@@ -87,7 +87,7 @@ const Footer = () => {
 
               <div className="mt-4 flex flex-col gap-3">
                 <Link className="footer-link" to="/">Help Center</Link>
-                <Link className="footer-link" to="/">Track Order</Link>
+                <Link className="footer-link" to="/orders">My Orders & Tracking</Link>
                 <Link className="footer-link" to="/">Returns & Refunds</Link>
                 <Link className="footer-link" to="/">Shipping Info</Link>
                 <Link className="footer-link" to="/contact">Contact Us</Link>

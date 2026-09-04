@@ -115,6 +115,12 @@ function Sidebar({ visible, setVisible }) {
           >
             Inventory
           </CNavItem>
+          <CNavItem
+            href="/products/update"
+            className="!text-[#6B7280] hover:!text-[#6D28D9]"
+          >
+            Update Product
+          </CNavItem>
         </CNavGroup>
 
         {/* Orders */}
