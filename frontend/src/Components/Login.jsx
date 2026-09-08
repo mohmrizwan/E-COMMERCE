@@ -1,9 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
+import { useForm } from "react-hook-form";
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+
+  // Form Validation
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm();
+
+  const onSubmit = () => {};
 
   return (
     <AuthShell>
@@ -12,7 +22,7 @@ const Login = () => {
         <h2>Welcome back</h2>
         <p>Login to your VendorAflame account</p>
       </div>
-      <form className="auth-form">
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
         <label className="field-label" htmlFor="login-email">
           Email address
         </label>
@@ -22,8 +32,21 @@ const Login = () => {
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
-          required
+          
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Enter a valid email address",
+            },
+          })}
         />
+        {errors.email && (
+          <p className="text-xs font-[inter] text-red-500 mt-1">
+            {" "}
+            {errors.email.message}
+          </p>
+        )}
         <label className="field-label" htmlFor="login-password">
           Password
         </label>
@@ -35,7 +58,13 @@ const Login = () => {
             placeholder="Enter your password"
             autoComplete="current-password"
             required
+            {...register("password", {
+              required: "Enter Password",
+            })}
           />
+          {errors.password && (
+            <p className="text-xs font-[inter] text-red-600 mt-1">{errors.password.message}</p>
+          )}
           <button
             className="password-toggle"
             type="button"
@@ -46,9 +75,7 @@ const Login = () => {
           </button>
         </div>
         <div className="form-options">
-          <label className="check-label">
-            <input type="checkbox" /> <span>Remember me</span>
-          </label>
+       
           <Link to="#" className="auth-link">
             Forgot password?
           </Link>
@@ -67,7 +94,6 @@ const Login = () => {
         <button className="social-button w-100" type="button">
           <strong className="google-icon">G</strong> Continue with Google
         </button>
-   
       </div>
     </AuthShell>
   );

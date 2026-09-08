@@ -11,6 +11,7 @@ import Account from "./Pages/Account";
 import TermsAndConditions from "./Pages/Terms&Condition";
 import ContactUs from "./Pages/ContactUs";
 import MyOrders from "./Pages/MyOrders";
+import Verify from "./Pages/Verify";
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
         <Route path="/track-order" element={<MyOrders />} />
         <Route path="/term&condition" element={<TermsAndConditions />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/otpVerfiy" element={<Verify />} />
       </Routes>
     </>
   );
