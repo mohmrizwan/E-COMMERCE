@@ -4,6 +4,7 @@ import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { products } from "../data/products";
 import profileImage from "../assets/images/487509508_1755531745305108_3167500546364621181_n.jpg";
+import { useForm } from "react-hook-form";
 
 const menuItems = [
   { id: "profile", label: "Profile", icon: "fa-regular fa-user" },
@@ -13,10 +14,9 @@ const menuItems = [
     label: "Saved Addresses",
     icon: "fa-solid fa-location-dot",
   },
-  { id: "settings", label: "Account Settings", icon: "fa-solid fa-gear" },
 ];
 
-const orders = [
+const initialOrders = [
   {
     id: "VND-48291",
     date: "22 Aug 2026",
@@ -78,8 +78,16 @@ const initialAddresses = [
     pincode: "452002",
     default: true,
   },
- 
 ];
+
+const initialProfile = {
+  name: "Rizwan",
+  email: "mohmrizwan10@gmail.com",
+  phone: "+91 98264 80948",
+  dateOfBirth: "02 December 2004",
+  gender: "Male",
+  address: "4 sector k green park colony dhar road",
+};
 
 const money = (value) => `Rs. ${value.toLocaleString("en-IN")}`;
 
@@ -92,7 +100,12 @@ const Account = () => {
     products[13],
   ]);
   const [addresses, setAddresses] = useState(initialAddresses);
+  const [profile, setProfile] = useState(initialProfile);
+  const [profileFormOpen, setProfileFormOpen] = useState(false);
+  const [addressFormOpen, setAddressFormOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState(null);
   const [notice, setNotice] = useState("");
+  const [accountOrders, setAccountOrders] = useState(initialOrders);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [preferences, setPreferences] = useState({
     orders: true,
@@ -114,6 +127,16 @@ const Account = () => {
     showNotice("Address removed");
   };
 
+  const cancelOrder = (orderId) => {
+    setAccountOrders((items) =>
+      items.map((order) =>
+        order.id === orderId ? { ...order, status: "Cancelled" } : order,
+      ),
+    );
+    setSelectedOrder(null);
+    showNotice("Order cancelled successfully");
+  };
+
   const navClass = (id) =>
     `flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold transition-colors ${active === id ? "bg-[#6C3BFF] text-white shadow-sm shadow-[#6C3BFF]/20" : "text-slate-600 hover:bg-[#f4f1ff] hover:text-[#6C3BFF]"}`;
 
@@ -131,36 +154,289 @@ const Account = () => {
     </div>
   );
 
+  const ProfileForm = () => {
+    const {
+      register,
+      handleSubmit,
+      formState: { errors },
+    } = useForm({ defaultValues: profile });
+
+    const onSubmit = (data) => {
+      setProfile(data);
+      setProfileFormOpen(false);
+      showNotice("Profile details updated");
+    };
+
+    return (
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="mt-5 grid gap-4 sm:grid-cols-2"
+      >
+        {[
+          [
+            "name",
+            "Full Name",
+            "text",
+            "Your full name",
+            {
+              required: "Name is required",
+              minLength: {
+                value: 3,
+                message: "Name must be at least 3 characters",
+              },
+            },
+          ],
+       
+          [
+            "phone",
+            "Phone Number",
+            "tel",
+            "+91 00000 00000",
+            {
+              required: "Phone number is required",
+              pattern: {
+                value: /^\+?[0-9 ]{10,15}$/,
+                message: "Enter a valid phone number",
+              },
+            },
+          ],
+          [
+            "dateOfBirth",
+            "Date of Birth",
+            "text",
+            "02 December 2004",
+            { required: "Date of birth is required" },
+          ],
+        ].map(([name, label, type, placeholder, rules]) => (
+          <label
+            key={name}
+            className="block text-sm font-semibold text-slate-700"
+          >
+            {label}
+            <input
+              type={type}
+              placeholder={placeholder}
+              className="mt-2 w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm font-normal outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]"
+              {...register(name, rules)}
+            />
+            {errors[name] && (
+              <span className="mt-1 block text-xs font-normal text-rose-500">
+                {errors[name].message}
+              </span>
+            )}
+          </label>
+        ))}
+        
+       
+        <div className="flex gap-3 sm:col-span-2">
+          <button
+            type="submit"
+            className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white hover:bg-[#5527d8]"
+          >
+            Save Details
+          </button>
+          <button
+            type="button"
+            onClick={() => setProfileFormOpen(false)}
+            className="min-h-10 rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  };
+
+  const AddressForm = () => {
+    const {
+      register,
+      handleSubmit,
+      formState: { errors },
+    } = useForm({
+      defaultValues: editingAddress || {
+        type: "Home",
+        name: profile.name,
+        phone: profile.phone,
+        address: "",
+        city: "",
+        state: "",
+        pincode: "",
+      },
+    });
+
+    const onSubmit = (data) => {
+      if (editingAddress) {
+        setAddresses((items) =>
+          items.map((item) =>
+            item.id === editingAddress.id ? { ...item, ...data } : item,
+          ),
+        );
+        showNotice("Address updated");
+      } else {
+        setAddresses((items) => [
+          ...items,
+          { ...data, id: Date.now(), default: items.length === 0 },
+        ]);
+        showNotice("Address added");
+      }
+      setAddressFormOpen(false);
+      setEditingAddress(null);
+    };
+
+    const fields = [
+      [
+        "name",
+        "Full Name",
+        "text",
+        "Recipient name",
+        {
+          required: "Name is required",
+          minLength: {
+            value: 3,
+            message: "Name must be at least 3 characters",
+          },
+        },
+      ],
+      [
+        "phone",
+        "Phone Number",
+        "tel",
+        "+91 00000 00000",
+        {
+          required: "Phone number is required",
+          pattern: {
+            value: /^\+?[0-9 ]{10,15}$/,
+            message: "Enter a valid phone number",
+          },
+        },
+      ],
+      ["city", "City", "text", "City", { required: "City is required" }],
+      ["state", "State", "text", "State", { required: "State is required" }],
+      [
+        "pincode",
+        "Pincode",
+        "text",
+        "6-digit pincode",
+        {
+          required: "Pincode is required",
+          pattern: {
+            value: /^[0-9]{6}$/,
+            message: "Enter a valid 6-digit pincode",
+          },
+        },
+      ],
+    ];
+
+    return (
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="mb-5 rounded-xl border border-[#d9ceff] bg-[#faf9ff] p-5 sm:p-7"
+      >
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="font-bold text-slate-900">
+              {editingAddress ? "Edit Address" : "Add Address"}
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Enter a complete delivery address.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setAddressFormOpen(false);
+              setEditingAddress(null);
+            }}
+            className="text-slate-400 hover:text-slate-700"
+            aria-label="Close address form"
+          >
+            <i className="fa-solid fa-xmark" />
+          </button>
+        </div>
+        <div className="mt-5 grid gap-4 sm:grid-cols-2">
+          <label className="block text-sm font-semibold text-slate-700">
+            Address Type
+            <select
+              className="mt-2 w-full rounded-lg border border-slate-200 bg-white px-3.5 py-3 text-sm font-normal outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]"
+              {...register("type", { required: "Address type is required" })}
+            >
+              <option>Home</option>
+              <option>Work</option>
+              <option>Other</option>
+            </select>
+            {errors.type && (
+              <span className="mt-1 block text-xs font-normal text-rose-500">
+                {errors.type.message}
+              </span>
+            )}
+          </label>
+          {fields.map(([name, label, type, placeholder, rules]) => (
+            <label
+              key={name}
+              className="block text-sm font-semibold text-slate-700"
+            >
+              {label}
+              <input
+                type={type}
+                placeholder={placeholder}
+                className="mt-2 w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm font-normal outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]"
+                {...register(name, rules)}
+              />
+              {errors[name] && (
+                <span className="mt-1 block text-xs font-normal text-rose-500">
+                  {errors[name].message}
+                </span>
+              )}
+            </label>
+          ))}
+          <label className="block text-sm font-semibold text-slate-700 sm:col-span-2">
+            Street Address
+            <textarea
+              rows="3"
+              placeholder="House number, street and area"
+              className="mt-2 w-full resize-y rounded-lg border border-slate-200 px-3.5 py-3 text-sm font-normal outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]"
+              {...register("address", {
+                required: "Street address is required",
+                minLength: {
+                  value: 10,
+                  message: "Address must be at least 10 characters",
+                },
+              })}
+            />
+            {errors.address && (
+              <span className="mt-1 block text-xs font-normal text-rose-500">
+                {errors.address.message}
+              </span>
+            )}
+          </label>
+        </div>
+        <div className="mt-5 flex gap-3">
+          <button
+            type="submit"
+            className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white hover:bg-[#5527d8]"
+          >
+            {editingAddress ? "Save Address" : "Add Address"}
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setAddressFormOpen(false);
+              setEditingAddress(null);
+            }}
+            className="min-h-10 rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    );
+  };
+
   const Profile = () => (
     <>
       <PageIntro eyebrow="My account" heading="Welcome back, Aarav">
         Manage your profile, delivery details and shopping preferences.
       </PageIntro>
-      <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_10px_30px_rgba(26,37,63,0.04)]">
-        <div className="h-24 bg-[#f2eeff] sm:h-28" />
-        <div className="relative px-5 pb-6 sm:px-7">
-          <img
-            src={profileImage}
-            alt="Aarav Sharma"
-            className="absolute -top-12 h-24 w-24 rounded-full border-4 border-white object-cover shadow-md sm:-top-14 sm:h-28 sm:w-28"
-          />
-          <div className="flex flex-col gap-5 pt-16 sm:flex-row sm:items-end sm:justify-between sm:pt-17">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">Rizwan</h2>
-              <div className="mt-2 flex flex-col gap-1 text-sm text-slate-500 sm:flex-row sm:gap-4">
-                <span>
-                  <i className="fa-regular fa-envelope mr-2 text-[#6C3BFF]" />
-                  mohmrizwan10@gmail.com
-                </span>
-                <span>
-                  <i className="fa-solid fa-phone mr-2 text-[#6C3BFF]" />
-                  +91 98264 80948
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <section className="mt-5 rounded-xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(26,37,63,0.04)] sm:p-7">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -171,31 +447,35 @@ const Account = () => {
             </p>
           </div>
           <button
-            onClick={() => showNotice("Personal details are ready to edit.")}
+            onClick={() => setProfileFormOpen(true)}
             className="shrink-0 text-sm font-bold text-[#6C3BFF] hover:text-[#5126d1]"
           >
             Edit Details
           </button>
         </div>
-        <dl className="grid gap-x-8 gap-y-5 pt-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
-          {[
-            ["Full Name", "Rizwan"],
-            ["Email Address", "mohmrizwan10.com"],
-            ["Phone Number", "+91 9826480948 "],
-            ["Date of Birth", "02 December 2004"],
-            ["Gender", "Male"],
-            ["Address", "B-204, Palm Grove, Bengaluru, 560034"],
-          ].map(([label, value]) => (
-            <div key={label}>
-              <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
-                {label}
-              </dt>
-              <dd className="mt-1.5 font-medium leading-5 text-slate-700">
-                {value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+        {profileFormOpen ? (
+          <ProfileForm />
+        ) : (
+          <dl className="grid gap-x-8 gap-y-5 pt-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              ["Full Name", profile.name],
+              ["Email Address", profile.email],
+              ["Phone Number", profile.phone],
+              ["Date of Birth", profile.dateOfBirth],
+              ["Gender", profile.gender],
+              ["Address", profile.address],
+            ].map(([label, value]) => (
+              <div key={label}>
+                <dt className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+                  {label}
+                </dt>
+                <dd className="mt-1.5 font-medium leading-5 text-slate-700">
+                  {value}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        )}
       </section>
     </>
   );
@@ -206,7 +486,7 @@ const Account = () => {
         Everything you have ordered from Vendora, in one place.
       </PageIntro>
       <div className="space-y-4">
-        {orders.map((order) => (
+        {accountOrders.map((order) => (
           <article
             key={order.id}
             className="rounded-xl border border-slate-200 bg-white p-4 shadow-[0_8px_24px_rgba(26,37,63,0.035)] sm:p-5"
@@ -240,19 +520,29 @@ const Account = () => {
                   {money(order.price)} each
                 </p>
               </div>
-              <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-3 sm:block sm:border-0 sm:pt-0 sm:text-right">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3 sm:block sm:border-0 sm:pt-0 sm:text-right">
                 <div>
                   <p className="text-xs text-slate-400">Total amount</p>
                   <p className="mt-1 font-bold text-slate-900">
                     {money(order.total)}
                   </p>
                 </div>
-                <button
-                  onClick={() => setSelectedOrder(order)}
-                  className="min-h-10 rounded-lg border border-slate-200 px-3.5 text-sm font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]"
-                >
-                  View Details
-                </button>
+                <div className="mt-3 flex flex-wrap justify-end gap-2">
+                  <button
+                    onClick={() => setSelectedOrder(order)}
+                    className="min-h-10 rounded-lg border border-slate-200 px-3.5 text-sm font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]"
+                  >
+                    Track Order
+                  </button>
+                  {(order.status === "Processing" || order.status === "Shipped") && (
+                    <button
+                      onClick={() => cancelOrder(order.id)}
+                      className="min-h-10 rounded-lg border border-rose-200 px-3.5 text-sm font-bold text-rose-600 hover:bg-rose-50"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </article>
@@ -266,9 +556,32 @@ const Account = () => {
                 {selectedOrder.id} order update
               </p>
               <p className="mt-1">
-                Your {selectedOrder.product} is marked as{" "}
-                <strong>{selectedOrder.status}</strong>.
+                {selectedOrder.status === "Cancelled"
+                  ? `Your ${selectedOrder.product} order was cancelled.`
+                  : `Your ${selectedOrder.product} order is currently ${selectedOrder.status.toLowerCase()}.`}
               </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                {["Processing", "Shipped", "Out for delivery", "Delivered"].map(
+                  (step, index) => {
+                    const statusOrder = {
+                      Processing: 0,
+                      Shipped: 1,
+                      "Out for delivery": 2,
+                      Delivered: 3,
+                    };
+                    const currentStep = statusOrder[selectedOrder.status];
+                    const complete = selectedOrder.status !== "Cancelled" && currentStep >= index;
+                    return (
+                      <div key={step} className="flex items-center gap-2 text-xs font-semibold sm:block">
+                        <span className={`grid h-7 w-7 shrink-0 place-items-center rounded-full ${complete ? "bg-[#6C3BFF] text-white" : "bg-slate-100 text-slate-400"}`}>
+                          {complete ? <i className="fa-solid fa-check" /> : index + 1}
+                        </span>
+                        <span className={complete ? "text-slate-700" : "text-slate-400"}>{step}</span>
+                      </div>
+                    );
+                  },
+                )}
+              </div>
             </div>
             <button
               onClick={() => setSelectedOrder(null)}
@@ -290,16 +603,16 @@ const Account = () => {
           Choose where your Vendora orders should arrive.
         </PageIntro>
         <button
-          onClick={() =>
-            showNotice(
-              "Address form will open here when connected to your API.",
-            )
-          }
+          onClick={() => {
+            setEditingAddress(null);
+            setAddressFormOpen(true);
+          }}
           className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white hover:bg-[#5527d8]"
         >
           <i className="fa-solid fa-plus" /> Add Address
         </button>
       </div>
+      {addressFormOpen && <AddressForm />}
       <div className="grid gap-4 lg:grid-cols-2">
         {addresses.map((address) => (
           <article
@@ -333,11 +646,10 @@ const Account = () => {
               {address.city}, {address.state} - {address.pincode}
             </address>
             <button
-              onClick={() =>
-                showNotice(
-                  "Address editor will open here when connected to your API.",
-                )
-              }
+              onClick={() => {
+                setEditingAddress(address);
+                setAddressFormOpen(true);
+              }}
               className="mt-5 text-sm font-bold text-[#6C3BFF] hover:text-[#5126d1]"
             >
               <i className="fa-regular fa-pen-to-square mr-2" />
@@ -351,106 +663,6 @@ const Account = () => {
           No saved addresses yet.
         </div>
       )}
-    </>
-  );
-
-  const Settings = () => (
-    <>
-      <PageIntro eyebrow="Account control" heading="Account Settings">
-        Control how Vendora contacts you and uses your account data.
-      </PageIntro>
-      <div className="space-y-4">
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(26,37,63,0.035)]">
-          <h2 className="font-bold text-slate-800">Password & security</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Keep your account protected with a unique password.
-          </p>
-          <button
-            onClick={() => showNotice("Password update flow will open here.")}
-            className="mt-4 min-h-10 rounded-lg border border-slate-200 px-4 text-sm font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]"
-          >
-            Change Password
-          </button>
-        </section>
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(26,37,63,0.035)]">
-          <h2 className="font-bold text-slate-800">Email & notifications</h2>
-          <div className="mt-4 divide-y divide-slate-100">
-            {[
-              [
-                "orders",
-                "Order updates",
-                "Delivery progress, returns and payment updates.",
-              ],
-              [
-                "offers",
-                "Offers & recommendations",
-                "New arrivals, saved-item price drops and special deals.",
-              ],
-            ].map(([key, heading, copy]) => (
-              <label
-                key={key}
-                className="flex cursor-pointer items-center justify-between gap-5 py-4 first:pt-0"
-              >
-                <span>
-                  <span className="block text-sm font-semibold text-slate-700">
-                    {heading}
-                  </span>
-                  <span className="mt-1 block text-sm leading-5 text-slate-500">
-                    {copy}
-                  </span>
-                </span>
-                <input
-                  type="checkbox"
-                  checked={preferences[key]}
-                  onChange={() =>
-                    setPreferences((current) => ({
-                      ...current,
-                      [key]: !current[key],
-                    }))
-                  }
-                  className="h-5 w-5 shrink-0 accent-[#6C3BFF]"
-                />
-              </label>
-            ))}
-          </div>
-        </section>
-        <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(26,37,63,0.035)]">
-          <h2 className="font-bold text-slate-800">Privacy</h2>
-          <label className="mt-4 flex cursor-pointer items-center justify-between gap-5">
-            <span>
-              <span className="block text-sm font-semibold text-slate-700">
-                Personalised shopping
-              </span>
-              <span className="mt-1 block text-sm leading-5 text-slate-500">
-                Use your browsing activity to personalise products and offers.
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={preferences.profile}
-              onChange={() =>
-                setPreferences((current) => ({
-                  ...current,
-                  profile: !current.profile,
-                }))
-              }
-              className="h-5 w-5 shrink-0 accent-[#6C3BFF]"
-            />
-          </label>
-        </section>
-        <section className="rounded-xl border border-rose-100 bg-rose-50/50 p-5">
-          <h2 className="font-bold text-slate-800">Sign out</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            End your current Vendora session on this device.
-          </p>
-          <Link
-            to="/login"
-            className="mt-4 inline-flex min-h-10 items-center rounded-lg border border-rose-200 px-4 text-sm font-bold text-rose-600 hover:bg-rose-100"
-          >
-            Logout
-          </Link>
-        </section>
-      </div>
     </>
   );
 
@@ -470,11 +682,6 @@ const Account = () => {
             <aside className="mb-6 lg:mb-0">
               <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-[0_10px_30px_rgba(26,37,63,0.04)] lg:sticky lg:top-5">
                 <div className="hidden items-center gap-3 border-b border-slate-100 p-4 lg:flex">
-                  <img
-                    src={profileImage}
-                    alt="Aarav Sharma"
-                    className="h-10 w-10 rounded-full object-cover"
-                  />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold text-slate-800">
                       Aarav Sharma

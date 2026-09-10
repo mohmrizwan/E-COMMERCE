@@ -292,7 +292,7 @@ export const forgotPassword = async (req, res) => {
   }
 };
 // verfiyForgotPassword
-export const verifyForgotPassword = async (req, res) => {
+export const verifyForgotPasswordOtp = async (req, res) => {
   try {
     const { userId, otp } = req.body;
 

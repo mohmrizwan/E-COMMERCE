@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
       minlength: 6,
     },
 
+    phone: {
+      type: Number,
+      required: true,
+      minlength: 10,
+    },
+
     otp: {
       type: String,
       default: null,

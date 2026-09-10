@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 
 import AuthUser from "./Routes/Users/AuthRoutes.js";
+import profileRoutes from "../src/Routes//Users/profileRoutes.js"
 
 export default function createApp() {
   const app = express();
@@ -12,6 +13,7 @@ export default function createApp() {
 
 
   app.use("/user", AuthUser);
+  app.use("/profile", profileRoutes)
 
   return app;
 }
