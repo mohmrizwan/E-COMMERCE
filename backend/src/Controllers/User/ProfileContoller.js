@@ -1,5 +1,6 @@
 import UserModel from "../../models/user/AuthModel.js";
 import orderModel from "../../models/user/MyOrdersModel.js";
+import AddressModel from "../../models/user/AddressModel.js";
 
 export const getProfile = async (req, res) => {
   try {
@@ -93,6 +94,91 @@ export const getOrder = async (req, res) => {
       message: "Orders fetched successfully",
       getOrder,
     });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const addAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { type, name, phone, state, city, pincode, address } = req.body;
+
+    if (!type || !name || !phone || !state || !city || !pincode || !address) {
+      return res.status(400).json({
+        message: "Enter all address details",
+      });
+    }
+
+    const newAddress = await AddressModel.create({
+      userId,
+      type,
+      name,
+      phone,
+      state,
+      city,
+      pincode,
+      address,
+    });
+
+    res.status(201).json({
+      message: "Address added successfully",
+      address: newAddress,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const updateAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { addressId } = req.params;
+    const { type, name, phone, state, city, pincode, address } = req.body;
+
+    const addressFind = await AddressModel.findOne({
+      _id: addressId,
+      userId,
+    });
+
+    if (!addressFind) {
+      return res.status(404).json({ message: "Address not found" });
+    }
+
+    if (type !== undefined) addressFind.type = type;
+    if (name !== undefined) addressFind.name = name;
+    if (phone !== undefined) addressFind.phone = phone;
+    if (state !== undefined) addressFind.state = state;
+    if (city !== undefined) addressFind.city = city;
+    if (pincode !== undefined) addressFind.pincode = pincode;
+    if (address !== undefined) addressFind.address = address;
+
+    await addressFind.save();
+
+    res.status(200).json({
+      message: "Address updated successfully",
+      address: addressFind,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const deleteAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { addressId } = req.params;
+
+    const addressFind = await AddressModel.findOneAndDelete({
+      _id: addressId,
+      userId,
+    });
+
+    if (!addressFind) {
+      return res.status(404).json({ message: "Address not found" });
+    }
+
+    res.status(200).json({ message: "Address deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: "Internal server error" });
   }
