@@ -16,10 +16,17 @@ import Message from "./Pages/Messages/Message";
 import Profile from "./Pages/Profile/Profile";
 import Setting from "./Pages/Setting/Setting";
 import Update from "./Pages/Products/Update";
+import VendorLogin from "./Pages/Auth/VendorLogin";
+import VendorSignup from "./Pages/Auth/VendorSignup";
+import VendorVerifyOtp from "./Pages/Auth/VendorVerifyOtp";
 
 function App() {
   return (
     <Routes>
+      <Route path="/vendor/login" element={<VendorLogin />} />
+      <Route path="/vendor/signup" element={<VendorSignup />} />
+      <Route path="/vendor/verify" element={<VendorVerifyOtp />} />
+
       {/* Vendor Panel Layout */}
       <Route path="/" element={<VendorLayout />}>
         {/* Dashboard */}

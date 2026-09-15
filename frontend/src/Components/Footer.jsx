@@ -19,7 +19,7 @@ const Footer = () => {
 
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
-                  Marqo is the marketplace where thousands of trusted vendors
+                  Vendora is the marketplace where thousands of trusted vendors
                   meet millions of shoppers. Discover more, pay less, sell
                   smarter.
                 </p>

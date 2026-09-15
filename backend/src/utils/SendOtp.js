@@ -10,6 +10,7 @@ const transporter = nodemailer.createTransport({
 
 const sendOtp = async (email, otp) => {
   try {
+    console.log("EMAIL RECEIVED:", email);
     const mailOptions = {
       from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
       to: email,
