@@ -3,12 +3,16 @@ import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import AuthLayout from "../../Components/Auth/AuthLayout";
 import FormField from "../../Components/Auth/FormField";
-import { vendorAuthApi } from "../../services/vendorAuthApi";
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const VendorLogin = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const {
     register,
     handleSubmit,
@@ -19,13 +23,32 @@ const VendorLogin = () => {
   });
 
   const onSubmit = async (values) => {
-    setSubmitError("");
-
     try {
-      await vendorAuthApi.login(values);
-      navigate("/", { replace: true });
+      const response = await axios.post(
+        "http://localhost:3000/vendor/login",
+        values,
+      );
+
+      // Success message
+      setMessage(response.data.message);
+      setErrorMessage("");
+
+      // Wait for Snackbar to show, then go to OTP page
+      setTimeout(() => {
+        navigate("/", {
+          state: {
+            vendorId: response.data.vendorId,
+            email: values.email,
+          },
+        });
+      }, 1500);
     } catch (error) {
-      setSubmitError(error.message);
+      console.log(error.response?.data);
+
+      // Error message
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+
+      setMessage("");
     }
   };
 
@@ -35,6 +58,40 @@ const VendorLogin = () => {
       title="Sign in to your store"
       description="Access your vendor workspace and keep your business moving."
     >
+      {/* Success Snackbar */}
+      <Snackbar
+        open={Boolean(message)}
+        autoHideDuration={3000}
+        onClose={() => setMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
       <form className="grid gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
         <FormField
           label="Email address"
@@ -55,8 +112,16 @@ const VendorLogin = () => {
 
         <div className="grid gap-2">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-xs font-bold text-slate-700">Password</label>
-            <Link to="/vendor/forgot-password" className="text-xs font-bold text-violet-700 no-underline hover:underline">
+            <label
+              htmlFor="password"
+              className="text-xs font-bold text-slate-700"
+            >
+              Password
+            </label>
+            <Link
+              to="/vendor/forgot-password"
+              className="text-xs font-bold text-violet-700 no-underline hover:underline"
+            >
               Forgot password?
             </Link>
           </div>
@@ -87,21 +152,42 @@ const VendorLogin = () => {
             </button>
           </div>
           {errors.password && (
-            <span id="password-error" className="text-xs text-red-700" role="alert">
+            <span
+              id="password-error"
+              className="text-xs text-red-700"
+              role="alert"
+            >
               {errors.password.message}
             </span>
           )}
         </div>
 
-        {submitError && <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700" role="alert">{submitError}</div>}
+        {submitError && (
+          <div
+            className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700"
+            role="alert"
+          >
+            {submitError}
+          </div>
+        )}
 
-        <button type="submit" className="min-h-13 rounded-xl border-0 bg-violet-700 px-5 font-extrabold text-white transition hover:bg-violet-800 disabled:cursor-wait disabled:opacity-60" disabled={isSubmitting}>
+        <button
+          type="submit"
+          className="min-h-13 rounded-xl border-0 bg-violet-700 px-5 font-extrabold text-white transition hover:bg-violet-800 disabled:cursor-wait disabled:opacity-60"
+          disabled={isSubmitting}
+        >
           {isSubmitting ? "Signing in..." : "Sign in"}
         </button>
       </form>
 
       <p className="mt-6 text-center text-sm text-slate-500">
-        Don&apos;t have an account? <Link className="font-bold text-violet-700 no-underline hover:underline" to="/vendor/signup">Sign up</Link>
+        Don&apos;t have an account?{" "}
+        <Link
+          className="font-bold text-violet-700 no-underline hover:underline"
+          to="/vendor/signup"
+        >
+          Sign up
+        </Link>
       </p>
     </AuthLayout>
   );

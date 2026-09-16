@@ -19,6 +19,9 @@ import Update from "./Pages/Products/Update";
 import VendorLogin from "./Pages/Auth/VendorLogin";
 import VendorSignup from "./Pages/Auth/VendorSignup";
 import VendorVerifyOtp from "./Pages/Auth/VendorVerifyOtp";
+import VendorForgotPassword from "./Pages/Auth/VendorForgotPassword";
+import VendorResetVerify from "./Pages/Auth/VendorResetVerify";
+import VendorNewPassword from "./Pages/Auth/VendorNewPassword";
 
 function App() {
   return (
@@ -26,6 +29,9 @@ function App() {
       <Route path="/vendor/login" element={<VendorLogin />} />
       <Route path="/vendor/signup" element={<VendorSignup />} />
       <Route path="/vendor/verify" element={<VendorVerifyOtp />} />
+      <Route path="/vendor/forgot-password" element={<VendorForgotPassword />} />
+      <Route path="/vendor/reset-verify" element={<VendorResetVerify />} />
+      <Route path="/vendor/new-password" element={<VendorNewPassword />} />
 
       {/* Vendor Panel Layout */}
       <Route path="/" element={<VendorLayout />}>
