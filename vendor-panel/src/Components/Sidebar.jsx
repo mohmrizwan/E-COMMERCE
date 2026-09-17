@@ -60,7 +60,7 @@ function Sidebar({ visible, setVisible }) {
         {/* Dashboard */}
 
         <CNavItem
-          href="/"
+          href="/dashboard"
           className="!text-white font-medium text-base rounded-lg hover:!bg-[#241A42] transition duration-200 mb-1"
         >
           <CIcon

@@ -33,9 +33,10 @@ const VendorLogin = () => {
       setMessage(response.data.message);
       setErrorMessage("");
 
+      localStorage.setItem("vendorToken", response.data.token);
       // Wait for Snackbar to show, then go to OTP page
       setTimeout(() => {
-        navigate("/", {
+        navigate("/dashboard", {
           state: {
             vendorId: response.data.vendorId,
             email: values.email,

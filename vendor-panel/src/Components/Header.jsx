@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 
 import {
   CHeader,
@@ -13,8 +13,10 @@ import {
   CDropdownItem,
   CAvatar,
 } from "@coreui/react";
-
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 import CIcon from "@coreui/icons-react";
+import { useNavigate } from "react-router-dom";
 
 import {
   cilMenu,
@@ -25,6 +27,23 @@ import {
 } from "@coreui/icons";
 
 function Header({ onMenuClick }) {
+  const navigate = useNavigate();
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("vendorToken");
+
+      setMessage("Logged out successfully");
+      setErrorMessage("");
+
+      setTimeout(() => {
+        navigate("/vendor/login", {});
+      }, 1000);
+    } catch (error) {
+      setErrorMessage("Something went wrong");
+    }
+  };
   return (
     <CHeader
       position="sticky"
@@ -32,7 +51,38 @@ function Header({ onMenuClick }) {
     >
       <CContainer fluid className="px-4 md:px-6">
         {/* ================= LEFT ================= */}
+        <Snackbar
+          open={Boolean(message)}
+          autoHideDuration={3000}
+          onClose={() => setMessage("")}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setMessage("")}
+            severity="success"
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {message}
+          </Alert>
+        </Snackbar>
 
+        {/* Error Snackbar */}
+        <Snackbar
+          open={Boolean(errorMessage)}
+          autoHideDuration={3000}
+          onClose={() => setErrorMessage("")}
+          anchorOrigin={{ vertical: "top", horizontal: "right" }}
+        >
+          <Alert
+            onClose={() => setErrorMessage("")}
+            severity="error"
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {errorMessage}
+          </Alert>
+        </Snackbar>
         <div className="flex items-center">
           {/* Mobile Menu Button */}
           <CHeaderToggler
@@ -125,7 +175,7 @@ function Header({ onMenuClick }) {
               {/* Logout */}
 
               <CDropdownItem
-                href="#"
+                onClick={handleLogout}
                 className="!flex !items-center !gap-2 !rounded-lg !px-3 !py-2.5 !text-red-500 hover:!bg-red-50 transition duration-150"
               >
                 <CIcon icon={cilAccountLogout} />

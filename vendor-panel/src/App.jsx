@@ -22,40 +22,45 @@ import VendorVerifyOtp from "./Pages/Auth/VendorVerifyOtp";
 import VendorForgotPassword from "./Pages/Auth/VendorForgotPassword";
 import VendorResetVerify from "./Pages/Auth/VendorResetVerify";
 import VendorNewPassword from "./Pages/Auth/VendorNewPassword";
+import ProtectedRoute from "./Components/ProtectedRoute";
 
 function App() {
   return (
     <Routes>
+      {/* Auth Routes */}
       <Route path="/vendor/login" element={<VendorLogin />} />
       <Route path="/vendor/signup" element={<VendorSignup />} />
       <Route path="/vendor/verify" element={<VendorVerifyOtp />} />
-      <Route path="/vendor/forgot-password" element={<VendorForgotPassword />} />
+      <Route
+        path="/vendor/forgot-password"
+        element={<VendorForgotPassword />}
+      />
       <Route path="/vendor/reset-verify" element={<VendorResetVerify />} />
       <Route path="/vendor/new-password" element={<VendorNewPassword />} />
 
-      {/* Vendor Panel Layout */}
-      <Route path="/" element={<VendorLayout />}>
-        {/* Dashboard */}
-        <Route index element={<Dashboard />} />
+      {/* Protected Vendor Panel */}
+      <Route element={<ProtectedRoute />}>
+        <Route path="/" element={<VendorLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
 
-        {/* Products */}
-        <Route path="products" element={<AllProducts />} />
-        <Route path="products/add" element={<AddProduct />} />
-        <Route path="products/inventory" element={<Inventory />} />
-        <Route path="products/update" element={<Update />} />
-        <Route path="/orders" element={<AllOrders />} />
-        <Route path="/orders/processing" element={<Processing />} />
-        <Route path="/orders/shipped" element={<Shipped />} />
-        <Route path="/orders/delivered" element={<Deliverd />} />
-        <Route path="/customers" element={<Customers />} />
-        <Route path="/reviews" element={<Review />} />
-        <Route path="/earnings" element={<Earning />} />
-        <Route path="/transactions" element={<Transaction />} />
-        <Route path="/messages" element={<Message />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/settings" element={<Setting />} />
-        
+          <Route path="products" element={<AllProducts />} />
+          <Route path="products/add" element={<AddProduct />} />
+          <Route path="products/inventory" element={<Inventory />} />
+          <Route path="products/update" element={<Update />} />
 
+          <Route path="orders" element={<AllOrders />} />
+          <Route path="orders/processing" element={<Processing />} />
+          <Route path="orders/shipped" element={<Shipped />} />
+          <Route path="orders/delivered" element={<Deliverd />} />
+
+          <Route path="customers" element={<Customers />} />
+          <Route path="reviews" element={<Review />} />
+          <Route path="earnings" element={<Earning />} />
+          <Route path="transactions" element={<Transaction />} />
+          <Route path="messages" element={<Message />} />
+          <Route path="profile" element={<Profile />} />
+          <Route path="settings" element={<Setting />} />
+        </Route>
       </Route>
     </Routes>
   );
