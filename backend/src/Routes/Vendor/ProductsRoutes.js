@@ -1,5 +1,8 @@
 import express from "express";
-import { createProduct } from "../../Controllers/Vendor/ProductController.js";
+import {
+  createProduct,
+  getAllProducts,
+} from "../../Controllers/Vendor/ProductController.js";
 import VendorAuthMiddleware from "../../middlewares/VendorAuthMiddleware.js";
 import upload from "../../middlewares/multer.js";
 import cloudinary from "../../Config/Cloudinary.js";
@@ -11,5 +14,6 @@ router.post(
   upload.single("image"),
   createProduct,
 );
+router.get("/getAllProducts", VendorAuthMiddleware, getAllProducts);
 
 export default router;

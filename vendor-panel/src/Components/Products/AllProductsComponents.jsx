@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   CButton,
   CCard,
@@ -10,10 +10,13 @@ import {
 } from "@coreui/react";
 import { cilPlus, cilSearch } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-
 import ProductTable from "./ProductTableComponents";
 
 const AllProducts = () => {
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState("");
+  const [status, setStatus] = useState("");
+
   return (
     <div>
       {/* Header */}
@@ -35,6 +38,7 @@ const AllProducts = () => {
       <CCard className="border-0 shadow-sm mb-4">
         <CCardBody>
           <CRow className="g-3">
+            {/* Search */}
             <CCol md={6}>
               <div className="position-relative">
                 <CIcon
@@ -42,12 +46,21 @@ const AllProducts = () => {
                   className="position-absolute top-50 translate-middle-y ms-3 text-body-secondary"
                 />
 
-                <CFormInput className="ps-5" placeholder="Search products..." />
+                <CFormInput
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="ps-5"
+                  placeholder="Search products..."
+                />
               </div>
             </CCol>
 
+            {/* Category */}
             <CCol md={3}>
-              <CFormSelect>
+              <CFormSelect
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
                 <option value="">All Categories</option>
                 <option value="electronics">Electronics</option>
                 <option value="fashion">Fashion</option>
@@ -56,8 +69,12 @@ const AllProducts = () => {
               </CFormSelect>
             </CCol>
 
+            {/* Status */}
             <CCol md={3}>
-              <CFormSelect>
+              <CFormSelect
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+              >
                 <option value="">All Status</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -71,7 +88,11 @@ const AllProducts = () => {
       {/* Products Table */}
       <CCard className="border-0 shadow-sm">
         <CCardBody className="p-0">
-          <ProductTable />
+          <ProductTable
+            search={search}
+            category={category}
+            status={status}
+          />
         </CCardBody>
       </CCard>
     </div>
@@ -79,3 +100,4 @@ const AllProducts = () => {
 };
 
 export default AllProducts;
+

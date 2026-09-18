@@ -72,3 +72,25 @@ export const createProduct = async (req, res) => {
     });
   }
 };
+
+export const getAllProducts = async (req, res) => {
+  try {
+    const vendorId = req.vendor._id;
+
+    if (!vendorId) {
+      return res.status(404).json({ message: "vendor not found" });
+    }
+    const products = await productModel.find({ vendorId });
+
+    if (products.length === 0) {
+      return res.status(404).json("Error to find the products");
+    }
+
+    return res.status(200).json({
+      products,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};

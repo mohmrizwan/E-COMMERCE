@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   CAvatar,
   CBadge,
@@ -15,205 +15,223 @@ import {
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
-import {
-  cilOptions,
-  cilPencil,
-  cilTrash,
-  cilInfo,
-} from "@coreui/icons";
+import { cilOptions, cilPencil, cilTrash } from "@coreui/icons";
+import ProductLoader from "../ProductLoader";
+import Alert from "@mui/material/Alert";
+import axios from "axios";
+import Snackbar from "@mui/material/Snackbar";
 
-const ProductTable = () => {
-  const products = [
-    {
-      id: 1,
-      name: "Nike Air Max",
-      category: "Shoes",
-      price: "₹4,999",
-      stock: 24,
-      status: "Active",
-    },
-    {
-      id: 2,
-      name: "Smart Watch",
-      category: "Electronics",
-      price: "₹2,999",
-      stock: 12,
-      status: "Active",
-    },
-    {
-      id: 3,
-      name: "Premium T-Shirt",
-      category: "Fashion",
-      price: "₹899",
-      stock: 0,
-      status: "Out of Stock",
-    },
-    {
-      id: 4,
-      name: "Wireless Headphones",
-      category: "Electronics",
-      price: "₹1,999",
-      stock: 18,
-      status: "Active",
-    },
-    {
-      id: 5,
-      name: "Leather Wallet",
-      category: "Accessories",
-      price: "₹1,299",
-      stock: 5,
-      status: "Inactive",
-    },
-  ];
+const ProductTable = ({ search, category, status }) => {
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [products, setProducts] = useState([]);
 
-  const getStatusColor = (status) => {
-    if (status === "Active") return "success";
-    if (status === "Out of Stock") return "danger";
-    return "secondary";
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesCategory =
+      category === "" || product.category === category;
+
+    const matchesStatus =
+      status === "" || product.status === status;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+
+  const handleProducts = async () => {
+    setLoading(true);
+
+    try {
+      const token = localStorage.getItem("vendorToken");
+
+      const response = await axios.get(
+        "http://localhost:3000/vendor/products/getAllProducts",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setProducts(response.data.products);
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || "Something went wrong",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleProducts();
+  }, []);
+
+  const getStatusColor = (stockQuantity) => {
+    if (stockQuantity === 0) return "danger";
+    if (stockQuantity <= 5) return "warning";
+    return "success";
   };
 
   return (
-    <CTable hover responsive align="middle" className="mb-0">
+    <>
+      {/* Error Snackbar */}
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
 
-      <CTableHead>
-        <CTableRow>
-          <CTableHeaderCell className="text-body-secondary py-3 ps-4">
-            Product
-          </CTableHeaderCell>
+      {/* Table */}
+      {loading ? (
+        <ProductLoader />
+      ) : (
+        <CTable hover responsive align="middle" className="mb-0">
+          <CTableHead>
+            <CTableRow>
+              <CTableHeaderCell className="text-body-secondary py-3 ps-4">
+                Product
+              </CTableHeaderCell>
 
-          <CTableHeaderCell className="text-body-secondary">
-            Category
-          </CTableHeaderCell>
+              <CTableHeaderCell className="text-body-secondary">
+                Category
+              </CTableHeaderCell>
 
-          <CTableHeaderCell className="text-body-secondary">
-            Price
-          </CTableHeaderCell>
+              <CTableHeaderCell className="text-body-secondary">
+                Price
+              </CTableHeaderCell>
 
-          <CTableHeaderCell className="text-body-secondary">
-            Stock
-          </CTableHeaderCell>
+              <CTableHeaderCell className="text-body-secondary">
+                Stock
+              </CTableHeaderCell>
 
-          <CTableHeaderCell className="text-body-secondary">
-            Status
-          </CTableHeaderCell>
+              <CTableHeaderCell className="text-body-secondary">
+                Status
+              </CTableHeaderCell>
 
-          <CTableHeaderCell className="text-body-secondary text-end pe-4">
-            Actions
-          </CTableHeaderCell>
-        </CTableRow>
-      </CTableHead>
+              <CTableHeaderCell className="text-body-secondary text-end pe-4">
+                Actions
+              </CTableHeaderCell>
+            </CTableRow>
+          </CTableHead>
 
-      <CTableBody>
-        {products.map((product) => (
-          <CTableRow key={product.id}>
+          <CTableBody>
+            {filteredProducts.map((product) => (
+              <CTableRow key={product._id}>
+                {/* Product */}
+                <CTableDataCell className="ps-4">
+                  <div className="d-flex align-items-center gap-3">
+                    <CAvatar color="light" size="lg">
+                      {product.name.charAt(0)}
+                    </CAvatar>
 
-            {/* Product */}
-            <CTableDataCell className="ps-4">
-              <div className="d-flex align-items-center gap-3">
+                    <div>
+                      <div className="fw-semibold">
+                        {product.name}
+                      </div>
 
-                <CAvatar
-                  color="light"
-                  size="lg"
-                >
-                  {product.name.charAt(0)}
-                </CAvatar>
-
-                <div>
-                  <div className="fw-semibold">
-                    {product.name}
+                      <small className="text-body-secondary">
+                        Product #{product._id}
+                      </small>
+                    </div>
                   </div>
+                </CTableDataCell>
 
-                  <small className="text-body-secondary">
-                    Product #{product.id}
-                  </small>
-                </div>
+                {/* Category */}
+                <CTableDataCell>
+                  <span className="text-body-secondary">
+                    {product.category}
+                  </span>
+                </CTableDataCell>
 
-              </div>
-            </CTableDataCell>
+                {/* Price */}
+                <CTableDataCell>
+                  <span className="fw-semibold">
+                    ${product.pricing}
+                  </span>
+                </CTableDataCell>
 
-            {/* Category */}
-            <CTableDataCell>
-              <span className="text-body-secondary">
-                {product.category}
-              </span>
-            </CTableDataCell>
+                {/* Stock */}
+                <CTableDataCell>
+                  <span
+                    className={
+                      product.stockQuantity === 0
+                        ? "text-danger fw-semibold"
+                        : product.stockQuantity <= 5
+                          ? "text-warning fw-semibold"
+                          : "fw-semibold"
+                    }
+                  >
+                    {product.stockQuantity}
+                  </span>
+                </CTableDataCell>
 
-            {/* Price */}
-            <CTableDataCell>
-              <span className="fw-semibold">
-                {product.price}
-              </span>
-            </CTableDataCell>
+                {/* Status */}
+                <CTableDataCell>
+                  <CBadge
+                    color={getStatusColor(product.stockQuantity)}
+                    shape="rounded-pill"
+                    className="px-3 py-2"
+                  >
+                    {product.stockQuantity === 0
+                      ? "Out of Stock"
+                      : product.status}
+                  </CBadge>
+                </CTableDataCell>
 
-            {/* Stock */}
-            <CTableDataCell>
-              <span
-                className={
-                  product.stock === 0
-                    ? "text-danger fw-semibold"
-                    : product.stock <= 5
-                    ? "text-warning fw-semibold"
-                    : "fw-semibold"
-                }
-              >
-                {product.stock}
-              </span>
-            </CTableDataCell>
+                {/* Actions */}
+                <CTableDataCell className="text-end pe-4">
+                  <CDropdown direction="dropstart">
+                    <CDropdownToggle
+                      color="transparent"
+                      caret={false}
+                      className="p-1"
+                    >
+                      <CIcon icon={cilOptions} />
+                    </CDropdownToggle>
 
-            {/* Status */}
-            <CTableDataCell>
-              <CBadge
-                color={getStatusColor(product.status)}
-                shape="rounded-pill"
-                className="px-3 py-2"
-              >
-                {product.status}
-              </CBadge>
-            </CTableDataCell>
+                    <CDropdownMenu>
+                      <CDropdownItem href="/products/update">
+                        <CIcon
+                          icon={cilPencil}
+                          className="me-2"
+                        />
+                        Edit
+                      </CDropdownItem>
 
-            {/* Actions */}
-            <CTableDataCell className="text-end pe-4">
-
-              <CDropdown direction="dropstart">
-
-                <CDropdownToggle
-                  color="transparent"
-                  caret={false}
-                  className="p-1"
-                >
-                  <CIcon icon={cilOptions} />
-                </CDropdownToggle>
-
-                <CDropdownMenu>
-
-                  <CDropdownItem>
-                    <CIcon icon={cilInfo} className="me-2" />
-                    View
-                  </CDropdownItem>
-
-                  <CDropdownItem 
-                  href="/products/update">
-                    <CIcon icon={cilPencil} className="me-2" />
-                    Edit
-                  </CDropdownItem>
-
-                  <CDropdownItem className="text-danger">
-                    <CIcon icon={cilTrash} className="me-2" />
-                    Delete
-                  </CDropdownItem>
-
-                </CDropdownMenu>
-
-              </CDropdown>
-
-            </CTableDataCell>
-
-          </CTableRow>
-        ))}
-      </CTableBody>
-
-    </CTable>
+                      <CDropdownItem className="text-danger">
+                        <CIcon
+                          icon={cilTrash}
+                          className="me-2"
+                        />
+                        Delete
+                      </CDropdownItem>
+                    </CDropdownMenu>
+                  </CDropdown>
+                </CTableDataCell>
+              </CTableRow>
+            ))}
+          </CTableBody>
+        </CTable>
+      )}
+    </>
   );
 };
 
 export default ProductTable;
+
