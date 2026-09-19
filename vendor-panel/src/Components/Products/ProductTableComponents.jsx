@@ -24,6 +24,7 @@ import Snackbar from "@mui/material/Snackbar";
 const ProductTable = ({ search, category, status }) => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [message, setMessage] = useState("");
   const [products, setProducts] = useState([]);
 
   const filteredProducts = products.filter((product) => {
@@ -31,11 +32,9 @@ const ProductTable = ({ search, category, status }) => {
       .toLowerCase()
       .includes(search.toLowerCase());
 
-    const matchesCategory =
-      category === "" || product.category === category;
+    const matchesCategory = category === "" || product.category === category;
 
-    const matchesStatus =
-      status === "" || product.status === status;
+    const matchesStatus = status === "" || product.status === status;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
@@ -57,14 +56,11 @@ const ProductTable = ({ search, category, status }) => {
 
       setProducts(response.data.products);
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message || "Something went wrong",
-      );
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     handleProducts();
   }, []);
@@ -75,8 +71,49 @@ const ProductTable = ({ search, category, status }) => {
     return "success";
   };
 
+  const handleDeleteProduct = async (productId) => {
+    try {
+      const token = localStorage.getItem("vendorToken");
+
+      const response = await axios.delete(
+        `http://localhost:3000/vendor/products/delete/${productId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      setMessage(response.data.message);
+
+      // Product list refresh
+      await handleProducts();
+
+      setTimeout(() => {
+        setMessage("");
+      }, 2000);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
   return (
     <>
+      <Snackbar
+        open={Boolean(message)}
+        autoHideDuration={3000}
+        onClose={() => setMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
       {/* Error Snackbar */}
       <Snackbar
         open={Boolean(errorMessage)}
@@ -131,101 +168,102 @@ const ProductTable = ({ search, category, status }) => {
           </CTableHead>
 
           <CTableBody>
-            {filteredProducts.map((product) => (
-              <CTableRow key={product._id}>
-                {/* Product */}
-                <CTableDataCell className="ps-4">
-                  <div className="d-flex align-items-center gap-3">
-                    <CAvatar color="light" size="lg">
-                      {product.name.charAt(0)}
-                    </CAvatar>
-
-                    <div>
-                      <div className="fw-semibold">
-                        {product.name}
-                      </div>
-
-                      <small className="text-body-secondary">
-                        Product #{product._id}
-                      </small>
-                    </div>
-                  </div>
-                </CTableDataCell>
-
-                {/* Category */}
-                <CTableDataCell>
-                  <span className="text-body-secondary">
-                    {product.category}
-                  </span>
-                </CTableDataCell>
-
-                {/* Price */}
-                <CTableDataCell>
-                  <span className="fw-semibold">
-                    ${product.pricing}
-                  </span>
-                </CTableDataCell>
-
-                {/* Stock */}
-                <CTableDataCell>
-                  <span
-                    className={
-                      product.stockQuantity === 0
-                        ? "text-danger fw-semibold"
-                        : product.stockQuantity <= 5
-                          ? "text-warning fw-semibold"
-                          : "fw-semibold"
-                    }
-                  >
-                    {product.stockQuantity}
-                  </span>
-                </CTableDataCell>
-
-                {/* Status */}
-                <CTableDataCell>
-                  <CBadge
-                    color={getStatusColor(product.stockQuantity)}
-                    shape="rounded-pill"
-                    className="px-3 py-2"
-                  >
-                    {product.stockQuantity === 0
-                      ? "Out of Stock"
-                      : product.status}
-                  </CBadge>
-                </CTableDataCell>
-
-                {/* Actions */}
-                <CTableDataCell className="text-end pe-4">
-                  <CDropdown direction="dropstart">
-                    <CDropdownToggle
-                      color="transparent"
-                      caret={false}
-                      className="p-1"
-                    >
-                      <CIcon icon={cilOptions} />
-                    </CDropdownToggle>
-
-                    <CDropdownMenu>
-                      <CDropdownItem href="/products/update">
-                        <CIcon
-                          icon={cilPencil}
-                          className="me-2"
-                        />
-                        Edit
-                      </CDropdownItem>
-
-                      <CDropdownItem className="text-danger">
-                        <CIcon
-                          icon={cilTrash}
-                          className="me-2"
-                        />
-                        Delete
-                      </CDropdownItem>
-                    </CDropdownMenu>
-                  </CDropdown>
+            {filteredProducts.length === 0 ? (
+              <CTableRow>
+                <CTableDataCell colSpan={6} className="text-center py-5">
+                  No products found
                 </CTableDataCell>
               </CTableRow>
-            ))}
+            ) : (
+              filteredProducts.map((product) => (
+                <CTableRow key={product._id}>
+                  {/* Product */}
+                  <CTableDataCell className="ps-4">
+                    <div className="d-flex align-items-center gap-3">
+                      <CAvatar color="light" size="lg">
+                        {product.name.charAt(0)}
+                      </CAvatar>
+
+                      <div>
+                        <div className="fw-semibold">{product.name}</div>
+
+                        <small className="text-body-secondary">
+                          Product #{product._id}
+                        </small>
+                      </div>
+                    </div>
+                  </CTableDataCell>
+
+                  {/* Category */}
+                  <CTableDataCell>
+                    <span className="text-body-secondary">
+                      {product.category}
+                    </span>
+                  </CTableDataCell>
+
+                  {/* Price */}
+                  <CTableDataCell>
+                    <span className="fw-semibold">${product.pricing}</span>
+                  </CTableDataCell>
+
+                  {/* Stock */}
+                  <CTableDataCell>
+                    <span
+                      className={
+                        product.stockQuantity === 0
+                          ? "text-danger fw-semibold"
+                          : product.stockQuantity <= 5
+                            ? "text-warning fw-semibold"
+                            : "fw-semibold"
+                      }
+                    >
+                      {product.stockQuantity}
+                    </span>
+                  </CTableDataCell>
+
+                  {/* Status */}
+                  <CTableDataCell>
+                    <CBadge
+                      color={getStatusColor(product.stockQuantity)}
+                      shape="rounded-pill"
+                      className="px-3 py-2"
+                    >
+                      {product.stockQuantity === 0
+                        ? "Out of Stock"
+                        : product.status}
+                    </CBadge>
+                  </CTableDataCell>
+
+                  {/* Actions */}
+                  <CTableDataCell className="text-end pe-4">
+                    <CDropdown direction="dropstart">
+                      <CDropdownToggle
+                        color="transparent"
+                        caret={false}
+                        className="p-1"
+                      >
+                        <CIcon icon={cilOptions} />
+                      </CDropdownToggle>
+
+                      <CDropdownMenu>
+                        <CDropdownItem href={`/products/update/${product._id}`}>
+                          <CIcon icon={cilPencil} className="me-2" />
+                          Edit
+                        </CDropdownItem>
+
+                        <CDropdownItem
+                          className="text-danger"
+                          onClick={() => handleDeleteProduct(product._id)}
+                        >
+                          <CIcon icon={cilTrash} className="me-2" />
+                          Delete
+                        </CDropdownItem>
+                      </CDropdownMenu>
+                    </CDropdown>
+                  </CTableDataCell>
+                </CTableRow>
+              ))
+            )}
           </CTableBody>
         </CTable>
       )}
@@ -234,4 +272,3 @@ const ProductTable = ({ search, category, status }) => {
 };
 
 export default ProductTable;
-

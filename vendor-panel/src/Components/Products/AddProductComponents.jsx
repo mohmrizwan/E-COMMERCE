@@ -17,8 +17,10 @@ import { cilArrowLeft, cilCloudUpload, cilPlus } from "@coreui/icons";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { useNavigate } from "react-router-dom";
 
 const AddProduct = () => {
+  const navigate = useNavigate();
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,6 +53,8 @@ const AddProduct = () => {
       );
       setMessage(response.data.message);
       setErrorMessage("");
+ 
+      navigate("/products");
     } catch (error) {
       console.log(error.response?.data);
 

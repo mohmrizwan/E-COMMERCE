@@ -78,19 +78,138 @@ export const getAllProducts = async (req, res) => {
     const vendorId = req.vendor._id;
 
     if (!vendorId) {
-      return res.status(404).json({ message: "vendor not found" });
+      return res.status(404).json({
+        message: "Vendor not found",
+      });
     }
-    const products = await productModel.find({ vendorId });
 
-    if (products.length === 0) {
-      return res.status(404).json("Error to find the products");
-    }
+    const products = await productModel.find({ vendorId });
 
     return res.status(200).json({
       products,
       success: true,
     });
   } catch (error) {
-    return res.status(500).json({ message: "Internal Server Error" });
+    return res.status(500).json({
+      message: "Internal Server Error",
+    });
+  }
+};
+
+export const deleteproduct = async (req, res) => {
+  try {
+    const vendorId = req.vendor._id;
+    const productId = req.params.id;
+
+    if (!vendorId) {
+      return res.status(400).json({ message: "Vendor not found" });
+    }
+
+    const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.vendorId.toString() !== vendorId.toString()) {
+      return res.status(403).json({ message: "Unauthorized" });
+    }
+
+    await productModel.findByIdAndDelete(productId);
+
+    return res.status(200).json({
+      message: "Product deleted successfully",
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+
+export const updateProduct = async (req, res) => {
+  try {
+    const vendorId = req.vendor._id;
+    const productId = req.params.id;
+
+    const { name, description, category, pricing, stockQuantity, status } =
+      req.body;
+
+    if (!vendorId) {
+      return res.status(400).json({
+        message: "Vendor not found",
+      });
+    }
+
+    const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    if (product.vendorId.toString() !== vendorId.toString()) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+
+    product.name = name;
+    product.description = description;
+    product.category = category;
+    product.pricing = pricing;
+    product.stockQuantity = stockQuantity;
+    product.status = status;
+
+    await product.save();
+
+    return res.status(200).json({
+      message: "Product updated successfully",
+      product,
+    });
+  } catch (error) {
+    console.log("UPDATE PRODUCT ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
+  }
+};
+export const getProductById = async (req, res) => {
+  try {
+    const vendorId = req.vendor._id;
+    const productId = req.params.id;
+
+    if (!vendorId) {
+      return res.status(404).json({
+        message: "Vendor not found",
+      });
+    }
+
+    const product = await productModel.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Product not found",
+      });
+    }
+
+    if (product.vendorId.toString() !== vendorId.toString()) {
+      return res.status(403).json({
+        message: "Unauthorized",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      product,
+    });
+  } catch (error) {
+    console.log("GET PRODUCT ERROR:", error);
+
+    return res.status(500).json({
+      message: "Internal server error",
+    });
   }
 };
