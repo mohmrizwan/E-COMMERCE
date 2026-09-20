@@ -1,5 +1,5 @@
 import productModel from "../../models/vendor/ProductModel.js";
-import cloudinary from "../../Config/Cloudinary.js";
+import Cloudinary from "../../Config/Cloudinary.js";
 
 export const createProduct = async (req, res) => {
   try {
@@ -39,7 +39,7 @@ export const createProduct = async (req, res) => {
     // Upload image to Cloudinary
     let result;
 
-    result = await cloudinary.uploader.upload(
+    result = await Cloudinary.uploader.upload(
       `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
       {
         folder: "products",
