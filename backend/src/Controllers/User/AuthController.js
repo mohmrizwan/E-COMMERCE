@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import UserModel from "../../models/user/AuthModel.js";
 import sendOtp from "../../utils/SendOtp.js";
-import generateToken from "../../utils/GenerateToken.js";
+import generateToken from "../../utils/generateToken.js";
 
 // create
 export const CreateAccount = async (req, res) => {
