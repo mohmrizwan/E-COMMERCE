@@ -16,7 +16,7 @@ const VendorResetVerify = () => {
     setErrorMessage("");
 
     try {
-      await axios.post("http://localhost:3000/vendor/verify-reset-otp", {
+      await axios.post("https://ecommerceba-6dtt.onrender.com/vendor/verify-reset-otp", {
         vendorId,
         otp: values.otp,
       });

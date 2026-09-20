@@ -38,7 +38,7 @@ const VendorSignup = () => {
   const onSubmit = async (values) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/vendor/register",
+        "https://ecommerceba-6dtt.onrender.com/vendor/register",
         values,
       );
 

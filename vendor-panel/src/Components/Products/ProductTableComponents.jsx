@@ -46,7 +46,7 @@ const ProductTable = ({ search, category, status }) => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        "http://localhost:3000/vendor/products/getAllProducts",
+        "https://ecommerceba-6dtt.onrender.com/vendor/products/getAllProducts",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -76,7 +76,7 @@ const ProductTable = ({ search, category, status }) => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.delete(
-        `http://localhost:3000/vendor/products/delete/${productId}`,
+        `https://ecommerceba-6dtt.onrender.com/vendor/products/delete/${productId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

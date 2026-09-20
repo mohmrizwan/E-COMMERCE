@@ -23,7 +23,7 @@ const CreateAccount = () => {
 
       // OTP registration API yahan call hogi
       // const response = await axios.post(
-      //   "http://localhost:3000/api/auth/register",
+      //   "https://ecommerceba-6dtt.onrender.com/api/auth/register",
       //   data
       // );
 

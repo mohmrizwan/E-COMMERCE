@@ -43,7 +43,7 @@ const AddProduct = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        "http://localhost:3000/vendor/products/create",
+        "https://ecommerceba-6dtt.onrender.com/vendor/products/create",
         formData,
         {
           headers: {

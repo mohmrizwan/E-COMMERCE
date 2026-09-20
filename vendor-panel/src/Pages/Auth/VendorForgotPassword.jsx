@@ -16,7 +16,7 @@ const VendorForgotPassword = () => {
     setErrorMessage("");
 
     try {
-      const response = await axios.post("http://localhost:3000/vendor/forgot-password", values);
+      const response = await axios.post("https://ecommerceba-6dtt.onrender.com/vendor/forgot-password", values);
       navigate("/vendor/reset-verify", {
         state: { vendorId: response.data.vendorId, email: values.email },
       });

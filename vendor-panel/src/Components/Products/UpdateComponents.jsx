@@ -52,7 +52,7 @@ const UpadteProduct = () => {
         const token = localStorage.getItem("vendorToken");
 
         const response = await axios.get(
-          `http://localhost:3000/vendor/products/products/${id}`,
+          `https://ecommerceba-6dtt.onrender.com/vendor/products/products/${id}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -217,7 +217,7 @@ const UpadteProduct = () => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.put(
-        `http://localhost:3000/vendor/products/update/${id}`,
+        `https://ecommerceba-6dtt.onrender.com/vendor/products/update/${id}`,
         product,
         {
           headers: {

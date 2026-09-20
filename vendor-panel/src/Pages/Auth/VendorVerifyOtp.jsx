@@ -25,7 +25,7 @@ const VendorVerifyOtp = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/vendor/verify",
+        "https://ecommerceba-6dtt.onrender.com/vendor/verify",
         {
           vendorId,
           otp: data.otp,
@@ -50,7 +50,7 @@ const VendorVerifyOtp = () => {
   const handleResend = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:3000/vendor/resend",
+        "https://ecommerceba-6dtt.onrender.com/vendor/resend",
         {
           vendorId,
         }
