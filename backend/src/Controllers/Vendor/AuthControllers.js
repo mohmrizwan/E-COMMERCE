@@ -1,7 +1,7 @@
 import VendorModel from "../../models/vendor/AuthModel.js";
+import sendOtp from "../../utils/SendOtp.js";
 import bcrypt from "bcrypt";
-import sendOtp from "../../utils/sendOtp.js";
-import generateToken from "../../utils/GenerateToken.js";
+import generateToken from "../../utils/generateToken.js";
 
 export const registerVendor = async (req, res) => {
   try {
