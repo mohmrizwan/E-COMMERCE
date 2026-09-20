@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
 const AuthLayout = ({ eyebrow, title, description, children }) => (
-  <main className="grid min-h-screen bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(360px,0.82fr)_minmax(560px,1.18fr)]">
+  <main className="grid min-h-dvh min-w-0 bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(360px,0.82fr)_minmax(560px,1.18fr)]">
     <section className="relative hidden overflow-hidden flex-col bg-[#17112B] p-8 text-white sm:p-12 lg:flex lg:p-16 xl:p-20">
       <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full border border-violet-400/20 bg-violet-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 size-[28rem] rounded-full border border-fuchsia-300/10 bg-fuchsia-500/10 blur-3xl" />
@@ -33,18 +33,18 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
       <p className="m-0 text-xs text-slate-400">2026 VendoraFlame</p>
     </section>
 
-    <section className="grid min-h-screen place-items-center bg-[radial-gradient(circle_at_top_right,#EDE9FE_0,transparent_28rem)] px-5 py-8 sm:px-10 lg:px-24 xl:px-32">
-      <div className="w-full max-w-xl">
-        <div className="mb-9 lg:hidden">
+    <section className="grid min-h-dvh min-w-0 place-items-center bg-[radial-gradient(circle_at_top_right,#EDE9FE_0,transparent_28rem)] px-4 py-6 sm:px-6 sm:py-8 lg:px-16 xl:px-24">
+      <div className="w-full min-w-0 max-w-xl">
+        <div className="mb-7 lg:hidden">
           <Link to="/vendor/login" className="flex w-fit items-center text-lg font-extrabold tracking-tight text-[#17112B] no-underline">
             <img src="/Copilot_20260831_214454.png" alt="VendoraFlame" className="h-10 w-auto max-w-48 object-contain object-left" />
           </Link>
         </div>
 
-        <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-6 shadow-[0_24px_80px_-32px_rgba(23,17,43,0.35)] backdrop-blur sm:p-10">
-          <div className="mb-8">
+        <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-5 shadow-[0_24px_80px_-32px_rgba(23,17,43,0.35)] backdrop-blur sm:p-8 lg:p-10">
+          <div className="mb-7 sm:mb-8">
             <span className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-violet-700">{eyebrow}</span>
-            <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.03em] text-[#17112B] sm:text-4xl">{title}</h2>
+            <h2 className="mt-3 break-words text-2xl font-extrabold tracking-[-0.03em] text-[#17112B] sm:text-4xl">{title}</h2>
             <p className="mt-3 text-sm leading-6 text-slate-500">{description}</p>
           </div>
           {children}
