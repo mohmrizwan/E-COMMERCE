@@ -109,12 +109,7 @@ function Sidebar({ visible, setVisible }) {
 
 
 
-          <CNavItem
-            href="/products/inventory"
-            className="!text-[#6B7280] hover:!text-[#6D28D9]"
-          >
-            Inventory
-          </CNavItem>
+       
        
         </CNavGroup>
 
