@@ -72,7 +72,7 @@ export const CreateAccount = async (req, res) => {
       userId: userCreated._id,
     });
   } catch (error) {
-    // console.log("Create Account Error:", error);
+    console.log("Create Account Error:", error);
 
     return res.status(500).json({
       success: false,

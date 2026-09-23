@@ -2,14 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
 import { useForm } from "react-hook-form";
-
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 const VerifyOtp = () => {
   const [timeLeft, setTimeLeft] = useState(60);
-
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [isResending, setIsResending] = useState(false);
   const inputRefs = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
 
+  const userId = location.state?.userId || "";
   const email = location.state?.email || "";
   const {
     register,
@@ -42,7 +48,10 @@ const VerifyOtp = () => {
   const handleChange = (value, index) => {
     if (!/^\d?$/.test(value)) return;
 
-    setValue(`otp.${index}`, value, { shouldDirty: true, shouldValidate: true });
+    setValue(`otp.${index}`, value, {
+      shouldDirty: true,
+      shouldValidate: true,
+    });
 
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus();
@@ -79,30 +88,104 @@ const VerifyOtp = () => {
   };
 
   // Verify
-  const handleVerify = (data) => {
-    console.log("Name:", data.name);
-    console.log("Email:", email);
-    console.log("OTP:", data.otp.join(""));
+  const handleVerify = async (data) => {
+    setIsVerifying(true);
 
-    // Axios API yahan connect karenge
+    try {
+      const otpCode = data.otp.join("");
+
+      const response = await axios.post(
+        "http://localhost:3000/user/verifyOtp",
+        {
+          userId,
+          otp: otpCode,
+        },
+      );
+
+      setMessage(response.data.message);
+      setErrorMessage("");
+
+      setTimeout(() => {
+        navigate("/login", {
+          state: {
+            email,
+          },
+        });
+      }, 1500);
+    } catch (error) {
+      console.log("OTP Verification Error:", error);
+
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+
+      setMessage("");
+    } finally {
+      setIsVerifying(false);
+    }
   };
-
   // Resend OTP
-  const handleResend = () => {
-    if (timeLeft > 0) return;
+  const handleResend = async () => {
+    if (timeLeft > 0 || !userId || isResending) return;
 
-    resetField("otp");
-    setTimeLeft(60);
+    setIsResending(true);
 
-    inputRefs.current[0]?.focus();
+    try {
+      const response = await axios.post(
+        "http://localhost:3000/user/resendOtp",
+        {
+          userId,
+        },
+      );
 
-    console.log("Resend OTP to:", email);
+      resetField("otp");
+      setTimeLeft(60);
+      inputRefs.current[0]?.focus();
+      setMessage(response.data.message);
+      setErrorMessage("");
+    } catch (error) {
+      console.log("Resend OTP Error:", error);
 
-    // Resend OTP API yahan connect karenge
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+
+      setMessage("");
+    } finally {
+      setIsResending(false);
+    }
   };
 
   return (
     <AuthShell>
+      <Snackbar
+        open={Boolean(message)}
+        autoHideDuration={3000}
+        onClose={() => setMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
       <div className="auth-heading text-center">
         <p className="auth-eyebrow">EMAIL VERIFICATION</p>
 
@@ -111,7 +194,6 @@ const VerifyOtp = () => {
         <p>
           We’ve sent a 6-digit verification code to
           <br />
-
           <strong className="text-[#6C3BFF] font-[inter]">
             {email || "your email address"}
           </strong>
@@ -119,8 +201,6 @@ const VerifyOtp = () => {
       </div>
 
       <form className="auth-form" onSubmit={handleSubmit(handleVerify)}>
-   
-
         {/* OTP Boxes */}
         <div className="flex justify-center gap-3 my-6">
           {otp.map((digit, index) => (
@@ -181,9 +261,7 @@ const VerifyOtp = () => {
               </span>
             </p>
           ) : (
-            <p className="text-sm text-red-500 font-[inter]">
-              OTP has expired
-            </p>
+            <p className="text-sm text-red-500 font-[inter]">OTP has expired</p>
           )}
         </div>
 
@@ -198,9 +276,13 @@ const VerifyOtp = () => {
             hover:opacity-90
             disabled:opacity-50
           "
-          disabled={otp.join("").length !== 6}
+          disabled={otp.join("").length !== 6 || isVerifying}
         >
-          Verify OTP
+          {isVerifying ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            "Verify OTP"
+          )}
         </button>
 
         {/* Resend */}
@@ -212,7 +294,7 @@ const VerifyOtp = () => {
           <button
             type="button"
             onClick={handleResend}
-            disabled={timeLeft > 0}
+            disabled={timeLeft > 0 || isResending}
             className={`
               mt-1
               text-sm
@@ -226,7 +308,13 @@ const VerifyOtp = () => {
               }
             `}
           >
-            {timeLeft > 0 ? `Resend in ${timeLeft}s` : "Resend OTP"}
+            {isResending ? (
+              <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent align-middle" />
+            ) : timeLeft > 0 ? (
+              `Resend in ${timeLeft}s`
+            ) : (
+              "Resend OTP"
+            )}
           </button>
         </div>
       </form>
@@ -234,7 +322,7 @@ const VerifyOtp = () => {
       {/* Back */}
       <div className="text-center mt-6">
         <Link
-          to="/create-account"
+          to="/create"
           className="
             text-sm
             font-bold

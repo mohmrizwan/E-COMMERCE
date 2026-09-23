@@ -2,9 +2,15 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
 import { useForm } from "react-hook-form";
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const CreateAccount = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -18,22 +24,38 @@ const CreateAccount = () => {
   const password = watch("password");
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
+
     try {
       console.log("Form Data:", data);
 
-      // OTP registration API yahan call hogi
-      // const response = await axios.post(
-      //   "https://ecommerceba-6dtt.onrender.com/api/auth/register",
-      //   data
-      // );
+      const response = await axios.post(
+        "http://localhost:3000/user/create",
+        data
+      );
 
-      // OTP send hone ke baad OTP page par jayenge
-      // navigate("/verify-otp", {
-      //   state: { email: data.email },
-      // });
+      setMessage(response.data.message);
+      setErrorMessage("");
 
+      setTimeout(() => {
+        navigate("/otpVerfiy", {
+          state: {
+            userId: response.data.userId,
+            email: data.email,
+          },
+        });
+      }, 1500);
     } catch (error) {
       console.log("Registration Error:", error);
+      console.log("Backend Response:", error.response?.data);
+
+      setErrorMessage(
+        error.response?.data?.message || "Something went wrong"
+      );
+
+      setMessage("");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,15 +66,44 @@ const CreateAccount = () => {
 
         <h2>Create your account</h2>
 
-        <p>
-          Join VendorAflame and start shopping or selling today.
-        </p>
+        <p>Join VendorAflame and start shopping or selling today.</p>
       </div>
 
-      <form
-        className="auth-form"
-        onSubmit={handleSubmit(onSubmit)}
+      {/* Success Snackbar */}
+      <Snackbar
+        open={Boolean(message)}
+        autoHideDuration={3000}
+        onClose={() => setMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
+        <Alert
+          onClose={() => setMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
         {/* Full Name */}
         <label className="field-label" htmlFor="create-name">
           Full name
@@ -105,6 +156,32 @@ const CreateAccount = () => {
           </p>
         )}
 
+        {/* Phone */}
+        <label className="field-label" htmlFor="create-phone">
+          Phone number
+        </label>
+
+        <input
+          className="auth-input"
+          id="create-phone"
+          type="tel"
+          placeholder="Enter your phone number"
+          autoComplete="tel"
+          {...register("phone", {
+            required: "Phone is required",
+            pattern: {
+              value: /^[6-9]\d{9}$/,
+              message: "Enter a valid 10-digit phone number",
+            },
+          })}
+        />
+
+        {errors.phone && (
+          <p className="text-red-500 text-xs font-[inter]">
+            {errors.phone.message}
+          </p>
+        )}
+
         {/* Password */}
         <label className="field-label" htmlFor="create-password">
           Password
@@ -130,9 +207,7 @@ const CreateAccount = () => {
             className="password-toggle"
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            aria-label={
-              showPassword ? "Hide password" : "Show password"
-            }
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
             {showPassword ? "Hide" : "Show"}
           </button>
@@ -179,13 +254,8 @@ const CreateAccount = () => {
 
           <span>
             I agree to the{" "}
-            <Link to="/term&condition">
-              Terms & Conditions
-            </Link>{" "}
-            and{" "}
-            <Link to="/term&condition">
-              Privacy Policy
-            </Link>
+            <Link to="/term&condition">Terms & Conditions</Link>{" "}
+            and <Link to="/term&condition">Privacy Policy</Link>
           </span>
         </label>
 
@@ -196,8 +266,12 @@ const CreateAccount = () => {
         )}
 
         {/* Submit */}
-        <button className="auth-button" type="submit">
-          Create Account
+        <button className="auth-button" type="submit" disabled={isLoading}>
+          {isLoading ? (
+            <span className="inline-block h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          ) : (
+            "Create Account"
+          )}
         </button>
       </form>
 
@@ -210,12 +284,8 @@ const CreateAccount = () => {
       </div>
 
       <div className="social-actions">
-        <button
-          className="social-button w-100"
-          type="button"
-        >
-          <strong className="google-icon">G</strong>{" "}
-          Continue with Google
+        <button className="social-button w-100" type="button">
+          <strong className="google-icon">G</strong> Continue with Google
         </button>
       </div>
     </AuthShell>

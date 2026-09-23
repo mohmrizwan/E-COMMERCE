@@ -41,7 +41,7 @@ const sendOtp = async (email, otp) => {
           </div>
 
           <p>
-            This OTP is valid for <strong>10 minutes</strong>.
+            This OTP is valid for <strong>1 minutes</strong>.
           </p>
 
           <p>
