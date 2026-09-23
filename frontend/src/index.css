@@ -29,3 +29,13 @@ button, input { font: inherit; }
 @media (max-width: 1023px) { .auth-page { grid-template-columns: minmax(0, .9fr) minmax(420px, 1.1fr); }.auth-promo { padding-inline: 32px; }.promo-float-top { right: -18px; }.promo-float-bottom { left: -18px; }.auth-panel { padding-inline: 42px; } }
 @media (max-width: 767px) { .auth-page { display: block; }.auth-promo { display: none; }.auth-panel { min-height: 100vh; padding: 27px 20px 22px; }.auth-mobile-brand { display: block; margin-bottom: 48px; }.auth-card { max-width: 560px; padding: 0; border: 0; background: transparent; box-shadow: none; }.auth-footer { margin-top: 34px; }.choice-grid, .social-actions { grid-template-columns: 1fr; } }
 @media (max-width: 479px) { .auth-panel { padding-inline: 17px; }.auth-mobile-brand { margin-bottom: 38px; }.auth-heading { margin-bottom: 22px; }.auth-heading h2 { font-size: 30px; }.choice-card { padding: 13px; }.auth-switch { margin-block: 17px 22px; } }
+
+.forgot-heading { margin-bottom: 26px; }
+.forgot-heading h2 { max-width: 420px; }
+.otp-input { letter-spacing: .3em; font-size: 18px; font-weight: 800; text-align: center; }
+.text-button { align-self: center; margin-top: 4px; border: 0; background: transparent; color: #6c3bff; cursor: pointer; font-size: 12px; font-weight: 700; }
+.forgot-back { margin-top: 24px; text-align: center; }
+.forgot-error { margin: 14px 0 0; color: #dc2626; font-size: 12px; font-weight: 600; }
+.forgot-success { display: flex; flex-direction: column; align-items: center; gap: 24px; }
+.success-mark { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; background: #ecfdf3; color: #16a34a; font-size: 27px; font-weight: 800; }
+.success-button { display: flex; align-items: center; justify-content: center; width: 100%; text-decoration: none; }

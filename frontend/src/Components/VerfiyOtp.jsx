@@ -95,7 +95,7 @@ const VerifyOtp = () => {
       const otpCode = data.otp.join("");
 
       const response = await axios.post(
-        "http://localhost:3000/user/verifyOtp",
+        "https://ecommerceba-6dtt.onrender.com/user/verifyOtp",
         {
           userId,
           otp: otpCode,
@@ -130,7 +130,7 @@ const VerifyOtp = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/user/resendOtp",
+        "https://ecommerceba-6dtt.onrender.com/user/resendOtp",
         {
           userId,
         },

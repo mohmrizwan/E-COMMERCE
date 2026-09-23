@@ -30,7 +30,7 @@ const CreateAccount = () => {
       console.log("Form Data:", data);
 
       const response = await axios.post(
-        "http://localhost:3000/user/create",
+        "https://ecommerceba-6dtt.onrender.com/user/create",
         data
       );
 
