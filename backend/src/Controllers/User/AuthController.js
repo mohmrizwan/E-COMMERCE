@@ -177,11 +177,6 @@ export const resendOtp = async (req, res) => {
 
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    user.otp = otp;
-    user.otpExpiresAt = otpExpiresAt;
-
-    await user.save();
-
     const emailSent = await sendOtp(user.email, otp);
 
     if (!emailSent) {
@@ -190,6 +185,11 @@ export const resendOtp = async (req, res) => {
         message: "Failed to send OTP",
       });
     }
+
+    user.otp = otp;
+    user.otpExpiresAt = otpExpiresAt;
+
+    await user.save();
 
     return res.status(200).json({
       success: true,
