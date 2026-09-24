@@ -102,16 +102,16 @@ const VerifyOtp = () => {
         },
       );
 
+      const token = response?.data?.token;
+
+      if (!token) {
+        throw new Error("Email verification response did not include a token");
+      }
+
+      localStorage.setItem("userToken", token);
       setMessage(response.data.message);
       setErrorMessage("");
-
-      setTimeout(() => {
-        navigate("/login", {
-          state: {
-            email,
-          },
-        });
-      }, 1500);
+      navigate("/", { replace: true });
     } catch (error) {
       console.log("OTP Verification Error:", error);
 

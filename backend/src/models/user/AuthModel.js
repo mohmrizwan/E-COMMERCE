@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
 
     password: {
       type: String,
-      required: true,
+      default: null,
       minlength: 6,
     },
 
@@ -28,6 +28,30 @@ const userSchema = new mongoose.Schema(
       type: Number,
       // required: true,
       minlength: 10,
+    },
+
+    googleId: {
+      type: String,
+      default: null,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+
+    profileImage: {
+      type: String,
+      default: "",
+    },
+
+    authProvider: {
+      type: String,
+      enum: ["local", "google"],
+      default: "local",
+    },
+
+    emailVerified: {
+      type: Boolean,
+      default: false,
     },
 
     otp: {

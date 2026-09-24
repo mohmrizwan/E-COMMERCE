@@ -278,16 +278,6 @@ const CreateAccount = () => {
       <p className="auth-switch">
         Already have an account? <Link to="/login">Login</Link>
       </p>
-
-      <div className="auth-divider">
-        <span>OR</span>
-      </div>
-
-      <div className="social-actions">
-        <button className="social-button w-100" type="button">
-          <strong className="google-icon">G</strong> Continue with Google
-        </button>
-      </div>
     </AuthShell>
   );
 };

@@ -20,23 +20,32 @@ const Login = () => {
   } = useForm();
 
   const onSubmit = async (data) => {
+    setIsLoading(true);
+    setErrorMessage("");
+
     try {
       const response = await axios.post(
         "https://ecommerceba-6dtt.onrender.com/user/login",
         data,
       );
 
-      localStorage.setItem("userToken", response.data.token);
-      setMessage(response.data.message);
+      const token = response?.data?.token;
+
+      if (!token) {
+        throw new Error("Login response did not include a token");
+      }
+
+      localStorage.setItem("userToken", token);
+      setMessage(response.data.message || "Login successful");
       setErrorMessage("");
-
-      setTimeout(() => {
-        navigate("/");
-      }, 1500);
+      navigate("/", { replace: true });
     } catch (error) {
-      console.log(error)
-      setErrorMessage(error.response?.data?.message || "Something went wrong");
-
+      console.log(error);
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
       setMessage("");
     } finally {
       setIsLoading(false);
@@ -152,14 +161,6 @@ const Login = () => {
       <p className="auth-switch">
         Don't have an account? <Link to="/create">Create Account</Link>
       </p>
-      <div className="auth-divider">
-        <span>OR</span>
-      </div>
-      <div className="social-actions">
-        <button className="social-button w-100" type="button">
-          <strong className="google-icon">G</strong> Continue with Google
-        </button>
-      </div>
     </AuthShell>
   );
 };

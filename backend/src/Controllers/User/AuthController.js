@@ -1,7 +1,9 @@
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import UserModel from "../../models/user/AuthModel.js";
 import sendOtp from "../../utils/SendOtp.js";
 import generateToken from "../../utils/generateToken.js";
+import { verifyGoogleCredential } from "../../utils/googleAuth.js";
 
 // create
 export const CreateAccount = async (req, res) => {
@@ -51,6 +53,9 @@ export const CreateAccount = async (req, res) => {
       otp,
       otpExpiresAt,
       isVerified: false,
+      authProvider: "local",
+      emailVerified: false,
+      profileImage: "",
     });
 
     // Send OTP through Gmail
@@ -134,9 +139,12 @@ export const verifyOtp = async (req, res) => {
 
     await user.save();
 
+    const token = generateToken(user);
+
     return res.status(200).json({
       success: true,
       message: "Email verified successfully",
+      token,
     });
   } catch (error) {
     return res.status(500).json({
@@ -221,6 +229,13 @@ export const LoginAccount = async (req, res) => {
       return res.status(401).json({ message: "Invalid Email Address" });
     }
 
+    if (!userFind.password) {
+      return res.status(401).json({
+        success: false,
+        message: "This account was created with Google. Please use Google login.",
+      });
+    }
+
     if (!userFind.isVerified) {
       return res
         .status(403)
@@ -252,6 +267,86 @@ export const LoginAccount = async (req, res) => {
     });
   }
 };
+
+export const GoogleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential is required",
+      });
+    }
+
+    const googleUser = await verifyGoogleCredential(credential);
+
+    let user = await UserModel.findOne({ email: googleUser.email });
+
+    if (!user) {
+      const randomPassword = crypto.randomBytes(32).toString("hex");
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      user = await UserModel.create({
+        name: googleUser.name,
+        email: googleUser.email,
+        password: hashedPassword,
+        googleId: googleUser.googleId,
+        profileImage: googleUser.picture || "",
+        authProvider: "google",
+        emailVerified: true,
+        isVerified: true,
+      });
+
+      const token = generateToken(user);
+
+      return res.status(201).json({
+        success: true,
+        message: "Google signup successful",
+        token,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          profileImage: user.profileImage,
+          authProvider: user.authProvider,
+          isVerified: user.isVerified,
+        },
+      });
+    }
+
+    user.googleId = user.googleId || googleUser.googleId;
+    user.profileImage = user.profileImage || googleUser.picture || "";
+    user.authProvider = user.authProvider || "google";
+    user.emailVerified = true;
+    user.isVerified = true;
+
+    await user.save();
+
+    const token = generateToken(user);
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        profileImage: user.profileImage,
+        authProvider: user.authProvider,
+        isVerified: user.isVerified,
+      },
+    });
+  } catch (error) {
+    const statusCode = error.statusCode || 500;
+
+    return res.status(statusCode).json({
+      success: false,
+      message: error.message || "Google authentication failed",
+    });
+  }
+};
 // forgot password
 export const forgotPassword = async (req, res) => {
   try {
@@ -268,7 +363,7 @@ export const forgotPassword = async (req, res) => {
     }
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     userFind.otp = otp;
-    user.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+    userFind.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
     await userFind.save();
 
@@ -282,7 +377,7 @@ export const forgotPassword = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "OTP sent to your email",
-      userId: user._id,
+      userId: userFind._id,
     });
   } catch (error) {
     return res.status(500).json({
@@ -300,7 +395,7 @@ export const verifyForgotPasswordOtp = async (req, res) => {
       return res.status(400).json({ message: "Enter all fields" });
     }
 
-    const userFind = await UserModel.findOne({ userId });
+    const userFind = await UserModel.findById(userId);
 
     if (!userFind) {
       return res.status(404).json({ message: "Invalid Userid" });
@@ -310,7 +405,7 @@ export const verifyForgotPasswordOtp = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
-    if (!user.otpExpiresAt || user.otpExpiresAt < new Date()) {
+    if (!userFind.otpExpiresAt || userFind.otpExpiresAt < new Date()) {
       return res
         .status(400)
         .json({ success: false, message: "OTP has expired" });
@@ -318,7 +413,7 @@ export const verifyForgotPasswordOtp = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "OTP verified successfully",
-      userId: user._id,
+      userId: userFind._id,
     });
   } catch (error) {
     return res.status(500).json({
