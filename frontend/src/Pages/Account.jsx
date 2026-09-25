@@ -8,11 +8,14 @@ import { products } from "../data/products";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-  },
-});
+// simple function to get auth header, using token from localStorage
+const getAuthConfig = () => {
+  return {
+    headers: {
+      Authorization: "Bearer " + localStorage.getItem("userToken"),
+    },
+  };
+};
 
 const menuItems = [
   { id: "profile", label: "Profile", icon: "fa-regular fa-user" },
@@ -24,29 +27,19 @@ const menuItems = [
   },
 ];
 
-// const profileDefaults = {
-//   name: "Rizwan",
-//   email: "mohmrizwan10@gmail.com",
-//   phone: "+91 98264 80948",
-//   dateOfBirth: "02 December 2004",
-//   gender: "Male",
-//   address: "4 sector k green park colony dhar road",
-// };
+// empty starting values, real data will come from backend after page loads
+const profileDefaults = {
+  name: "",
+  email: "",
+  phone: "",
+  dateOfBirth: "",
+  gender: "",
+  address: "",
+};
 
-// const addressDefaults = [
-//   {
-//     id: 1,
-//     type: "Home",
-//     name: "Rizwan",
-//     phone: "+91 98264 80948",
-//     address: "4 sector k green park colony dhar road",
-//     city: "Indore",
-//     state: "Madhya Pradesh",
-//     pincode: "452002",
-//     default: true,
-//   },
-// ];
+const addressDefaults = [];
 
+const orderDefaults = [];
 
 const statusStyles = {
   Delivered: "bg-emerald-50 text-emerald-700 ring-emerald-100",
@@ -57,7 +50,11 @@ const statusStyles = {
 
 const inputClass =
   "mt-2 w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]";
-const money = (value) => `Rs. ${value.toLocaleString("en-IN")}`;
+
+const money = (value) => {
+  if (!value) return "Rs. 0";
+  return "Rs. " + value.toLocaleString("en-IN");
+};
 
 function PageIntro({ eyebrow, title, children }) {
   return (
@@ -97,12 +94,13 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
     setForm(profile);
   }, [profile]);
 
-  const update = (field, value) =>
-    setForm((current) => ({ ...current, [field]: value }));
+  const update = (field, value) => {
+    setForm({ ...form, [field]: value });
+  };
 
   return (
     <>
-      <PageIntro eyebrow="My account" title={`Welcome back, ${profile.name}`}>
+      <PageIntro eyebrow="My account" title={`Welcome back, ${profile.name || "User"}`}>
         Manage your profile and delivery details.
       </PageIntro>
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(26,37,63,0.04)] sm:p-7">
@@ -192,7 +190,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
                   {label}
                 </dt>
                 <dd className="mt-1.5 font-medium leading-5 text-slate-700">
-                  {value}
+                  {value || "-"}
                 </dd>
               </div>
             ))}
@@ -215,8 +213,9 @@ function AddressForm({ address, profile, onSave, onCancel }) {
       pincode: "",
     },
   );
-  const update = (field, value) =>
-    setForm((current) => ({ ...current, [field]: value }));
+  const update = (field, value) => {
+    setForm({ ...form, [field]: value });
+  };
   const fields = [
     ["name", "Full Name"],
     ["phone", "Phone Number"],
@@ -499,6 +498,11 @@ function OrdersPage({ orders, selectedOrder, onTrack, onCancel, onClose }) {
           </article>
         ))}
       </div>
+      {!orders.length && (
+        <div className="mt-4 rounded-xl border border-dashed border-slate-300 bg-white py-12 text-center text-sm text-slate-500">
+          No orders yet.
+        </div>
+      )}
       {selectedOrder && (
         <OrderTracking order={selectedOrder} onClose={onClose} />
       )}
@@ -559,71 +563,107 @@ function Account() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+
   const showNotice = (message) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);
   };
 
+  // fetch profile, address and orders from backend when page loads
   useEffect(() => {
     const token = localStorage.getItem("userToken");
-    if (!token) return;
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
 
     const loadAccount = async () => {
       try {
-        const [profileResponse, addressResponse] = await Promise.all([
-          axios.get(`${API_URL}/profile/getProfile`, getAuthConfig()),
-          axios.get(`${API_URL}/profile/address`, getAuthConfig()),
-        ]);
-
+        // get profile
+        const profileRes = await axios.get(
+          `${API_URL}/profile/getProfile`,
+          getAuthConfig(),
+        );
         setProfile((current) => ({
           ...current,
-          ...profileResponse.data,
-          phone: profileResponse.data.phone?.toString() || "",
+          ...profileRes.data,
+          phone: profileRes.data.phone ? profileRes.data.phone.toString() : "",
         }));
-        setAddresses(addressResponse.data.addresses || []);
+
+        // get addresses
+        const addressRes = await axios.get(
+          `${API_URL}/profile/address`,
+          getAuthConfig(),
+        );
+        setAddresses(addressRes.data.addresses || []);
+
+        // get orders
+        // NOTE: confirm this endpoint with your backend, changed it if different
+        const orderRes = await axios.get(
+          `${API_URL}/order/myOrders`,
+          getAuthConfig(),
+        );
+        setOrders(orderRes.data.orders || []);
       } catch (error) {
-        if (error.response?.status === 401) {
+        console.log(error);
+        if (error.response && error.response.status === 401) {
           localStorage.removeItem("userToken");
           window.location.replace("/login");
         } else {
           showNotice(
-            error.response?.data?.message || "Could not load account details",
+            (error.response && error.response.data && error.response.data.message) ||
+              "Could not load account details",
           );
         }
-      } finally {
-        setIsLoading(false);
       }
+      setIsLoading(false);
     };
 
     loadAccount();
   }, []);
+
   const pageTitle =
     menuItems.find((item) => item.id === activePage)?.label || "Profile";
+
   const saveAddress = async (data) => {
     try {
-      const response = editingAddress
-        ? await axios.put(
-            `${API_URL}/profile/address/${editingAddress._id}`,
-            data,
-            getAuthConfig(),
-          )
-        : await axios.post(`${API_URL}/profile/address`, data, getAuthConfig());
+      let response;
+      if (editingAddress) {
+        response = await axios.put(
+          `${API_URL}/profile/address/${editingAddress._id}`,
+          data,
+          getAuthConfig(),
+        );
+      } else {
+        response = await axios.post(
+          `${API_URL}/profile/address`,
+          data,
+          getAuthConfig(),
+        );
+      }
       const savedAddress = response.data.address;
 
-      setAddresses((items) =>
-        editingAddress
-          ? items.map((item) =>
-              item._id === editingAddress._id ? savedAddress : item,
-            )
-          : [...items, savedAddress],
-      );
+      if (editingAddress) {
+        setAddresses(
+          addresses.map((item) =>
+            item._id === editingAddress._id ? savedAddress : item,
+          ),
+        );
+      } else {
+        setAddresses([...addresses, savedAddress]);
+      }
       showNotice(response.data.message || "Address saved");
       setEditingAddress(null);
       setAddressFormOpen(false);
     } catch (error) {
-      showNotice(error.response?.data?.message || "Could not save address");
+      console.log(error);
+      showNotice(
+        (error.response && error.response.data && error.response.data.message) ||
+          "Could not save address",
+      );
     }
   };
+
   const openAddAddress = () => {
     setEditingAddress(null);
     setAddressFormOpen(true);
@@ -636,18 +676,26 @@ function Account() {
     setEditingAddress(null);
     setAddressFormOpen(false);
   };
+
   const deleteAddress = async (id) => {
     try {
       await axios.delete(`${API_URL}/profile/address/${id}`, getAuthConfig());
-      setAddresses((items) => items.filter((item) => item._id !== id));
+      setAddresses(addresses.filter((item) => item._id !== id));
       showNotice("Address removed");
     } catch (error) {
-      showNotice(error.response?.data?.message || "Could not remove address");
+      console.log(error);
+      showNotice(
+        (error.response && error.response.data && error.response.data.message) ||
+          "Could not remove address",
+      );
     }
   };
+
+  // NOTE: this only updates status on frontend for now, hook this up to
+  // a real cancel-order API route when you have one (e.g. PUT /order/cancel/:id)
   const cancelOrder = (id) => {
-    setOrders((items) =>
-      items.map((item) =>
+    setOrders(
+      orders.map((item) =>
         item.id === id ? { ...item, status: "Cancelled" } : item,
       ),
     );
@@ -671,22 +719,38 @@ function Account() {
         ...current,
         ...data,
         ...(response.data.user || {}),
-        phone: (response.data.user?.phone ?? data.phone)?.toString() || "",
+        phone: (
+          (response.data.user && response.data.user.phone) ||
+          data.phone
+        )?.toString() || "",
       }));
       setEditingProfile(false);
       showNotice(response.data.message || "Profile details updated");
     } catch (error) {
-      showNotice(error.response?.data?.message || "Could not update profile");
+      console.log(error);
+      showNotice(
+        (error.response && error.response.data && error.response.data.message) ||
+          "Could not update profile",
+      );
     }
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <Header />
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <p className="text-sm font-semibold text-slate-500">Loading...</p>
+        </div>
+        <Footer />
+      </>
+    );
+  }
 
   return (
     <>
       <Header />
-      <main
-        aria-busy={isLoading}
-        className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10"
-      >
+      <main className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
             <Link to="/" className="hover:text-[#6C3BFF]">
