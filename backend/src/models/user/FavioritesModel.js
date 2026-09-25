@@ -11,7 +11,7 @@ const FavoritesSchema = new mongoose.Schema(
     favorites: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
+        ref: "product",
       },
     ],
   },

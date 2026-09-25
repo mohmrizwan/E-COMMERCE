@@ -76,6 +76,19 @@ export const updateProfile = async (req, res) => {
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
+export const getAddresses = async (req, res) => {
+  try {
+    const addresses = await AddressModel.find({ userId: req.user.id }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json({ addresses });
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching addresses" });
+  }
+};
+
 export const getOrder = async (req, res) => {
   try {
     const userId = req.user.id;

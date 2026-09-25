@@ -2,6 +2,7 @@ import express from "express";
 import {
   addAddress,
   deleteAddress,
+  getAddresses,
   getOrder,
   getProfile,
   updateAddress,
@@ -18,6 +19,7 @@ const router = express.Router();
 router.get("/getProfile", AuthMiddleware, getProfile);
 router.put("/updateProfile", AuthMiddleware, updateProfile);
 router.get("/myOrder", AuthMiddleware, getOrder);
+router.get("/address", AuthMiddleware, getAddresses);
 router.post("/address", AuthMiddleware, addAddress);
 router.put("/address/:addressId", AuthMiddleware, updateAddress);
 router.delete("/address/:addressId", AuthMiddleware, deleteAddress);

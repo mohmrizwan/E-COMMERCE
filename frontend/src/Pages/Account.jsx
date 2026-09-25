@@ -1,8 +1,18 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { products } from "../data/products";
+
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
+
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+  },
+});
 
 const menuItems = [
   { id: "profile", label: "Profile", icon: "fa-regular fa-user" },
@@ -129,6 +139,11 @@ function Field({ label, value, onChange, type = "text", required = true }) {
 
 function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
   const [form, setForm] = useState(profile);
+
+  useEffect(() => {
+    setForm(profile);
+  }, [profile]);
+
   const update = (field, value) =>
     setForm((current) => ({ ...current, [field]: value }));
 
@@ -361,7 +376,7 @@ function AddressesPage({
       </div>
       {addressFormOpen && (
         <AddressForm
-          key={editingAddress?.id || "new-address"}
+          key={editingAddress?._id || "new-address"}
           address={editingAddress}
           profile={profile}
           onSave={onSave}
@@ -371,7 +386,7 @@ function AddressesPage({
       <div className="grid gap-4 lg:grid-cols-2">
         {addresses.map((address) => (
           <article
-            key={address.id}
+            key={address._id}
             className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_8px_24px_rgba(26,37,63,0.035)]"
           >
             <div className="flex items-start justify-between">
@@ -386,7 +401,7 @@ function AddressesPage({
                 )}
               </div>
               <button
-                onClick={() => onDelete(address.id)}
+                onClick={() => onDelete(address._id)}
                 aria-label={`Delete ${address.type} address`}
                 className="text-slate-400"
               >
@@ -539,6 +554,13 @@ function OrdersPage({ orders, selectedOrder, onTrack, onCancel, onClose }) {
 }
 
 function Sidebar({ activePage, profile, onChange }) {
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("userToken");
+    navigate("/login", { replace: true });
+  };
+
   return (
     <aside className="mb-6 lg:mb-0">
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white lg:sticky lg:top-5">
@@ -559,13 +581,14 @@ function Sidebar({ activePage, profile, onChange }) {
               {item.label}
             </button>
           ))}
-          <Link
-            to="/login"
+          <button
+            type="button"
+            onClick={handleLogout}
             className="flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-rose-500"
           >
             <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center" />
             Logout
-          </Link>
+          </button>
         </nav>
       </div>
     </aside>
@@ -582,29 +605,71 @@ function Account() {
   const [orders, setOrders] = useState(orderDefaults);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notice, setNotice] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const showNotice = (message) => {
     setNotice(message);
     window.setTimeout(() => setNotice(""), 2600);
   };
+
+  useEffect(() => {
+    const token = localStorage.getItem("userToken");
+    if (!token) return;
+
+    const loadAccount = async () => {
+      try {
+        const [profileResponse, addressResponse] = await Promise.all([
+          axios.get(`${API_URL}/profile/getProfile`, getAuthConfig()),
+          axios.get(`${API_URL}/profile/address`, getAuthConfig()),
+        ]);
+
+        setProfile((current) => ({
+          ...current,
+          ...profileResponse.data,
+          phone: profileResponse.data.phone?.toString() || "",
+        }));
+        setAddresses(addressResponse.data.addresses || []);
+      } catch (error) {
+        if (error.response?.status === 401) {
+          localStorage.removeItem("userToken");
+          window.location.replace("/login");
+        } else {
+          showNotice(
+            error.response?.data?.message || "Could not load account details",
+          );
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAccount();
+  }, []);
   const pageTitle =
     menuItems.find((item) => item.id === activePage)?.label || "Profile";
-  const saveAddress = (data) => {
-    if (editingAddress) {
+  const saveAddress = async (data) => {
+    try {
+      const response = editingAddress
+        ? await axios.put(
+            `${API_URL}/profile/address/${editingAddress._id}`,
+            data,
+            getAuthConfig(),
+          )
+        : await axios.post(`${API_URL}/profile/address`, data, getAuthConfig());
+      const savedAddress = response.data.address;
+
       setAddresses((items) =>
-        items.map((item) =>
-          item.id === editingAddress.id ? { ...item, ...data } : item,
-        ),
+        editingAddress
+          ? items.map((item) =>
+              item._id === editingAddress._id ? savedAddress : item,
+            )
+          : [...items, savedAddress],
       );
-      showNotice("Address updated");
-    } else {
-      setAddresses((items) => [
-        ...items,
-        { ...data, id: Date.now(), default: items.length === 0 },
-      ]);
-      showNotice("Address added");
+      showNotice(response.data.message || "Address saved");
+      setEditingAddress(null);
+      setAddressFormOpen(false);
+    } catch (error) {
+      showNotice(error.response?.data?.message || "Could not save address");
     }
-    setEditingAddress(null);
-    setAddressFormOpen(false);
   };
   const openAddAddress = () => {
     setEditingAddress(null);
@@ -618,9 +683,14 @@ function Account() {
     setEditingAddress(null);
     setAddressFormOpen(false);
   };
-  const deleteAddress = (id) => {
-    setAddresses((items) => items.filter((item) => item.id !== id));
-    showNotice("Address removed");
+  const deleteAddress = async (id) => {
+    try {
+      await axios.delete(`${API_URL}/profile/address/${id}`, getAuthConfig());
+      setAddresses((items) => items.filter((item) => item._id !== id));
+      showNotice("Address removed");
+    } catch (error) {
+      showNotice(error.response?.data?.message || "Could not remove address");
+    }
   };
   const cancelOrder = (id) => {
     setOrders((items) =>
@@ -632,10 +702,38 @@ function Account() {
     showNotice("Order cancelled successfully");
   };
 
+  const saveProfile = async (data) => {
+    try {
+      const response = await axios.put(
+        `${API_URL}/profile/updateProfile`,
+        {
+          name: data.name,
+          phone: data.phone,
+          dateOfBirth: data.dateOfBirth,
+        },
+        getAuthConfig(),
+      );
+
+      setProfile((current) => ({
+        ...current,
+        ...data,
+        ...(response.data.user || {}),
+        phone: (response.data.user?.phone ?? data.phone)?.toString() || "",
+      }));
+      setEditingProfile(false);
+      showNotice(response.data.message || "Profile details updated");
+    } catch (error) {
+      showNotice(error.response?.data?.message || "Could not update profile");
+    }
+  };
+
   return (
     <>
       <Header />
-      <main className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10">
+      <main
+        aria-busy={isLoading}
+        className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10"
+      >
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
             <Link to="/" className="hover:text-[#6C3BFF]">
@@ -656,11 +754,7 @@ function Account() {
                   profile={profile}
                   editing={editingProfile}
                   onEdit={() => setEditingProfile(true)}
-                  onSave={(data) => {
-                    setProfile(data);
-                    setEditingProfile(false);
-                    showNotice("Profile details updated");
-                  }}
+                  onSave={saveProfile}
                   onCancel={() => setEditingProfile(false)}
                 />
               )}

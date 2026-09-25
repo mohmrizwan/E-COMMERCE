@@ -1,52 +1,74 @@
-import React from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-import img from "../assets/images/new-pair-white-sneakers-isolated-white.jpg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
+
+const getAuthConfig = () => ({
+  headers: {
+    Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+  },
+});
 
 const FavoriteCard = () => {
-  const products = [
-    {
-      id: 1,
-      name: "AeroGlide Pro Running Sneakers",
-      store: "Ksetra",
-      price: "$999",
-      oldPrice: "$1200",
-      discount: "-26% OFF",
-      rating: "4.8",
-      reviews: "2,413",
-    },
-    {
-      id: 2,
-      name: "AeroGlide Pro Running Sneakers",
-      store: "Ksetra",
-      price: "$999",
-      oldPrice: "$1200",
-      discount: "-26% OFF",
-      rating: "4.8",
-      reviews: "2,413",
-    },
-    {
-      id: 3,
-      name: "AeroGlide Pro Running Sneakers",
-      store: "Ksetra",
-      price: "$999",
-      oldPrice: "$1200",
-      discount: "-26% OFF",
-      rating: "4.8",
-      reviews: "2,413",
-    },
-    {
-      id: 4,
-      name: "AeroGlide Pro Running Sneakers",
-      store: "Ksetra",
-      price: "$999",
-      oldPrice: "$1200",
-      discount: "-26% OFF",
-      rating: "4.8",
-      reviews: "2,413",
-    },
-  ];
+  const [products, setProducts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [removingId, setRemovingId] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
+
+  const loadFavorites = useCallback(async () => {
+    const token = localStorage.getItem("userToken");
+    if (!token) {
+      navigate("/login", { replace: true });
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+    try {
+      const response = await axios.get(
+        `${API_URL}/profile/favorites`,
+        getAuthConfig(),
+      );
+      setProducts(response.data.favorites || []);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        localStorage.removeItem("userToken");
+        navigate("/login", { replace: true });
+      } else {
+        setErrorMessage(
+          error.response?.data?.message || "Could not load your wishlist",
+        );
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
+
+  const removeFavorite = async (productId) => {
+    setRemovingId(productId);
+    setErrorMessage("");
+    try {
+      await axios.delete(
+        `${API_URL}/profile/favorites/${productId}`,
+        getAuthConfig(),
+      );
+      setProducts((items) => items.filter((product) => product._id !== productId));
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message || "Could not remove this product",
+      );
+    } finally {
+      setRemovingId("");
+    }
+  };
 
   return (
     <>
@@ -61,85 +83,63 @@ const FavoriteCard = () => {
               </h3>
 
               <p className="my-2 font-[inter] text-xs text-[#6B7280] sm:text-sm">
-                3 favourite picks saved for you
+                {products.length} {products.length === 1 ? "item" : "items"} saved
               </p>
             </div>
           </div>
+          {errorMessage && (
+            <div role="alert" className="my-5 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              <span>{errorMessage}</span>
+              <button type="button" onClick={loadFavorites} className="font-semibold underline">
+                Try again
+              </button>
+            </div>
+          )}
+          {isLoading ? (
+            <p className="my-12 text-center text-sm text-[#6B7280]">Loading wishlist...</p>
+          ) : products.length === 0 ? (
+            <div className="my-12 text-center">
+              <p className="text-lg font-semibold text-[#111827]">Your wishlist is empty</p>
+              <p className="mt-2 text-sm text-[#6B7280]">Products you save will appear here.</p>
+              <Link to="/products" className="mt-5 inline-flex rounded-lg bg-[#111827] px-4 py-2.5 text-sm font-semibold text-white">
+                Explore products
+              </Link>
+            </div>
+          ) : (
           <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
             {products.map((product) => (
               <div
-                key={product.id}
+                key={product._id}
                 className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
               >
-                {/* ================= PRODUCT IMAGE ================= */}
                 <div className="relative overflow-hidden">
                   <img
-                    src={img}
-                    alt={product.name}
+                    src={product.image}
+                    alt={product.name || "Wishlist product"}
                     className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
                   />
-
-                  {/* Badges */}
-                  <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
-                    <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
-                      BestSeller
-                    </span>
-
-                    <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
-                      {product.discount}
-                    </span>
-                  </div>
-
-                  {/* Wishlist */}
                   <button
                     type="button"
+                    aria-label={`Remove ${product.name} from wishlist`}
+                    disabled={removingId === product._id}
+                    onClick={() => removeFavorite(product._id)}
                     className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 hover:bg-[#6C3BFF] hover:text-white sm:right-3 sm:top-3 sm:h-9 sm:w-9"
                   >
                     <i className="fa-solid fa-heart-crack text-[11px] sm:text-sm"></i>
                   </button>
                 </div>
 
-                {/* ================= PRODUCT CONTENT ================= */}
                 <div className="flex flex-1 flex-col p-2.5 sm:p-3 md:p-4">
-                  {/* Store */}
                   <span className="font-[inter] text-[9px] text-[#6B7280] sm:text-xs">
-                    {product.store}
+                    {product.category || "Product"}
                   </span>
-
-                  {/* Product Name */}
-                  <h4 className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-[40px] sm:text-sm sm:leading-5">
-                    {product.name}
+                  <h4 className="mt-1 line-clamp-2 min-h-7.5 font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-10 sm:text-sm sm:leading-5">
+                    {product.name || "Unnamed product"}
                   </h4>
-
-                  {/* Rating */}
-                  <div className="mt-1.5 flex items-center gap-1 sm:mt-2 sm:gap-1.5">
-                    <div className="flex items-center">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <i
-                          key={star}
-                          className="fa-solid fa-star text-[8px] text-[#FFB020] sm:text-[10px]"
-                        ></i>
-                      ))}
-                    </div>
-
-                    <span className="font-[inter] text-[9px] font-medium text-[#111827] sm:text-xs">
-                      {product.rating}
-                    </span>
-
-                    <span className="font-[inter] text-[8px] text-[#6B7280] sm:text-xs">
-                      ({product.reviews})
-                    </span>
-                  </div>
-
-                  {/* Price + Cart */}
                   <div className="mt-3 flex items-center justify-between gap-1 sm:mt-5">
                     <div className="flex min-w-0 items-center gap-1 sm:gap-2">
                       <span className="font-[inter] text-xs font-bold text-[#111827] sm:text-sm md:text-base">
-                        {product.price}
-                      </span>
-
-                      <span className="truncate font-[inter] text-[8px] text-[#6B7280] line-through sm:text-xs">
-                        {product.oldPrice}
+                        ₹{Number(product.pricing ?? product.price ?? 0).toLocaleString("en-IN")}
                       </span>
                     </div>
 
@@ -151,14 +151,11 @@ const FavoriteCard = () => {
                     </Link>
                   </div>
 
-                  {/* Shipping */}
-                  <p className="mt-2 font-[inter] text-[9px] font-medium text-green-600 sm:mt-3 sm:text-xs">
-                    Free shipping
-                  </p>
                 </div>
               </div>
             ))}
           </div>
+          )}
         </div>
       </div>
       <Footer />

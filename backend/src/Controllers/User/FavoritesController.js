@@ -1,5 +1,5 @@
 import FavoritesModel from "../../models/user/FavioritesModel.js";
-// import ProductModel from "../../Models/user/ProductModel"  will add soon;
+import ProductModel from "../../models/vendor/ProductModel.js";
 
 export const addToFavorite = async (req, res) => {
   try {

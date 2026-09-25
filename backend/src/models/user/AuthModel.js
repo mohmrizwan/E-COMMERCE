@@ -30,6 +30,11 @@ const userSchema = new mongoose.Schema(
       minlength: 10,
     },
 
+    dateOfBirth: {
+      type: String,
+      default: "",
+    },
+
     googleId: {
       type: String,
       default: null,
