@@ -24,76 +24,29 @@ const menuItems = [
   },
 ];
 
-const profileDefaults = {
-  name: "Rizwan",
-  email: "mohmrizwan10@gmail.com",
-  phone: "+91 98264 80948",
-  dateOfBirth: "02 December 2004",
-  gender: "Male",
-  address: "4 sector k green park colony dhar road",
-};
+// const profileDefaults = {
+//   name: "Rizwan",
+//   email: "mohmrizwan10@gmail.com",
+//   phone: "+91 98264 80948",
+//   dateOfBirth: "02 December 2004",
+//   gender: "Male",
+//   address: "4 sector k green park colony dhar road",
+// };
 
-const addressDefaults = [
-  {
-    id: 1,
-    type: "Home",
-    name: "Rizwan",
-    phone: "+91 98264 80948",
-    address: "4 sector k green park colony dhar road",
-    city: "Indore",
-    state: "Madhya Pradesh",
-    pincode: "452002",
-    default: true,
-  },
-];
+// const addressDefaults = [
+//   {
+//     id: 1,
+//     type: "Home",
+//     name: "Rizwan",
+//     phone: "+91 98264 80948",
+//     address: "4 sector k green park colony dhar road",
+//     city: "Indore",
+//     state: "Madhya Pradesh",
+//     pincode: "452002",
+//     default: true,
+//   },
+// ];
 
-const orderDefaults = [
-  [
-    "VND-48291",
-    "22 Aug 2026",
-    "AeroGlide Pro Running Sneakers",
-    1,
-    999,
-    "Delivered",
-    products[0].image,
-  ],
-  [
-    "VND-48157",
-    "17 Aug 2026",
-    "Auratone Studio Headphones",
-    1,
-    8999,
-    "Processing",
-    products[4].image,
-  ],
-  [
-    "VND-47702",
-    "08 Aug 2026",
-    "Everyday Linen Overshirt",
-    2,
-    1599,
-    "Shipped",
-    products[7].image,
-  ],
-  [
-    "VND-46218",
-    "25 Jul 2026",
-    "Classic Leather Crossbody",
-    1,
-    2399,
-    "Cancelled",
-    products[13].image,
-  ],
-].map(([id, date, product, quantity, price, status, image]) => ({
-  id,
-  date,
-  product,
-  quantity,
-  price,
-  total: quantity * price,
-  status,
-  image,
-}));
 
 const statusStyles = {
   Delivered: "bg-emerald-50 text-emerald-700 ring-emerald-100",
