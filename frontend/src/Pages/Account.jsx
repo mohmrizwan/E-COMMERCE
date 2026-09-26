@@ -4,8 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-import { products } from "../data/products";
 import Dotter from "../Components/Dotter";
+import { products } from "../data/products";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
@@ -741,7 +741,9 @@ function Account() {
     return (
       <>
         <Header />
-        <Dotter />
+        <div className="flex min-h-[70vh] items-center justify-center">
+          <Dotter />
+        </div>
         <Footer />
       </>
     );
