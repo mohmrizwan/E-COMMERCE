@@ -736,15 +736,25 @@ function Account() {
   };
 
   const saveProfile = async (data) => {
+    const profileUpdates = {};
+    if (data.name !== profile.name) profileUpdates.name = data.name;
+    if (data.phone !== profile.phone) profileUpdates.phone = data.phone;
+    if (data.dateOfBirth !== profile.dateOfBirth) {
+      profileUpdates.dateOfBirth = data.dateOfBirth;
+    }
+    if (data.gender !== profile.gender) profileUpdates.gender = data.gender;
+
+    if (Object.keys(profileUpdates).length === 0) {
+      setEditingProfile(false);
+      showNotice("No profile changes to save");
+      return;
+    }
+
     setLoadingAction("profile");
     try {
       const response = await axios.put(
         `${API_URL}/profile/updateProfile`,
-        {
-          name: data.name,
-          phone: data.phone,
-          dateOfBirth: data.dateOfBirth,
-        },
+        profileUpdates,
         getAuthConfig(),
       );
 

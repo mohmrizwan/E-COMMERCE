@@ -41,29 +41,28 @@ export const updateProfile = async (req, res) => {
     if (!userFind) {
       return res.status(404).json({ message: "User Not Found" });
     }
-    // Check only the fields that user wants to update
-    if (name !== undefined && userFind.name === name) {
+    const updates = {};
+    if (name !== undefined && name !== userFind.name) updates.name = name;
+    if (
+      phone !== undefined &&
+      String(phone ?? "") !== String(userFind.phone ?? "")
+    ) {
+      updates.phone = phone;
+    }
+    if (dateOfBirth !== undefined && dateOfBirth !== userFind.dateOfBirth) {
+      updates.dateOfBirth = dateOfBirth;
+    }
+    if (gender !== undefined && gender !== userFind.gender) {
+      updates.gender = gender;
+    }
+
+    if (Object.keys(updates).length === 0) {
       return res.status(409).json({
-        message: "Enter a new name",
+        message: "No profile changes detected",
       });
     }
 
-    if (phone !== undefined && userFind.phone === phone) {
-      return res.status(409).json({
-        message: "Enter a new phone number",
-      });
-    }
-
-    if (dateOfBirth !== undefined && userFind.dateOfBirth === dateOfBirth) {
-      return res.status(409).json({
-        message: "Enter a new date of birth",
-      });
-    }
-
-    if (name !== undefined) userFind.name = name;
-    if (phone !== undefined) userFind.phone = phone;
-    if (dateOfBirth !== undefined) userFind.dateOfBirth = dateOfBirth;
-    if (gender !== undefined) userFind.gender = gender;
+    Object.assign(userFind, updates);
 
     await userFind.save();
 
