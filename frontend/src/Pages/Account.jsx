@@ -144,7 +144,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
               value={form.dateOfBirth}
               onChange={(value) => update("dateOfBirth", value)}
             />
-            <Field
+            {/* <Field
               label="Gender"
               value={form.gender}
               onChange={(value) => update("gender", value)}
@@ -158,7 +158,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
                 className={inputClass}
                 required
               />
-            </label>
+            </label> */}
             <div className="flex gap-3 sm:col-span-2">
               <button
                 type="submit"

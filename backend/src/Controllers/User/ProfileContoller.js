@@ -23,13 +23,14 @@ export const updateProfile = async (req, res) => {
   try {
     const user = req.user.id;
 
-    const { name, phone, dateOfBirth } = req.body;
+    const { name, phone, dateOfBirth, gender } = req.body;
 
     // At least one field should be provided
     if (
       name === undefined &&
       phone === undefined &&
       dateOfBirth === undefined
+      gender === undefined
     ) {
       return res.status(400).json({
         message: "Enter at least one detail to update",
