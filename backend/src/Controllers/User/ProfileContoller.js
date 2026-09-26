@@ -29,7 +29,7 @@ export const updateProfile = async (req, res) => {
     if (
       name === undefined &&
       phone === undefined &&
-      dateOfBirth === undefined
+      dateOfBirth === undefined &&
       gender === undefined
     ) {
       return res.status(400).json({
@@ -63,6 +63,7 @@ export const updateProfile = async (req, res) => {
     if (name !== undefined) userFind.name = name;
     if (phone !== undefined) userFind.phone = phone;
     if (dateOfBirth !== undefined) userFind.dateOfBirth = dateOfBirth;
+    if (gender !== undefined) userFind.gender = gender;
 
     await userFind.save();
 

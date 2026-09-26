@@ -5,6 +5,7 @@ import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import { products } from "../data/products";
+import Dotter from "../Components/Dotter";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
@@ -100,7 +101,10 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
 
   return (
     <>
-      <PageIntro eyebrow="My account" title={`Welcome back, ${profile.name || "User"}`}>
+      <PageIntro
+        eyebrow="My account"
+        title={`Welcome back, ${profile.name || "User"}`}
+      >
         Manage your profile and delivery details.
       </PageIntro>
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(26,37,63,0.04)] sm:p-7">
@@ -144,21 +148,12 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
               value={form.dateOfBirth}
               onChange={(value) => update("dateOfBirth", value)}
             />
-            {/* <Field
+            <Field
               label="Gender"
               value={form.gender}
               onChange={(value) => update("gender", value)}
             />
-            <label className="block text-sm font-semibold text-slate-700 sm:col-span-2">
-              Address
-              <textarea
-                rows="3"
-                value={form.address}
-                onChange={(event) => update("address", event.target.value)}
-                className={inputClass}
-                required
-              />
-            </label> */}
+
             <div className="flex gap-3 sm:col-span-2">
               <button
                 type="submit"
@@ -522,9 +517,7 @@ function Sidebar({ activePage, profile, onChange }) {
     <aside className="mb-6 lg:mb-0">
       <div className="overflow-hidden rounded-xl border border-slate-200 bg-white lg:sticky lg:top-5">
         <div className="hidden border-b border-slate-100 p-4 lg:block">
-          <p className="text-sm font-bold text-slate-800">
-            {profile.name}
-          </p>
+          <p className="text-sm font-bold text-slate-800">{profile.name}</p>
           <p className="text-xs text-slate-500">{profile.email}</p>
         </div>
         <nav className="flex gap-2 overflow-x-auto p-2 lg:block lg:space-y-1 lg:p-3">
@@ -611,7 +604,9 @@ function Account() {
           window.location.replace("/login");
         } else {
           showNotice(
-            (error.response && error.response.data && error.response.data.message) ||
+            (error.response &&
+              error.response.data &&
+              error.response.data.message) ||
               "Could not load account details",
           );
         }
@@ -658,7 +653,9 @@ function Account() {
     } catch (error) {
       console.log(error);
       showNotice(
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
           "Could not save address",
       );
     }
@@ -685,7 +682,9 @@ function Account() {
     } catch (error) {
       console.log(error);
       showNotice(
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
           "Could not remove address",
       );
     }
@@ -719,17 +718,20 @@ function Account() {
         ...current,
         ...data,
         ...(response.data.user || {}),
-        phone: (
-          (response.data.user && response.data.user.phone) ||
-          data.phone
-        )?.toString() || "",
+        phone:
+          (
+            (response.data.user && response.data.user.phone) ||
+            data.phone
+          )?.toString() || "",
       }));
       setEditingProfile(false);
       showNotice(response.data.message || "Profile details updated");
     } catch (error) {
       console.log(error);
       showNotice(
-        (error.response && error.response.data && error.response.data.message) ||
+        (error.response &&
+          error.response.data &&
+          error.response.data.message) ||
           "Could not update profile",
       );
     }
@@ -739,9 +741,7 @@ function Account() {
     return (
       <>
         <Header />
-        <div className="flex min-h-[70vh] items-center justify-center">
-          <p className="text-sm font-semibold text-slate-500">Loading...</p>
-        </div>
+        <Dotter />
         <Footer />
       </>
     );

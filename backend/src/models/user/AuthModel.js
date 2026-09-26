@@ -35,6 +35,11 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
+    gender: {
+      type: String,
+      default: "",
+    },
+
     googleId: {
       type: String,
       default: null,
