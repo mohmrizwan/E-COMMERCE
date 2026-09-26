@@ -1,21 +1,23 @@
-import React from "react";
-
-const Dotter = () => {
+const Dotter = ({ className = "", dotClassName = "bg-indigo-600" }) => {
   return (
-    <div class="flex gap-2" role="status" aria-label="Loading">
+    <span
+      className={`inline-flex items-center gap-1.5 ${className}`}
+      role="status"
+      aria-label="Loading"
+    >
       <span
-        class="size-3 animate-pulse rounded-full bg-indigo-600"
+        className={`size-3 animate-pulse rounded-full ${dotClassName}`}
         aria-hidden="true"
-      ></span>
+      />
       <span
-        class="size-3 animate-pulse rounded-full bg-indigo-600 [animation-delay:0.2s]"
+        className={`size-3 animate-pulse rounded-full ${dotClassName} [animation-delay:0.2s]`}
         aria-hidden="true"
-      ></span>
+      />
       <span
-        class="size-3 animate-pulse rounded-full bg-indigo-600 [animation-delay:0.4s]"
+        className={`size-3 animate-pulse rounded-full ${dotClassName} [animation-delay:0.4s]`}
         aria-hidden="true"
-      ></span>
-    </div>
+      />
+    </span>
   );
 };
 

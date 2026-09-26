@@ -158,9 +158,16 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
               >
-                Save Details
+                {isSaving ? (
+                  <>
+                    Saving
+                    <Dotter dotClassName="size-1.5 bg-white" />
+                  </>
+                ) : (
+                  "Save Details"
+                )}
               </button>
               <button
                 type="button"
@@ -169,7 +176,6 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
               >
                 Cancel
               </button>
-              {isSaving && <Dotter />}
             </div>
           </form>
         ) : (
@@ -284,9 +290,18 @@ function AddressForm({ address, profile, onSave, onCancel, isSaving }) {
         <button
           type="submit"
           disabled={isSaving}
-          className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
         >
-          {address ? "Save Address" : "Add Address"}
+          {isSaving ? (
+            <>
+              Saving
+              <Dotter dotClassName="size-1.5 bg-white" />
+            </>
+          ) : address ? (
+            "Save Address"
+          ) : (
+            "Add Address"
+          )}
         </button>
         <button
           type="button"
@@ -295,7 +310,6 @@ function AddressForm({ address, profile, onSave, onCancel, isSaving }) {
         >
           Cancel
         </button>
-        {isSaving && <Dotter />}
       </div>
     </form>
   );
@@ -354,17 +368,18 @@ function AddressesPage({
                   </span>
                 )}
               </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => onDelete(address._id)}
-                  aria-label={`Delete ${address.type} address`}
-                  disabled={deletingAddressId === address._id}
-                  className="text-slate-400"
-                >
+              <button
+                onClick={() => onDelete(address._id)}
+                aria-label={`Delete ${address.type} address`}
+                disabled={deletingAddressId === address._id}
+                className="inline-flex h-8 w-8 items-center justify-center text-slate-400"
+              >
+                {deletingAddressId === address._id ? (
+                  <Dotter dotClassName="size-1.5 bg-[#6C3BFF]" />
+                ) : (
                   <i className="fa-regular fa-trash-can" />
-                </button>
-                {deletingAddressId === address._id && <Dotter />}
-              </div>
+                )}
+              </button>
             </div>
             <h2 className="mt-5 font-bold text-slate-800">{address.name}</h2>
             <p className="mt-1 text-sm text-slate-500">{address.phone}</p>
