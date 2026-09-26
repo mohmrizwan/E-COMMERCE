@@ -88,7 +88,7 @@ function Field({ label, value, onChange, type = "text", required = true }) {
   );
 }
 
-function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
+function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
   const [form, setForm] = useState(profile);
 
   useEffect(() => {
@@ -157,6 +157,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
             <div className="flex gap-3 sm:col-span-2">
               <button
                 type="submit"
+                disabled={isSaving}
                 className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
               >
                 Save Details
@@ -168,6 +169,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
               >
                 Cancel
               </button>
+              {isSaving && <Dotter />}
             </div>
           </form>
         ) : (
@@ -196,7 +198,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel }) {
   );
 }
 
-function AddressForm({ address, profile, onSave, onCancel }) {
+function AddressForm({ address, profile, onSave, onCancel, isSaving }) {
   const [form, setForm] = useState(
     address || {
       type: "Home",
@@ -278,9 +280,10 @@ function AddressForm({ address, profile, onSave, onCancel }) {
           />
         </label>
       </div>
-      <div className="mt-5 flex gap-3">
+      <div className="mt-5 flex items-center gap-3">
         <button
           type="submit"
+          disabled={isSaving}
           className="min-h-10 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
         >
           {address ? "Save Address" : "Add Address"}
@@ -292,6 +295,7 @@ function AddressForm({ address, profile, onSave, onCancel }) {
         >
           Cancel
         </button>
+        {isSaving && <Dotter />}
       </div>
     </form>
   );
@@ -307,6 +311,8 @@ function AddressesPage({
   onDelete,
   onSave,
   onCancel,
+  loadingAction,
+  deletingAddressId,
 }) {
   return (
     <>
@@ -328,6 +334,7 @@ function AddressesPage({
           profile={profile}
           onSave={onSave}
           onCancel={onCancel}
+          isSaving={loadingAction === "address"}
         />
       )}
       <div className="grid gap-4 lg:grid-cols-2">
@@ -347,13 +354,17 @@ function AddressesPage({
                   </span>
                 )}
               </div>
-              <button
-                onClick={() => onDelete(address._id)}
-                aria-label={`Delete ${address.type} address`}
-                className="text-slate-400"
-              >
-                <i className="fa-regular fa-trash-can" />
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => onDelete(address._id)}
+                  aria-label={`Delete ${address.type} address`}
+                  disabled={deletingAddressId === address._id}
+                  className="text-slate-400"
+                >
+                  <i className="fa-regular fa-trash-can" />
+                </button>
+                {deletingAddressId === address._id && <Dotter />}
+              </div>
             </div>
             <h2 className="mt-5 font-bold text-slate-800">{address.name}</h2>
             <p className="mt-1 text-sm text-slate-500">{address.phone}</p>
@@ -556,6 +567,7 @@ function Account() {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingAction, setLoadingAction] = useState("");
 
   const showNotice = (message) => {
     setNotice(message);
@@ -621,6 +633,7 @@ function Account() {
     menuItems.find((item) => item.id === activePage)?.label || "Profile";
 
   const saveAddress = async (data) => {
+    setLoadingAction("address");
     try {
       let response;
       if (editingAddress) {
@@ -658,6 +671,8 @@ function Account() {
           error.response.data.message) ||
           "Could not save address",
       );
+    } finally {
+      setLoadingAction("");
     }
   };
 
@@ -675,6 +690,7 @@ function Account() {
   };
 
   const deleteAddress = async (id) => {
+    setLoadingAction(`delete-address-${id}`);
     try {
       await axios.delete(`${API_URL}/profile/address/${id}`, getAuthConfig());
       setAddresses(addresses.filter((item) => item._id !== id));
@@ -687,6 +703,8 @@ function Account() {
           error.response.data.message) ||
           "Could not remove address",
       );
+    } finally {
+      setLoadingAction("");
     }
   };
 
@@ -703,6 +721,7 @@ function Account() {
   };
 
   const saveProfile = async (data) => {
+    setLoadingAction("profile");
     try {
       const response = await axios.put(
         `${API_URL}/profile/updateProfile`,
@@ -734,6 +753,8 @@ function Account() {
           error.response.data.message) ||
           "Could not update profile",
       );
+    } finally {
+      setLoadingAction("");
     }
   };
 
@@ -775,6 +796,7 @@ function Account() {
                   onEdit={() => setEditingProfile(true)}
                   onSave={saveProfile}
                   onCancel={() => setEditingProfile(false)}
+                  isSaving={loadingAction === "profile"}
                 />
               )}
               {activePage === "orders" && (
@@ -797,6 +819,12 @@ function Account() {
                   onDelete={deleteAddress}
                   onSave={saveAddress}
                   onCancel={closeAddressForm}
+                  loadingAction={loadingAction}
+                  deletingAddressId={
+                    loadingAction.startsWith("delete-address-")
+                      ? loadingAction.slice("delete-address-".length)
+                      : null
+                  }
                 />
               )}
             </section>
