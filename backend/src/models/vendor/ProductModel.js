@@ -30,6 +30,13 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    discount: {
+      type: Number,
+      min: 0,
+      max: 99,
+      default: 0,
+    },
+
     stockQuantity: {
       type: Number,
       required: true,

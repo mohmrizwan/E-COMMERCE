@@ -212,6 +212,22 @@ const AddProduct = () => {
                     </div>
                   </CCol>
 
+                  <CCol md={6}>
+                    <div className="mb-3">
+                      <CFormLabel className="fw-semibold">Discount (%)</CFormLabel>
+                      <CFormInput
+                        type="number"
+                        name="discount"
+                        placeholder="0"
+                        className="py-2"
+                        min="0"
+                        max="99"
+                        step="1"
+                        defaultValue="0"
+                      />
+                    </div>
+                  </CCol>
+
                   {/* Stock */}
                   <CCol md={6}>
                     <div className="mb-3">

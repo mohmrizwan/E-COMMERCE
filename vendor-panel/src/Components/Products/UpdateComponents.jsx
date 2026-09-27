@@ -38,6 +38,7 @@ const UpadteProduct = () => {
     description: "",
     category: "",
     pricing: "",
+    discount: 0,
     stockQuantity: "",
     status: "",
   });
@@ -70,6 +71,7 @@ const UpadteProduct = () => {
           description: data.description || "",
           category: data.category || "",
           pricing: data.pricing ?? "",
+          discount: data.discount ?? 0,
           stockQuantity: data.stockQuantity ?? "",
           status: data.status || "",
         });
@@ -185,6 +187,11 @@ const UpadteProduct = () => {
 
     if (Number(product.pricing) < 0) {
       setErrorMessage("Price cannot be negative");
+      return;
+    }
+
+    if (Number(product.discount) < 0 || Number(product.discount) > 99) {
+      setErrorMessage("Discount must be between 0 and 99 percent");
       return;
     }
 
@@ -418,6 +425,27 @@ const UpadteProduct = () => {
                           placeholder="₹ 0.00"
                           className="py-2"
                           min="0"
+                          required
+                          disabled={updating}
+                        />
+                      </div>
+                    </CCol>
+
+                    <CCol md={6}>
+                      <div className="mb-3">
+                        <CFormLabel className="fw-semibold">
+                          Discount (%)
+                        </CFormLabel>
+                        <CFormInput
+                          type="number"
+                          name="discount"
+                          value={product.discount}
+                          onChange={handleChange}
+                          placeholder="0"
+                          className="py-2"
+                          min="0"
+                          max="99"
+                          step="1"
                           required
                           disabled={updating}
                         />

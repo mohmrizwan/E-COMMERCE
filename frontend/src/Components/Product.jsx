@@ -1,68 +1,57 @@
-import React from "react";
-import Shoes from "../assets/images/close-up-futuristic-sneakers-showcase.jpg";
+import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-
-const products = [
-  {
-    id: 1,
-    name: "AeroGlide Pro Running Sneakers",
-    store: "Ksetra",
-    price: "$999",
-    oldPrice: "$1200",
-    discount: "-26% OFF",
-    rating: "4.8",
-    reviews: "2,413",
-  },
-  {
-    id: 2,
-    name: "AeroGlide Pro Running Sneakers",
-    store: "Ksetra",
-    price: "$999",
-    oldPrice: "$1200",
-    discount: "-26% OFF",
-    rating: "4.8",
-    reviews: "2,413",
-  },
-  {
-    id: 3,
-    name: "AeroGlide Pro Running Sneakers",
-    store: "Ksetra",
-    price: "$999",
-    oldPrice: "$1200",
-    discount: "-26% OFF",
-    rating: "4.8",
-    reviews: "2,413",
-  },
-  {
-    id: 4,
-    name: "AeroGlide Pro Running Sneakers",
-    store: "Ksetra",
-    price: "$999",
-    oldPrice: "$1200",
-    discount: "-26% OFF",
-    rating: "4.8",
-    reviews: "2,413",
-  },
-];
-
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import { useState } from "react";
+// https://ecommerceba-6dtt.onrender.com/products/allProducts
 const Product = () => {
+  const [products, setProducts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const getProducts = async () => {
+    try {
+      const respone = await axios.get(
+        "https://ecommerceba-6dtt.onrender.com/products/allProducts",
+      );
+
+      setProducts(respone.data.products);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
   return (
     <div className="product-wrapper my-8 sm:my-12 md:my-15">
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
       <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
-
         {/* ================= PRODUCT CARDS ================= */}
         <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-          
           {products.map((product) => (
             <div
-              key={product.id}
+              key={product._id}
               className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
             >
-              
               {/* ================= PRODUCT IMAGE ================= */}
               <div className="relative overflow-hidden">
                 <img
-                  src={Shoes}
+                  src={product.image}
                   alt={product.name}
                   className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
                 />
@@ -70,12 +59,14 @@ const Product = () => {
                 {/* Badges */}
                 <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
                   <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
-                    BestSeller
+                    {product.status}
                   </span>
 
-                  <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
-                    {product.discount}
-                  </span>
+                  {Number(product.discount) > 0 && (
+                    <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
+                      {product.discount}% OFF
+                    </span>
+                  )}
                 </div>
 
                 {/* Wishlist */}
@@ -89,10 +80,9 @@ const Product = () => {
 
               {/* ================= PRODUCT CONTENT ================= */}
               <div className="flex flex-1 flex-col p-2.5 sm:p-3 md:p-4">
-                
                 {/* Store */}
                 <span className="font-[inter] text-[9px] text-[#6B7280] sm:text-xs">
-                  {product.store}
+                  {product.store || "Store"}
                 </span>
 
                 {/* Product Name */}
@@ -100,36 +90,22 @@ const Product = () => {
                   {product.name}
                 </h4>
 
-                {/* Rating */}
-                <div className="mt-1.5 flex items-center gap-1 sm:mt-2 sm:gap-1.5">
-                  <div className="flex items-center">
-                    {[1, 2, 3, 4, 5].map((star) => (
-                      <i
-                        key={star}
-                        className="fa-solid fa-star text-[8px] text-[#FFB020] sm:text-[10px]"
-                      ></i>
-                    ))}
-                  </div>
-
-                  <span className="font-[inter] text-[9px] font-medium text-[#111827] sm:text-xs">
-                    {product.rating}
-                  </span>
-
-                  <span className="font-[inter] text-[8px] text-[#6B7280] sm:text-xs">
-                    ({product.reviews})
-                  </span>
+                <div className="mt-1.5 text-[9px] text-[#6B7280] sm:mt-2 sm:text-xs">
+                  No reviews yet
                 </div>
 
                 {/* Price + Cart */}
                 <div className="mt-3 flex items-center justify-between gap-1 sm:mt-5">
                   <div className="flex min-w-0 items-center gap-1 sm:gap-2">
                     <span className="font-[inter] text-xs font-bold text-[#111827] sm:text-sm md:text-base">
-                      {product.price}
+                      ₹{Number(product.price || 0).toLocaleString("en-IN")}
                     </span>
 
-                    <span className="truncate font-[inter] text-[8px] text-[#6B7280] line-through sm:text-xs">
-                      {product.oldPrice}
-                    </span>
+                    {product.oldPrice != null && (
+                      <span className="truncate font-[inter] text-[8px] text-[#6B7280] line-through sm:text-xs">
+                        ₹{Number(product.oldPrice).toLocaleString("en-IN")}
+                      </span>
+                    )}
                   </div>
 
                   <Link
@@ -141,8 +117,10 @@ const Product = () => {
                 </div>
 
                 {/* Shipping */}
-                <p className="mt-2 font-[inter] text-[9px] font-medium text-green-600 sm:mt-3 sm:text-xs">
-                  Free shipping
+                <p
+                  className={`mt-2 font-[inter] text-[9px] font-medium sm:mt-3 sm:text-xs ${product.inStock ? "text-green-600" : "text-red-500"}`}
+                >
+                  {product.inStock ? "In stock" : "Out of stock"}
                 </p>
               </div>
             </div>

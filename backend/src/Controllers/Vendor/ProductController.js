@@ -5,20 +5,37 @@ export const createProduct = async (req, res) => {
   try {
     const userId = req.vendor._id;
 
-    const { name, description, category, pricing, stockQuantity, status } =
-      req.body;
+    const {
+      name,
+      description,
+      category,
+      pricing,
+      discount = 0,
+      stockQuantity,
+      status,
+    } = req.body;
 
     if (
       !name ||
       !description ||
       !category ||
-      !pricing ||
-      !stockQuantity ||
+      pricing === undefined ||
+      pricing === "" ||
+      stockQuantity === undefined ||
+      stockQuantity === "" ||
       !status
     ) {
       return res.status(400).json({
         success: false,
         message: "Enter all details of product",
+      });
+    }
+
+    const discountValue = Number(discount);
+    if (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 99) {
+      return res.status(400).json({
+        success: false,
+        message: "Discount must be between 0 and 99 percent",
       });
     }
 
@@ -53,6 +70,7 @@ export const createProduct = async (req, res) => {
       description,
       category,
       pricing,
+      discount: discountValue,
       stockQuantity,
       status,
       image: result.secure_url,
@@ -132,8 +150,15 @@ export const updateProduct = async (req, res) => {
     const vendorId = req.vendor._id;
     const productId = req.params.id;
 
-    const { name, description, category, pricing, stockQuantity, status } =
-      req.body;
+    const {
+      name,
+      description,
+      category,
+      pricing,
+      discount,
+      stockQuantity,
+      status,
+    } = req.body;
 
     if (!vendorId) {
       return res.status(400).json({
@@ -153,6 +178,17 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({
         message: "Unauthorized",
       });
+    }
+
+    if (discount !== undefined) {
+      const discountValue = Number(discount);
+      if (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 99) {
+        return res.status(400).json({
+          success: false,
+          message: "Discount must be between 0 and 99 percent",
+        });
+      }
+      product.discount = discountValue;
     }
 
     product.name = name;
