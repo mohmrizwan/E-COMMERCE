@@ -14,7 +14,11 @@ const Product = () => {
         "https://ecommerceba-6dtt.onrender.com/products/allProducts",
       );
 
-      setProducts(respone.data.products);
+      setProducts(
+        Array.isArray(respone.data.products)
+          ? respone.data.products.slice(0, 4)
+          : [],
+      );
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Something went wrong");
     }
