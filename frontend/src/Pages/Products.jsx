@@ -1,20 +1,19 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import ProductFilter from "../Components/ProductFilter";
 import ProductGrid from "../Components/ProductGrid";
 import ProductSort from "../Components/ProductSort";
-import { getCategoryLabel, products } from "../data/products";
+import { getCategoryLabel } from "../data/products";
 
-const defaultFilters = { category: "", minPrice: "", maxPrice: "", brands: [], rating: 0, inStock: null, sort: "featured" };
+const defaultFilters = { category: "", minPrice: "", maxPrice: "", inStock: null, sort: "featured" };
 
 const readFilters = (params) => ({
   category: params.get("category") || "",
   minPrice: params.get("min") || "",
   maxPrice: params.get("max") || "",
-  brands: params.get("brand") ? params.get("brand").split(",") : [],
-  rating: Number(params.get("rating") || 0),
   inStock: params.get("stock") === "in" ? true : params.get("stock") === "out" ? false : null,
   sort: params.get("sort") || "featured",
 });
@@ -24,8 +23,6 @@ const writeFilters = (filters) => {
   if (filters.category) params.set("category", filters.category);
   if (filters.minPrice) params.set("min", filters.minPrice);
   if (filters.maxPrice) params.set("max", filters.maxPrice);
-  if (filters.brands.length) params.set("brand", filters.brands.join(","));
-  if (filters.rating) params.set("rating", filters.rating);
   if (filters.inStock !== null) params.set("stock", filters.inStock ? "in" : "out");
   if (filters.sort !== "featured") params.set("sort", filters.sort);
   return params;
@@ -35,40 +32,51 @@ const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(() => ({ ...defaultFilters, ...readFilters(searchParams) }));
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const response = await axios.get(
+          "https://ecommerceba-6dtt.onrender.com/products/allProducts",
+        );
+        setProducts(Array.isArray(response.data.products) ? response.data.products : []);
+      } catch (error) {
+        setErrorMessage(error.response?.data?.message || "Unable to load products.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getProducts();
+  }, []);
 
   useEffect(() => {
     setFilters((current) => ({ ...current, ...readFilters(searchParams) }));
   }, [searchParams]);
 
-  const brands = useMemo(() => [...new Set(products.filter((product) => !filters.category || product.category === filters.category).map((product) => product.brand))].sort(), [filters.category]);
-
   const visibleProducts = useMemo(() => {
     const filtered = products.filter((product) => {
       const matchesCategory = !filters.category || product.category === filters.category;
-      const matchesMin = !filters.minPrice || product.price >= Number(filters.minPrice);
-      const matchesMax = !filters.maxPrice || product.price <= Number(filters.maxPrice);
-      const matchesBrand = !filters.brands.length || filters.brands.includes(product.brand);
-      const matchesRating = !filters.rating || product.rating >= filters.rating;
+      const matchesMin = !filters.minPrice || Number(product.price) >= Number(filters.minPrice);
+      const matchesMax = !filters.maxPrice || Number(product.price) <= Number(filters.maxPrice);
       const matchesStock = filters.inStock === null || product.inStock === filters.inStock;
-      return matchesCategory && matchesMin && matchesMax && matchesBrand && matchesRating && matchesStock;
+      return matchesCategory && matchesMin && matchesMax && matchesStock;
     });
 
     return [...filtered].sort((a, b) => {
-      if (filters.sort === "price-asc") return a.price - b.price;
-      if (filters.sort === "price-desc") return b.price - a.price;
-      if (filters.sort === "newest") return Number(b.isNew) - Number(a.isNew);
-      if (filters.sort === "rating") return b.rating - a.rating;
-      return a.id - b.id;
+      if (filters.sort === "price-asc") return Number(a.price) - Number(b.price);
+      if (filters.sort === "price-desc") return Number(b.price) - Number(a.price);
+      if (filters.sort === "newest") return new Date(b.createdAt) - new Date(a.createdAt);
+      return 0;
     });
-  }, [filters]);
+  }, [filters, products]);
 
   const updateFilter = (key, value) => {
     const nextFilters = { ...filters };
-    if (key === "brands") {
-      nextFilters.brands = filters.brands.includes(value) ? filters.brands.filter((brand) => brand !== value) : [...filters.brands, value];
-    } else {
-      nextFilters[key] = value;
-    }
+    nextFilters[key] = value;
     setFilters(nextFilters);
     setSearchParams(writeFilters(nextFilters));
   };
@@ -87,10 +95,16 @@ const Products = () => {
           <button type="button" onClick={() => setFiltersOpen((open) => !open)} className="flex w-fit items-center gap-2 rounded-xl border border-[#dde3f0] bg-white px-4 py-2.5 text-sm font-semibold lg:hidden"><i className="fa-solid fa-sliders" />{filtersOpen ? "Hide filters" : "Show filters"}</button>
         </div>
         <div className="grid gap-7 lg:grid-cols-[250px_minmax(0,1fr)]">
-          <div className={`${filtersOpen ? "block" : "hidden"} lg:block`}><ProductFilter filters={filters} brands={brands} onChange={updateFilter} onClear={clearFilters} /></div>
+          <div className={`${filtersOpen ? "block" : "hidden"} lg:block`}><ProductFilter filters={filters} onChange={updateFilter} onClear={clearFilters} /></div>
           <section className="min-w-0">
             <div className="mb-5 flex items-center justify-between gap-4"><p className="text-sm text-[#6b7280]"><span className="font-bold text-black">{visibleProducts.length}</span> products found</p><ProductSort value={filters.sort} onChange={(value) => updateFilter("sort", value)} /></div>
-            <ProductGrid products={visibleProducts} />
+            {loading ? (
+              <p className="text-sm text-[#6b7280]">Loading products...</p>
+            ) : errorMessage ? (
+              <p role="alert" className="text-sm text-red-600">{errorMessage}</p>
+            ) : (
+              <ProductGrid products={visibleProducts} />
+            )}
           </section>
         </div>
       </main>
