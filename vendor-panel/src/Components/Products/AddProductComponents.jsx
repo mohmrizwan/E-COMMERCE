@@ -190,7 +190,7 @@ const AddProduct = () => {
                 <h5 className="fw-bold mb-1">Pricing & Inventory</h5>
 
                 <small className="text-body-secondary">
-                  Set the product price and available stock
+                  Set the original price, discount and available stock
                 </small>
               </CCardHeader>
 
@@ -199,7 +199,9 @@ const AddProduct = () => {
                   {/* Price */}
                   <CCol md={6}>
                     <div className="mb-3">
-                      <CFormLabel className="fw-semibold">Price</CFormLabel>
+                      <CFormLabel className="fw-semibold">
+                        Original Price
+                      </CFormLabel>
 
                       <CFormInput
                         type="number"

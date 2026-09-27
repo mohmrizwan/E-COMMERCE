@@ -403,7 +403,7 @@ const UpadteProduct = () => {
                   </h5>
 
                   <small className="text-body-secondary">
-                    Set the product price and available stock
+                    Set the original price, discount and available stock
                   </small>
                 </CCardHeader>
 
@@ -414,7 +414,7 @@ const UpadteProduct = () => {
                     <CCol md={6}>
                       <div className="mb-3">
                         <CFormLabel className="fw-semibold">
-                          Price
+                          Original Price
                         </CFormLabel>
 
                         <CFormInput

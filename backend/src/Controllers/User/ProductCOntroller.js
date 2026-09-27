@@ -12,11 +12,11 @@ export const getAllProducts = async (req, res) => {
       return {
         ...product,
         discount,
-        price: product.pricing,
-        oldPrice:
+        price:
           discount > 0
-            ? Math.round(product.pricing / (1 - discount / 100))
-            : null,
+            ? Math.round(product.pricing * (1 - discount / 100))
+            : product.pricing,
+        oldPrice: discount > 0 ? product.pricing : null,
         store: product.vendorId?.businessName || "Store",
         inStock: product.stockQuantity > 0,
       };
