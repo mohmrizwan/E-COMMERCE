@@ -1,23 +1,44 @@
-import React from "react";
-import Shoes from "../assets/images/close-up-futuristic-sneakers-showcase.jpg";
 import { Link } from "react-router-dom";
-
-const products = [
-  { id: 1 },
-  { id: 2 },
-  { id: 3 },
-  { id: 4 },
-  { id: 5 },
-  { id: 6 },
-  { id: 7 },
-  { id: 8 },
-];
-
+import axios from "axios";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
+import { useState, useEffect } from "react";
 const Product = () => {
+  const [products, setProducts] = useState([]);
+  const [errorMessage, setErrorMessage] = useState("");
+  const getProducts = async () => {
+    try {
+      const respone = await axios.get(
+        "https://ecommerceba-6dtt.onrender.com/products/allProducts",
+      );
+
+      setProducts(respone.data.products);
+    } catch (error) {
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
+    }
+  };
+
+  useEffect(() => {
+    getProducts();
+  }, []);
   return (
     <div className="product-wrapper my-8 sm:my-12 md:my-15">
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
       <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
-        
         {/* Product Header */}
         <div className="product-head flex items-center justify-between gap-3">
           <div className="min-w-0">
@@ -43,17 +64,15 @@ const Product = () => {
 
         {/* Product Cards */}
         <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-          
           {products.map((product) => (
             <div
               key={product.id}
               className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:border-[#b6a5e7] hover:shadow-md sm:rounded-[20px]"
             >
-              
               {/* Product Image */}
               <div className="relative overflow-hidden">
                 <img
-                  src={Shoes}
+                  src={product.image}
                   alt="product-image"
                   className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
                 />
@@ -84,7 +103,6 @@ const Product = () => {
 
               {/* Product Content */}
               <div className="flex flex-1 flex-col bg-white p-2.5 sm:p-3">
-                
                 {/* Vendor */}
                 <span className="font-[inter] text-[9px] text-[#6B7280] sm:text-xs">
                   Ksetra
@@ -141,7 +159,6 @@ const Product = () => {
               </div>
             </div>
           ))}
-
         </div>
       </div>
     </div>
