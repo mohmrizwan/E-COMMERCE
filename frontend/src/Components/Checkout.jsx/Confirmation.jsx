@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 
-const Confirmation = () => {
+const Confirmation = ({ orderData }) => {
   return (
     <>
       {/* Header */}
@@ -90,11 +90,7 @@ const Confirmation = () => {
               {/* Description */}
               <div className="max-w-md text-center">
                 <p className="text-xs leading-5 text-[#6B7280] sm:text-sm">
-                  Thank you, Priya. Order{" "}
-                  <span className="font-bold text-black">
-                    #NX-48213
-                  </span>{" "}
-                  is on its way.
+                  Thank you, {orderData?.address?.name || "customer"}. Your order has been received.
                 </p>
               </div>
 
@@ -104,11 +100,11 @@ const Confirmation = () => {
                 {/* Delivery */}
                 <div className="flex flex-col gap-1 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
                   <p className="text-xs text-[#6B7280] sm:text-sm">
-                    Estimated Delivery
+                    Payment method
                   </p>
 
-                  <p className="text-xs font-bold sm:text-sm">
-                    Aug-15 - Aug-20
+                  <p className="text-xs font-bold capitalize sm:text-sm">
+                    {orderData?.paymentMethod || "-"}
                   </p>
                 </div>
 
@@ -118,8 +114,10 @@ const Confirmation = () => {
                     Shipping to
                   </p>
 
-                  <p className="text-xs font-bold sm:text-sm">
-                    San Francisco, CA
+                  <p className="text-right text-xs font-bold sm:text-sm">
+                    {orderData?.address
+                      ? `${orderData.address.address}, ${orderData.address.city}, ${orderData.address.state} ${orderData.address.pincode}`
+                      : "-"}
                   </p>
                 </div>
 
@@ -130,24 +128,24 @@ const Confirmation = () => {
                   </p>
 
                   <p className="text-xs font-bold sm:text-sm">
-                    $574
+                    ₹{Number(orderData?.total || 0).toLocaleString("en-IN")}
                   </p>
                 </div>
               </div>
 
               {/* Track Button */}
-              <button
-                type="button"
-                className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:min-w-[160px] sm:px-6"
+              <Link
+                to="/products"
+                className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:min-w-40 sm:px-6"
               >
-                Track Order
-              </button>
+                Continue Shopping
+              </Link>
             </div>
           </div>
 
           {/* Right Section */}
     
-            <OrderSummary />
+            <OrderSummary orderData={orderData} />
         
 
         </div>

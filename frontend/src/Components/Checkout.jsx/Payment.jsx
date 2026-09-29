@@ -1,8 +1,94 @@
-import { React, useState } from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
-const Payment = ({ setStep }) => {
-  const [selectedMethod, setSelectedMethod] = useState("card");
+
+const paymentMethods = [
+  {
+    id: "upi",
+    label: "UPI",
+    detail: "Pay with any UPI app",
+    icon: "fa-brands fa-google-pay",
+  },
+  {
+    id: "card",
+    label: "Credit / Debit Card",
+    detail: "Visa, Mastercard and more",
+    icon: "fa-regular fa-credit-card",
+  },
+  {
+    id: "netbanking",
+    label: "Net Banking",
+    detail: "All major banks",
+    icon: "fa-solid fa-building-columns",
+  },
+  {
+    id: "cod",
+    label: "Cash on Delivery",
+    detail: "Pay when your order arrives",
+    icon: "fa-solid fa-money-bill-wave",
+  },
+];
+
+const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
+  const [selectedMethod, setSelectedMethod] = useState("upi");
+  const [paymentState, setPaymentState] = useState("idle");
+  const [paymentError, setPaymentError] = useState("");
+  const isBusy = paymentState === "initiating" || paymentState === "processing";
+  const canPay = Boolean(orderData?.items?.length && orderData?.address);
+
+  const handlePayNow = async () => {
+    if (!canPay || isBusy) return;
+
+    setPaymentError("");
+    if (typeof onInitiatePayment !== "function") {
+      setPaymentState("unavailable");
+      setPaymentError(
+        "Payment and order placement are not connected yet. No payment was taken and no order was placed.",
+      );
+      return;
+    }
+
+    setPaymentState("initiating");
+    try {
+      const result = await onInitiatePayment({
+        orderData,
+        paymentMethod: selectedMethod,
+      });
+      const nextState = ["processing", "success", "failed", "cancelled"].includes(
+        result?.status,
+      )
+        ? result.status
+        : "failed";
+
+      setPaymentState(nextState);
+      if (nextState === "success") {
+        onPlaceOrder(selectedMethod);
+      } else if (nextState === "failed") {
+        setPaymentError(result?.message || "Payment could not be completed.");
+      } else if (nextState === "cancelled") {
+        setPaymentError("Payment was cancelled. You can try again.");
+      }
+    } catch (error) {
+      setPaymentState("failed");
+      setPaymentError(error?.message || "Payment could not be started.");
+    }
+  };
+
+  const retryPayment = () => {
+    setPaymentState("idle");
+    setPaymentError("");
+    handlePayNow();
+  };
+
+  const statusMessage = {
+    initiating: "Opening secure payment...",
+    processing: "Payment is processing. Please wait for confirmation.",
+    success: "Payment confirmed.",
+    failed: paymentError,
+    cancelled: paymentError,
+    unavailable: paymentError,
+  }[paymentState];
+
   return (
     <>
       <div className="address-wrapper bg-[white] py-4">
@@ -26,11 +112,11 @@ const Payment = ({ setStep }) => {
             <div className="status hidden sm:flex my-6 w-full items-center justify-between gap-1 overflow-hidden sm:my-10 sm:gap-2">
               {/* Address */}
               <div className="address flex gap-3 items-center">
-                <div className="bg-[#6C3BFF] px-3 py-2 rounded-[50%] border-2 text-[inter] text-[#FFFFFF]  font-bold text-xs border-[#6C3BFF]">
+                <div className="bg-[#6C3BFF] px-3 py-2 rounded-[50%] border-2 font-[inter] text-[#FFFFFF] font-bold text-xs border-[#6C3BFF]">
                   <i className="fa-solid fa-check"></i>
                 </div>
                 <div>
-                  <p className="text-[inter] font-bold text-sm text-[#6B7280]">
+                  <p className="font-[inter] font-bold text-sm text-[#6B7280]">
                     Address
                   </p>
                 </div>
@@ -41,11 +127,11 @@ const Payment = ({ setStep }) => {
 
               {/* Payment */}
               <div className="Delivery flex gap-3 items-center">
-                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] border-2 text-[inter] font-bold text-xs text-[#6C3BFF] border-[#6C3BFF]">
+                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] border-2 font-[inter] font-bold text-xs text-[#6C3BFF] border-[#6C3BFF]">
                   2
                 </div>
                 <div>
-                  <p className="text-[inter] font-bold text-sm text-[#6B7280]">
+                  <p className="font-[inter] font-bold text-sm text-[#6B7280]">
                     Payment
                   </p>
                 </div>
@@ -56,11 +142,11 @@ const Payment = ({ setStep }) => {
 
               {/* Confirmation */}
               <div className="Delivery flex gap-3 items-center">
-                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] text-[inter] font-bold text-xs text-[#6B7280]">
+                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] font-[inter] font-bold text-xs text-[#6B7280]">
                   3
                 </div>
                 <div>
-                  <p className="text-[inter] font-bold text-sm text-[#6B7280]">
+                  <p className="font-[inter] font-bold text-sm text-[#6B7280]">
                     Confirmation
                   </p>
                 </div>
@@ -78,166 +164,149 @@ const Payment = ({ setStep }) => {
                   </p>
                 </div>
               </div>
-              <div className="payment-details">
-                <div className="methods grid grid-cols-2 gap-3 sm:flex sm:gap-4">
-                  {/* Card */}
+              <div className="payment-details space-y-5">
+                <section className="rounded-xl border border-[#E5E7EB] p-4 sm:p-5">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                      <h4 className="font-[inter] text-sm font-bold text-[#111827]">
+                        Delivery address
+                      </h4>
+                      {orderData?.address ? (
+                        <div className="mt-2 text-sm leading-6 text-[#6B7280]">
+                          <p className="font-semibold text-[#111827]">
+                            {orderData.address.name} · {orderData.address.type}
+                          </p>
+                          <p>{orderData.address.phone}</p>
+                          <p className="wrap-break-word">
+                            {orderData.address.address}, {orderData.address.city},{" "}
+                            {orderData.address.state} {orderData.address.pincode}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="mt-2 text-sm text-red-600">
+                          Select a delivery address before payment.
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="shrink-0 text-sm font-bold text-[#6C3BFF] hover:text-[#421db3]"
+                    >
+                      Change
+                    </button>
+                  </div>
+                </section>
+
+                <section>
+                  <h4 className="font-[inter] text-sm font-bold text-[#111827]">
+                    Choose a payment method
+                  </h4>
+                  <p className="mt-1 text-xs leading-5 text-[#6B7280]">
+                    Payment options will be enabled when secure checkout is connected.
+                  </p>
                   <div
-                    onClick={() => setSelectedMethod("card")}
-                    className={`h-fit min-w-0 w-full cursor-pointer rounded-2xl border px-3 py-3 transition duration-200 sm:w-50 sm:px-5 ${
-                      selectedMethod === "card"
-                        ? "border-[#6C3BFF] bg-[#E9E5FC] text-[#6C3BFF]"
-                        : "border-[#E9E5FC] bg-[#F7F5FF] text-[#111827] hover:border-[#6C3BFF]"
+                    role="radiogroup"
+                    aria-label="Payment method"
+                    className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+                  >
+                    {paymentMethods.map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selectedMethod === method.id}
+                        onClick={() => setSelectedMethod(method.id)}
+                        className={`flex min-w-0 items-start gap-3 rounded-xl border p-4 text-left transition ${
+                          selectedMethod === method.id
+                            ? "border-[#6C3BFF] bg-[#F7F5FF] text-[#6C3BFF]"
+                            : "border-[#E5E7EB] bg-white text-[#111827] hover:border-[#b6a5e7]"
+                        }`}
+                      >
+                        <i className={`${method.icon} mt-0.5 w-5 shrink-0 text-center`} />
+                        <span className="min-w-0">
+                          <span className="block wrap-break-word text-sm font-semibold">
+                            {method.label}
+                          </span>
+                          <span className="mt-1 block text-xs leading-5 text-[#6B7280]">
+                            {method.detail}
+                          </span>
+                        </span>
+                        <span
+                          className={`ml-auto mt-1 h-4 w-4 shrink-0 rounded-full border ${
+                            selectedMethod === method.id
+                              ? "border-4 border-[#6C3BFF]"
+                              : "border-[#9CA3AF]"
+                          }`}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {statusMessage && (
+                  <div
+                    role="status"
+                    aria-live="polite"
+                    className={`rounded-xl border p-4 text-sm ${
+                      paymentState === "success"
+                        ? "border-green-200 bg-green-50 text-green-800"
+                        : paymentState === "processing" ||
+                            paymentState === "initiating"
+                          ? "border-[#d9ceff] bg-[#F7F5FF] text-[#4b2aa8]"
+                          : "border-amber-200 bg-amber-50 text-amber-900"
                     }`}
                   >
-                    <div>
-                      <i className="fa-regular fa-credit-card"></i>
+                    <div className="flex items-start gap-2">
+                      {isBusy && (
+                        <i className="fa-solid fa-spinner mt-0.5 animate-spin" />
+                      )}
+                      <p>{statusMessage}</p>
                     </div>
-
-                    <p className="mt-2 break-words text-xs font-[inter] sm:text-sm">
-                      Credit / Debit Card
-                    </p>
+                    {(paymentState === "failed" ||
+                      paymentState === "cancelled") && (
+                      <button
+                        type="button"
+                        onClick={retryPayment}
+                        disabled={isBusy}
+                        className="mt-3 font-bold underline underline-offset-2 disabled:opacity-50"
+                      >
+                        Retry payment
+                      </button>
+                    )}
                   </div>
-
-                  {/* UPI */}
-                  <div
-                    onClick={() => setSelectedMethod("upi")}
-                    className={`h-fit min-w-0 w-full cursor-pointer rounded-2xl border px-3 py-3 transition duration-200 sm:w-50 sm:px-5 ${
-                      selectedMethod === "upi"
-                        ? "border-[#6C3BFF] bg-[#E9E5FC] text-[#6C3BFF]"
-                        : "border-[#E9E5FC] bg-[#F7F5FF] text-[#111827] hover:border-[#6C3BFF]"
-                    }`}
-                  >
-                    <div>
-                      <i className="fa-brands fa-google-pay"></i>
-                    </div>
-
-                    <p className="mt-2 text-xs font-[inter] sm:text-sm">UPI</p>
-                  </div>
-                </div>
-
-                {selectedMethod === "card" ? (
-                  <form className="card-details my-6 flex flex-col gap-3">
-                    <div className="form-control flex flex-1 flex-col my-4">
-                      <label htmlFor="email" className="text-xs font-[inter]">
-                        Card Number
-                      </label>
-
-                      <div className="flex min-w-0  items-center my-1 rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10">
-                        <input
-                          id="phone"
-                          type="text"
-                          placeholder="422422422422"
-                          className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                        />
-                      </div>
-                    </div>
-                    <div className="form-control flex flex-1 flex-col my-4">
-                      <label htmlFor="email" className="text-xs font-[inter]">
-                        Name On Card
-                      </label>
-
-                      <div className="flex min-w-0 my-1 items-center rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10">
-                        <input
-                          id="phone"
-                          type="text"
-                          placeholder="Priya Sharma"
-                          className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                        />
-                      </div>
-                    </div>
-                    <div className="flex flex-col gap-0 sm:flex-row sm:gap-5 my-4">
-                      {/* First Name */}
-                      <div className="form-control flex flex-1 flex-col">
-                        <label
-                          htmlFor="firstName"
-                          className="text-xs font-[inter]"
-                        >
-                          Expiry
-                        </label>
-
-                        <div className="flex min-w-0 my-1 items-center rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10">
-                          <input
-                            id="firstName"
-                            type="text"
-                            placeholder="12/25"
-                            className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Email */}
-                      <div className="form-control flex flex-1 flex-col">
-                        <label htmlFor="email" className="text-xs font-[inter]">
-                          CVV
-                        </label>
-
-                        <div className="flex min-w-0 my-1 items-center rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10">
-                          <input
-                            id="lastname"
-                            type="text"
-                            placeholder="244"
-                            className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-5 flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
-                      <button
-                        className="text-gray-300 hover:text-gray-700 transition text-sm duration-150"
-                        type="button"
-                        onClick={() => setStep(1)}
-                      >
-                        <i className="fa-solid fa-arrow-left"></i>&nbsp;Back To
-                        Address
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setStep(3)}
-                        className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:px-6"
-                      >
-                        Place Order
-                      </button>
-                    </div>
-                  </form>
-                ) : (
-                  <form className="upi-details my-6 flex flex-col gap-3">
-                    <div className="form-control flex flex-1 flex-col my-4">
-                      <label htmlFor="upiId" className="text-xs font-[inter]">
-                        UPI ID
-                      </label>
-
-                      <div className="flex min-w-0 my-1 items-center rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10">
-                        <input
-                          id="upiId"
-                          type="text"
-                          placeholder="yourname@upi"
-                          className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-5 flex flex-col-reverse items-stretch justify-between gap-4 sm:flex-row sm:items-center">
-                      <button
-                        type="button"
-                        onClick={() => setStep(1)}
-                        className="text-gray-300 hover:text-gray-700 transition text-sm duration-150"
-                      >
-                        <i className="fa-solid fa-arrow-left"></i>&nbsp;Back To
-                        Address
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setStep(3)}
-                        className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:px-6"
-                      >
-                        Place Order
-                      </button>
-                    </div>
-                  </form>
                 )}
+
+                <div className="flex flex-col-reverse items-stretch justify-between gap-4 border-t border-[#E5E7EB] pt-5 sm:flex-row sm:items-center">
+                  <button
+                    type="button"
+                    onClick={() => setStep(1)}
+                    className="text-sm text-gray-500 transition hover:text-gray-800"
+                  >
+                    <i className="fa-solid fa-arrow-left" />&nbsp; Back to address
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handlePayNow}
+                    disabled={!canPay || isBusy}
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-48"
+                  >
+                    {isBusy ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin" />
+                        Starting secure payment...
+                      </>
+                    ) : (
+                      selectedMethod === "cod"
+                        ? `Place COD order · ₹${Number(orderData?.total || 0).toLocaleString("en-IN")}`
+                        : `Pay ₹${Number(orderData?.total || 0).toLocaleString("en-IN")}`
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-          <OrderSummary />
+          <OrderSummary orderData={orderData} />
         </div>
       </div>
     </>
