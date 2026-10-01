@@ -69,6 +69,15 @@ export const createOrder = async (req, res) => {
       shippingAddress,
     });
 
+    // Reduce product stock
+    for (const item of items) {
+      const product = await productModel.findById(item.productId);
+
+      product.stockQuantity -= item.quantity;
+
+      await product.save();
+    }
+
     return res.status(201).json({
       message: "Order created successfully",
       order: newOrder,
@@ -82,9 +91,7 @@ export const createOrder = async (req, res) => {
     });
   }
 };
-
 // Get Logged-in User Orders
-
 
 // Get Single Order
 // export const getOrderById = async (req, res) => {
