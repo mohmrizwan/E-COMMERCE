@@ -620,10 +620,31 @@ function Account() {
         // get orders
         // NOTE: confirm this endpoint with your backend, changed it if different
         const orderRes = await axios.get(
-          `${API_URL}/order/myOrders`,
+          `http://localhost:3000/profile/myOrder`,
           getAuthConfig(),
         );
-        setOrders(orderRes.data.orders || []);
+        console.log("ORDER API RESPONSE:", orderRes.data);
+        const formattedOrders = (orderRes.data?.getOrder || []).map((order) => {
+          const firstItem = order?.items?.[0];
+
+          return {
+            id: order?._id || "",
+            date: order?.createdAt
+              ? new Date(order.createdAt).toLocaleDateString("en-IN", {
+                  year: "numeric",
+                  month: "short",
+                  day: "numeric",
+                })
+              : "",
+            product: firstItem?.productId?.name || "Product",
+            image: firstItem?.productId?.image || "",
+            quantity: firstItem?.quantity ?? 0,
+            price: firstItem?.price ?? 0,
+            total: order?.totalAmount ?? 0,
+            status: order?.status || "Pending",
+          };
+        });
+        setOrders(formattedOrders);
       } catch (error) {
         console.log(error);
         if (error.response && error.response.status === 401) {

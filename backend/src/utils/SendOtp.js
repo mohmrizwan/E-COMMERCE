@@ -1,16 +1,20 @@
 import nodemailer from "nodemailer";
 
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: process.env.EMAIL_USER?.trim(),
+    pass: process.env.EMAIL_PASS?.replace(/\s/g, ""),
   },
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 20000,
 });
 
 const sendOtp = async (email, otp) => {
   try {
-    console.log("EMAIL RECEIVED:", email);
     const mailOptions = {
       from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
       to: email,
@@ -57,7 +61,7 @@ const sendOtp = async (email, otp) => {
 
     return true;
   } catch (error) {
-    console.log("Send OTP Error:", error);
+    console.error("Send OTP Error:", error);
     return false;
   }
 };
