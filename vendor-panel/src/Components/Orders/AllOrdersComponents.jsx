@@ -386,9 +386,9 @@ const Orders = () => {
 
             <CTableBody>
               {isLoading && (
-                
-                    <ProductLoader />
-                 
+                <div className="flex justify-center items-center">
+                  <ProductLoader />
+                </div>
               )}
               {!isLoading && orders.length === 0 && (
                 <CTableRow>
