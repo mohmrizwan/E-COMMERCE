@@ -18,6 +18,7 @@ import {
 import axios from "axios";
 import CIcon from "@coreui/icons-react";
 import { cilSearch, cilChevronBottom, cilChevronRight } from "@coreui/icons";
+import ProductLoader from "../ProductLoader";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
@@ -42,14 +43,11 @@ const Orders = () => {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        `${API_URL}/vendor/orders/myOrders`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(`${API_URL}/vendor/orders/myOrders`, {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
 
       console.log("VENDOR ORDERS RESPONSE:", response.data);
 
@@ -76,25 +74,13 @@ const Orders = () => {
           return {
             id: order._id,
 
-            customer:
-              shippingAddress.name ||
-              order.userId?.name ||
-              "Customer",
+            customer: shippingAddress.name || order.userId?.name || "Customer",
 
-            email:
-              order.userId?.email ||
-              shippingAddress.email ||
-              "N/A",
+            email: order.userId?.email || shippingAddress.email || "N/A",
 
-            phone:
-              shippingAddress.phone ||
-              order.userId?.phone ||
-              "N/A",
+            phone: shippingAddress.phone || order.userId?.phone || "N/A",
 
-            products:
-              productNames ||
-              firstItem?.productId?.name ||
-              "Product",
+            products: productNames || firstItem?.productId?.name || "Product",
 
             items: totalItems,
 
@@ -139,9 +125,7 @@ const Orders = () => {
   }, []);
 
   const toggleOrderDetails = (orderId) => {
-    setExpandedOrderId((prev) =>
-      prev === orderId ? null : orderId,
-    );
+    setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
   };
 
   const runOrderAction = async (orderId, action, successMessage) => {
@@ -153,7 +137,9 @@ const Orders = () => {
       await getMyOrders();
       setNotice(successMessage);
     } catch (error) {
-      setNotice(error.response?.data?.message || "Could not update this order.");
+      setNotice(
+        error.response?.data?.message || "Could not update this order.",
+      );
     } finally {
       setLoadingOrderId("");
     }
@@ -350,9 +336,7 @@ const Orders = () => {
         <CCardHeader className="bg-transparent border-0 px-4 py-3">
           <div className="d-flex justify-content-between align-items-center">
             <div>
-              <h5 className="fw-semibold mb-1">
-                All Orders
-              </h5>
+              <h5 className="fw-semibold mb-1">All Orders</h5>
 
               <small className="text-body-secondary">
                 {orders.length} orders found
@@ -402,11 +386,9 @@ const Orders = () => {
 
             <CTableBody>
               {isLoading && (
-                <CTableRow>
-                  <CTableDataCell colSpan={8} className="py-4 text-center">
-                    Loading orders...
-                  </CTableDataCell>
-                </CTableRow>
+                
+                    <ProductLoader />
+                 
               )}
               {!isLoading && orders.length === 0 && (
                 <CTableRow>
@@ -415,355 +397,391 @@ const Orders = () => {
                   </CTableDataCell>
                 </CTableRow>
               )}
-              {!isLoading && orders.map((order) => {
-                const isExpanded =
-                  expandedOrderId === order.id;
+              {!isLoading &&
+                orders.map((order) => {
+                  const isExpanded = expandedOrderId === order.id;
 
-                const statusStyle =
-                  getStatusStyles(order.status);
+                  const statusStyle = getStatusStyles(order.status);
 
-                const locked =
-                  isFinalStatus(order.status);
+                  const locked = isFinalStatus(order.status);
 
-                return (
-                  <React.Fragment key={order.id}>
-                    {/* ===== Normal Row ===== */}
+                  return (
+                    <React.Fragment key={order.id}>
+                      {/* ===== Normal Row ===== */}
 
-                    <CTableRow
-                      onClick={() =>
-                        toggleOrderDetails(order.id)
-                      }
-                      className={`cursor-pointer transition-colors duration-200 border-l-[3px] ${
-                        isExpanded
-                          ? "bg-indigo-50 border-l-indigo-600"
-                          : "border-l-transparent hover:bg-gray-50"
-                      }`}
-                    >
-                      <CTableDataCell className="ps-4">
-                        <CIcon
-                          icon={
-                            isExpanded
-                              ? cilChevronBottom
-                              : cilChevronRight
-                          }
-                          className={`transition-colors duration-200 ${
-                            isExpanded
-                              ? "text-indigo-600"
-                              : "text-gray-400"
-                          }`}
-                        />
-                      </CTableDataCell>
+                      <CTableRow
+                        onClick={() => toggleOrderDetails(order.id)}
+                        className={`cursor-pointer transition-colors duration-200 border-l-[3px] ${
+                          isExpanded
+                            ? "bg-indigo-50 border-l-indigo-600"
+                            : "border-l-transparent hover:bg-gray-50"
+                        }`}
+                      >
+                        <CTableDataCell className="ps-4">
+                          <CIcon
+                            icon={
+                              isExpanded ? cilChevronBottom : cilChevronRight
+                            }
+                            className={`transition-colors duration-200 ${
+                              isExpanded ? "text-indigo-600" : "text-gray-400"
+                            }`}
+                          />
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <span className="fw-semibold text-primary">
-                          {order.id}
-                        </span>
-                      </CTableDataCell>
+                        <CTableDataCell>
+                          <span className="fw-semibold text-primary">
+                            {order.id}
+                          </span>
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <div className="fw-semibold">
-                          {order.customer}
-                        </div>
+                        <CTableDataCell>
+                          <div className="fw-semibold">{order.customer}</div>
 
-                        <small className="text-body-secondary">
-                          {order.email}
-                        </small>
-                      </CTableDataCell>
+                          <small className="text-body-secondary">
+                            {order.email}
+                          </small>
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <div className="fw-medium">
-                          {order.products}
-                        </div>
+                        <CTableDataCell>
+                          <div className="fw-medium">{order.products}</div>
 
-                        <small className="text-body-secondary">
-                          {order.items} items
-                        </small>
-                      </CTableDataCell>
+                          <small className="text-body-secondary">
+                            {order.items} items
+                          </small>
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <span className="fw-bold">
-                          {order.total}
-                        </span>
-                      </CTableDataCell>
+                        <CTableDataCell>
+                          <span className="fw-bold">{order.total}</span>
+                        </CTableDataCell>
 
-                      {/* ===== Status Cell ===== */}
+                        {/* ===== Status Cell ===== */}
 
-                      <CTableDataCell>
-                        <div
-                          className="flex items-center gap-2"
-                          onClick={(e) =>
-                            e.stopPropagation()
-                          }
-                        >
-                          <span
-                            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${statusStyle.badge}`}
+                        <CTableDataCell>
+                          <div
+                            className="flex items-center gap-2"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             <span
-                              className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}
-                            ></span>
+                              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${statusStyle.badge}`}
+                            >
+                              <span
+                                className={`w-1.5 h-1.5 rounded-full ${statusStyle.dot}`}
+                              ></span>
 
-                            {order.status}
-                          </span>
-                          {locked && (
-                            <span className="text-xs text-gray-400 italic">
-                              Final
+                              {order.status}
                             </span>
-                          )}
-                        </div>
-                      </CTableDataCell>
+                            {locked && (
+                              <span className="text-xs text-gray-400 italic">
+                                Final
+                              </span>
+                            )}
+                          </div>
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <span className="text-body-secondary">
-                          {order.date}
-                        </span>
-                      </CTableDataCell>
+                        <CTableDataCell>
+                          <span className="text-body-secondary">
+                            {order.date}
+                          </span>
+                        </CTableDataCell>
 
-                      <CTableDataCell>
-                        <CBadge
-                          color={
-                            order.payment === "Paid"
-                              ? "success"
-                              : "warning"
-                          }
-                          shape="rounded-pill"
-                        >
-                          {order.payment}
-                        </CBadge>
-                      </CTableDataCell>
-                    </CTableRow>
+                        <CTableDataCell>
+                          <CBadge
+                            color={
+                              order.payment === "Paid" ? "success" : "warning"
+                            }
+                            shape="rounded-pill"
+                          >
+                            {order.payment}
+                          </CBadge>
+                        </CTableDataCell>
+                      </CTableRow>
 
-                    {/* ===== Expanded Row ===== */}
+                      {/* ===== Expanded Row ===== */}
 
-                    <CTableRow>
-                      <CTableDataCell
-                        colSpan={8}
-                        className="p-0 border-0"
-                      >
-                        <div
-                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                            isExpanded
-                              ? "max-h-[300px]"
-                              : "max-h-0"
-                          }`}
-                        >
-                          <div className="bg-gray-50 border-t border-gray-200 px-6 py-5">
-                            <CRow>
-                              <CCol md={4}>
-                                <strong className="text-xs uppercase tracking-wide text-gray-500">
-                                  Customer Info
-                                </strong>
+                      <CTableRow>
+                        <CTableDataCell colSpan={8} className="p-0 border-0">
+                          <div
+                            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                              isExpanded ? "max-h-[300px]" : "max-h-0"
+                            }`}
+                          >
+                            <div className="bg-gray-50 border-t border-gray-200 px-6 py-5">
+                              <CRow>
+                                <CCol md={4}>
+                                  <strong className="text-xs uppercase tracking-wide text-gray-500">
+                                    Customer Info
+                                  </strong>
 
-                                <p className="mb-1 mt-2">
-                                  {order.customer}
-                                </p>
+                                  <p className="mb-1 mt-2">{order.customer}</p>
 
-                                <p className="mb-1 text-body-secondary">
-                                  {order.email}
-                                </p>
+                                  <p className="mb-1 text-body-secondary">
+                                    {order.email}
+                                  </p>
 
-                                <p className="mb-0 text-body-secondary">
-                                  {order.phone}
-                                </p>
-                              </CCol>
+                                  <p className="mb-0 text-body-secondary">
+                                    {order.phone}
+                                  </p>
+                                </CCol>
 
-                              <CCol md={4}>
-                                <strong className="text-xs uppercase tracking-wide text-gray-500">
-                                  Shipping Address
-                                </strong>
+                                <CCol md={4}>
+                                  <strong className="text-xs uppercase tracking-wide text-gray-500">
+                                    Shipping Address
+                                  </strong>
 
-                                <p className="mb-0 mt-2 text-body-secondary">
-                                  {order.address ||
-                                    "Address not available"}
-                                </p>
-                              </CCol>
+                                  <p className="mb-0 mt-2 text-body-secondary">
+                                    {order.address || "Address not available"}
+                                  </p>
+                                </CCol>
 
-                              <CCol md={4}>
-                                <strong className="text-xs uppercase tracking-wide text-gray-500">
-                                  Order Info
-                                </strong>
+                                <CCol md={4}>
+                                  <strong className="text-xs uppercase tracking-wide text-gray-500">
+                                    Order Info
+                                  </strong>
 
-                                <p className="mb-1 mt-2 text-body-secondary">
-                                  Items: {order.items}
-                                </p>
+                                  <p className="mb-1 mt-2 text-body-secondary">
+                                    Items: {order.items}
+                                  </p>
 
-                                <p className="mb-1 text-body-secondary">
-                                  Total: {order.total}
-                                </p>
+                                  <p className="mb-1 text-body-secondary">
+                                    Total: {order.total}
+                                  </p>
 
-                                <p className="mb-0 text-body-secondary">
-                                  Payment: {order.payment}
-                                </p>
-                              </CCol>
-                              <CCol md={12}>
-                                <div className="mt-3 border-top pt-3">
-                                  <div className="d-flex flex-wrap gap-2">
-                                    {order.status === "Pending" && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-primary"
-                                        disabled={loadingOrderId === order.id}
-                                        onClick={() => acceptOrder(order)}
-                                      >
-                                        Accept order
-                                      </button>
-                                    )}
-                                    {order.status === "Confirmed" && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-primary"
-                                        disabled={loadingOrderId === order.id}
-                                        onClick={() => markProcessing(order)}
-                                      >
-                                        Mark Processing
-                                      </button>
-                                    )}
-                                    {order.shipment && (
-                                      <button
-                                        type="button"
-                                        className="btn btn-sm btn-outline-secondary"
-                                        disabled={loadingOrderId === order.id}
-                                        onClick={() => loadTracking(order)}
-                                      >
-                                        {loadingOrderId === order.id
-                                          ? "Working..."
-                                          : "Refresh tracking"}
-                                      </button>
-                                    )}
-                                  </div>
+                                  <p className="mb-0 text-body-secondary">
+                                    Payment: {order.payment}
+                                  </p>
+                                </CCol>
+                                <CCol md={12}>
+                                  <div className="mt-3 border-top pt-3">
+                                    <div className="d-flex flex-wrap gap-2">
+                                      {order.status === "Pending" && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-primary"
+                                          disabled={loadingOrderId === order.id}
+                                          onClick={() => acceptOrder(order)}
+                                        >
+                                          Accept order
+                                        </button>
+                                      )}
+                                      {order.status === "Confirmed" && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-primary"
+                                          disabled={loadingOrderId === order.id}
+                                          onClick={() => markProcessing(order)}
+                                        >
+                                          Mark Processing
+                                        </button>
+                                      )}
+                                      {order.shipment && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-outline-secondary"
+                                          disabled={loadingOrderId === order.id}
+                                          onClick={() => loadTracking(order)}
+                                        >
+                                          {loadingOrderId === order.id
+                                            ? "Working..."
+                                            : "Refresh tracking"}
+                                        </button>
+                                      )}
+                                    </div>
 
-                                  {order.shipment && order.status !== "Shipped" && (
-                                    <div className="mt-3">
-                                      <div className="row g-2 align-items-end">
-                                        <div className="col-md-4">
-                                          <label
-                                            className="form-label mb-1"
-                                            htmlFor={`pickup-postcode-${order.id}`}
-                                          >
-                                            Pickup postcode
-                                          </label>
-                                          <CFormInput
-                                            id={`pickup-postcode-${order.id}`}
-                                            inputMode="numeric"
-                                            maxLength={6}
-                                            placeholder="Optional if server-configured"
-                                            value={pickupPostcode}
-                                            onChange={(event) =>
-                                              setPickupPostcode(
-                                                event.target.value.replace(/\D/g, ""),
-                                              )
-                                            }
-                                          />
-                                        </div>
-                                        <div className="col-md-auto">
-                                          <button
-                                            type="button"
-                                            className="btn btn-sm btn-outline-primary"
-                                            disabled={loadingOrderId === order.id}
-                                            onClick={() => loadCouriers(order)}
-                                          >
-                                            Get courier options
-                                          </button>
-                                        </div>
-                                        {courierOptions[order.id]?.length > 0 && (
-                                          <>
-                                            <div className="col-md-5">
+                                    {order.shipment &&
+                                      order.status !== "Shipped" && (
+                                        <div className="mt-3">
+                                          <div className="row g-2 align-items-end">
+                                            <div className="col-md-4">
                                               <label
                                                 className="form-label mb-1"
-                                                htmlFor={`courier-${order.id}`}
+                                                htmlFor={`pickup-postcode-${order.id}`}
                                               >
-                                                Courier
+                                                Pickup postcode
                                               </label>
-                                              <CFormSelect
-                                                id={`courier-${order.id}`}
-                                                value={selectedCouriers[order.id] || ""}
+                                              <CFormInput
+                                                id={`pickup-postcode-${order.id}`}
+                                                inputMode="numeric"
+                                                maxLength={6}
+                                                placeholder="Optional if server-configured"
+                                                value={pickupPostcode}
                                                 onChange={(event) =>
-                                                  setSelectedCouriers((current) => ({
-                                                    ...current,
-                                                    [order.id]: event.target.value,
-                                                  }))
+                                                  setPickupPostcode(
+                                                    event.target.value.replace(
+                                                      /\D/g,
+                                                      "",
+                                                    ),
+                                                  )
                                                 }
-                                              >
-                                                <option value="">Select courier</option>
-                                                {courierOptions[order.id].map((courier) => (
-                                                  <option
-                                                    key={courier.courierCompanyId}
-                                                    value={courier.courierCompanyId}
-                                                  >
-                                                    {courier.courierName} · {courier.rate == null ? "Rate unavailable" : `₹${courier.rate}`} · {courier.estimatedDelivery || "ETA unavailable"}
-                                                  </option>
-                                                ))}
-                                              </CFormSelect>
+                                              />
                                             </div>
                                             <div className="col-md-auto">
                                               <button
                                                 type="button"
                                                 className="btn btn-sm btn-outline-primary"
                                                 disabled={
-                                                  loadingOrderId === order.id ||
-                                                  !selectedCouriers[order.id]
+                                                  loadingOrderId === order.id
                                                 }
-                                                onClick={() => assignCourier(order)}
+                                                onClick={() =>
+                                                  loadCouriers(order)
+                                                }
                                               >
-                                                Assign and generate AWB
+                                                Get courier options
                                               </button>
                                             </div>
-                                          </>
+                                            {courierOptions[order.id]?.length >
+                                              0 && (
+                                              <>
+                                                <div className="col-md-5">
+                                                  <label
+                                                    className="form-label mb-1"
+                                                    htmlFor={`courier-${order.id}`}
+                                                  >
+                                                    Courier
+                                                  </label>
+                                                  <CFormSelect
+                                                    id={`courier-${order.id}`}
+                                                    value={
+                                                      selectedCouriers[
+                                                        order.id
+                                                      ] || ""
+                                                    }
+                                                    onChange={(event) =>
+                                                      setSelectedCouriers(
+                                                        (current) => ({
+                                                          ...current,
+                                                          [order.id]:
+                                                            event.target.value,
+                                                        }),
+                                                      )
+                                                    }
+                                                  >
+                                                    <option value="">
+                                                      Select courier
+                                                    </option>
+                                                    {courierOptions[
+                                                      order.id
+                                                    ].map((courier) => (
+                                                      <option
+                                                        key={
+                                                          courier.courierCompanyId
+                                                        }
+                                                        value={
+                                                          courier.courierCompanyId
+                                                        }
+                                                      >
+                                                        {courier.courierName} ·{" "}
+                                                        {courier.rate == null
+                                                          ? "Rate unavailable"
+                                                          : `₹${courier.rate}`}{" "}
+                                                        ·{" "}
+                                                        {courier.estimatedDelivery ||
+                                                          "ETA unavailable"}
+                                                      </option>
+                                                    ))}
+                                                  </CFormSelect>
+                                                </div>
+                                                <div className="col-md-auto">
+                                                  <button
+                                                    type="button"
+                                                    className="btn btn-sm btn-outline-primary"
+                                                    disabled={
+                                                      loadingOrderId ===
+                                                        order.id ||
+                                                      !selectedCouriers[
+                                                        order.id
+                                                      ]
+                                                    }
+                                                    onClick={() =>
+                                                      assignCourier(order)
+                                                    }
+                                                  >
+                                                    Assign and generate AWB
+                                                  </button>
+                                                </div>
+                                              </>
+                                            )}
+                                          </div>
+
+                                          {order.shipment.awbCode && (
+                                            <p className="mt-2 mb-0 small text-body-secondary">
+                                              {order.shipment.courierName ||
+                                                "Courier"}{" "}
+                                              · AWB {order.shipment.awbCode}
+                                            </p>
+                                          )}
+
+                                          {order.status === "Processing" &&
+                                            order.shipment.awbCode &&
+                                            order.shipment.courierCompanyId && (
+                                              <button
+                                                type="button"
+                                                className="btn btn-sm btn-success mt-3"
+                                                disabled={
+                                                  loadingOrderId === order.id
+                                                }
+                                                onClick={() => shipOrder(order)}
+                                              >
+                                                Ship order
+                                              </button>
+                                            )}
+                                        </div>
+                                      )}
+
+                                    {trackingByOrder[order.id] && (
+                                      <div className="mt-3 rounded border p-3">
+                                        <p className="mb-1 small">
+                                          Status:{" "}
+                                          <strong>
+                                            {trackingByOrder[order.id]
+                                              .currentStatus || order.status}
+                                          </strong>
+                                        </p>
+                                        <p className="mb-1 small">
+                                          Courier:{" "}
+                                          {trackingByOrder[order.id]
+                                            .courierName || "Not assigned"}{" "}
+                                          · AWB{" "}
+                                          {trackingByOrder[order.id].awbCode ||
+                                            "Not assigned"}
+                                        </p>
+                                        {trackingByOrder[order.id]
+                                          .estimatedDelivery && (
+                                          <p className="mb-1 small">
+                                            Estimated delivery:{" "}
+                                            {
+                                              trackingByOrder[order.id]
+                                                .estimatedDelivery
+                                            }
+                                          </p>
+                                        )}
+                                        {trackingByOrder[order.id].history?.map(
+                                          (event, index) => (
+                                            <p
+                                              key={`${event.date || event.activity || "event"}-${index}`}
+                                              className="mb-0 small text-body-secondary"
+                                            >
+                                              {[
+                                                event.activity || event.status,
+                                                event.location,
+                                                event.date,
+                                              ]
+                                                .filter(Boolean)
+                                                .join(" · ")}
+                                            </p>
+                                          ),
                                         )}
                                       </div>
-
-                                      {order.shipment.awbCode && (
-                                        <p className="mt-2 mb-0 small text-body-secondary">
-                                          {order.shipment.courierName || "Courier"} · AWB {order.shipment.awbCode}
-                                        </p>
-                                      )}
-
-                                      {order.status === "Processing" &&
-                                        order.shipment.awbCode &&
-                                        order.shipment.courierCompanyId && (
-                                          <button
-                                            type="button"
-                                            className="btn btn-sm btn-success mt-3"
-                                            disabled={loadingOrderId === order.id}
-                                            onClick={() => shipOrder(order)}
-                                          >
-                                            Ship order
-                                          </button>
-                                        )}
-                                    </div>
-                                  )}
-
-                                  {trackingByOrder[order.id] && (
-                                    <div className="mt-3 rounded border p-3">
-                                      <p className="mb-1 small">
-                                        Status: <strong>{trackingByOrder[order.id].currentStatus || order.status}</strong>
-                                      </p>
-                                      <p className="mb-1 small">
-                                        Courier: {trackingByOrder[order.id].courierName || "Not assigned"} · AWB {trackingByOrder[order.id].awbCode || "Not assigned"}
-                                      </p>
-                                      {trackingByOrder[order.id].estimatedDelivery && (
-                                        <p className="mb-1 small">
-                                          Estimated delivery: {trackingByOrder[order.id].estimatedDelivery}
-                                        </p>
-                                      )}
-                                      {trackingByOrder[order.id].history?.map((event, index) => (
-                                        <p key={`${event.date || event.activity || "event"}-${index}`} className="mb-0 small text-body-secondary">
-                                          {[event.activity || event.status, event.location, event.date]
-                                            .filter(Boolean)
-                                            .join(" · ")}
-                                        </p>
-                                      ))}
-                                    </div>
-                                  )}
-                                </div>
-                              </CCol>
-                            </CRow>
+                                    )}
+                                  </div>
+                                </CCol>
+                              </CRow>
+                            </div>
                           </div>
-                        </div>
-                      </CTableDataCell>
-                    </CTableRow>
-                  </React.Fragment>
-                );
-              })}
+                        </CTableDataCell>
+                      </CTableRow>
+                    </React.Fragment>
+                  );
+                })}
             </CTableBody>
           </CTable>
         </CCardBody>
