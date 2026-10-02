@@ -4,10 +4,12 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useState, useEffect } from "react";
 import Loader from "./Loader";
+
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(true);
+
   const getProducts = async () => {
     try {
       const respone = await axios.get(
@@ -29,6 +31,7 @@ const Product = () => {
   useEffect(() => {
     getProducts();
   }, []);
+
   return (
     <div className="product-wrapper my-8 sm:my-12 md:my-15">
       <Snackbar
@@ -46,6 +49,7 @@ const Product = () => {
           {errorMessage}
         </Alert>
       </Snackbar>
+
       <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
         {/* Product Header */}
         <div className="product-head flex items-center justify-between gap-3">
@@ -72,10 +76,20 @@ const Product = () => {
 
         {/* Product Cards */}
         <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {loading && <p className="col-span-full text-sm text-[#6B7280]"><Loader/></p>}
+          {/* Loading */}
+          {loading &&
+            Array.from({ length: 4 }).map((_, index) => (
+              <Loader key={index} />
+            ))}
+
+          {/* Empty State */}
           {!loading && !errorMessage && products.length === 0 && (
-            <p className="col-span-full text-sm text-[#6B7280]">No active products available.</p>
+            <p className="col-span-full text-sm text-[#6B7280]">
+              No active products available.
+            </p>
           )}
+
+          {/* Products */}
           {products.map((product) => (
             <div
               key={product._id}
@@ -150,7 +164,11 @@ const Product = () => {
                 </div>
 
                 {/* Shipping */}
-                <p className={`mt-auto font-[inter] text-[9px] sm:text-xs ${product.inStock ? "text-green-600" : "text-red-500"}`}>
+                <p
+                  className={`mt-auto font-[inter] text-[9px] sm:text-xs ${
+                    product.inStock ? "text-green-600" : "text-red-500"
+                  }`}
+                >
                   {product.inStock ? "In stock" : "Out of stock"}
                 </p>
               </div>
