@@ -386,7 +386,7 @@ const Orders = () => {
 
             <CTableBody>
               {isLoading && (
-                <div className="flex justify-center items-center">
+                <div className="w-full flex justify-center items-center">
                   <ProductLoader />
                 </div>
               )}
