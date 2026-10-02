@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
 const paymentMethods = [
   // {
   //   id: "upi",
@@ -89,7 +90,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/payment/get-payment",
+        `${API_URL}/payment/get-payment`,
         {
           amount: orderData.total,
         },
@@ -148,7 +149,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
 
         try {
           const verifyResponse = await axios.post(
-            "http://localhost:3000/payment/verify",
+            `${API_URL}/payment/verify`,
             {
               razorpay_order_id,
               razorpay_payment_id,
@@ -160,7 +161,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
 
           if (verifyResponse.data.success) {
             const orderResponse = await axios.post(
-              "http://localhost:3000/order/createOrder",
+              `${API_URL}/order/createOrder`,
               {
                 items: orderData.items,
                 shippingAddress: orderData.address,

@@ -19,6 +19,8 @@ import axios from "axios";
 import CIcon from "@coreui/icons-react";
 import { cilSearch, cilChevronBottom, cilChevronRight } from "@coreui/icons";
 
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
+
 const Orders = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -28,7 +30,7 @@ const Orders = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        "http://localhost:3000/vendor/orders/myOrders",
+        `${API_URL}/vendor/orders/myOrders`,
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,

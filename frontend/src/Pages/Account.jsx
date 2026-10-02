@@ -620,7 +620,7 @@ function Account() {
         // get orders
         // NOTE: confirm this endpoint with your backend, changed it if different
         const orderRes = await axios.get(
-          `http://localhost:3000/profile/myOrder`,
+          `${API_URL}/profile/myOrder`,
           getAuthConfig(),
         );
         console.log("ORDER API RESPONSE:", orderRes.data);
