@@ -24,6 +24,19 @@ const API_URL = "https://ecommerceba-6dtt.onrender.com";
 const Orders = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
   const [orders, setOrders] = useState([]);
+  const [courierOptions, setCourierOptions] = useState({});
+  const [selectedCouriers, setSelectedCouriers] = useState({});
+  const [trackingByOrder, setTrackingByOrder] = useState({});
+  const [pickupPostcode, setPickupPostcode] = useState("");
+  const [loadingOrderId, setLoadingOrderId] = useState("");
+  const [notice, setNotice] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  const getVendorConfig = () => ({
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+    },
+  });
 
   const getMyOrders = async () => {
     try {
@@ -103,6 +116,7 @@ const Orders = () => {
             ]
               .filter(Boolean)
               .join(", "),
+            shipment: order.shipment || null,
           };
         });
 
@@ -115,6 +129,8 @@ const Orders = () => {
       console.log("Backend error:", error.response?.data);
 
       setOrders([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -128,17 +144,110 @@ const Orders = () => {
     );
   };
 
-  const handleStatusChange = (orderId, newStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId
-          ? { ...order, status: newStatus }
-          : order,
-      ),
+  const runOrderAction = async (orderId, action, successMessage) => {
+    setLoadingOrderId(orderId);
+    setNotice("");
+
+    try {
+      await action();
+      await getMyOrders();
+      setNotice(successMessage);
+    } catch (error) {
+      setNotice(error.response?.data?.message || "Could not update this order.");
+    } finally {
+      setLoadingOrderId("");
+    }
+  };
+
+  const acceptOrder = (order) =>
+    runOrderAction(
+      order.id,
+      () =>
+        axios.patch(
+          `${API_URL}/vendor/orders/accept/${order.id}`,
+          {},
+          getVendorConfig(),
+        ),
+      "Order accepted and shipment created.",
     );
 
-    console.log("Order:", orderId);
-    console.log("New Status:", newStatus);
+  const markProcessing = (order) =>
+    runOrderAction(
+      order.id,
+      () =>
+        axios.patch(
+          `${API_URL}/vendor/orders/processing/${order.id}`,
+          {},
+          getVendorConfig(),
+        ),
+      "Order marked as Processing.",
+    );
+
+  const loadCouriers = async (order) => {
+    setLoadingOrderId(order.id);
+    setNotice("");
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/couriers`,
+        {
+          ...getVendorConfig(),
+          params: pickupPostcode ? { pickupPostcode } : undefined,
+        },
+      );
+      setCourierOptions((current) => ({
+        ...current,
+        [order.id]: response.data.couriers || [],
+      }));
+    } catch (error) {
+      setNotice(error.response?.data?.message || "Could not load couriers.");
+    } finally {
+      setLoadingOrderId("");
+    }
+  };
+
+  const assignCourier = (order) =>
+    runOrderAction(
+      order.id,
+      () =>
+        axios.patch(
+          `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/courier`,
+          { courierCompanyId: selectedCouriers[order.id] },
+          getVendorConfig(),
+        ),
+      "Courier assigned and AWB generated.",
+    );
+
+  const shipOrder = (order) =>
+    runOrderAction(
+      order.id,
+      () =>
+        axios.post(
+          `${API_URL}/vendor/orders/ship/${order.id}`,
+          {},
+          getVendorConfig(),
+        ),
+      "Pickup requested and order marked as Shipped.",
+    );
+
+  const loadTracking = async (order) => {
+    setLoadingOrderId(order.id);
+    setNotice("");
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/tracking`,
+        getVendorConfig(),
+      );
+      setTrackingByOrder((current) => ({
+        ...current,
+        [order.id]: response.data.tracking,
+      }));
+    } catch (error) {
+      setNotice(error.response?.data?.message || "Could not load tracking.");
+    } finally {
+      setLoadingOrderId("");
+    }
   };
 
   const getStatusStyles = (status) => {
@@ -230,6 +339,12 @@ const Orders = () => {
         </CCardBody>
       </CCard>
 
+      {notice && (
+        <div className="alert alert-info py-2" role="status">
+          {notice}
+        </div>
+      )}
+
       {/* ================= Orders Table ================= */}
       <CCard className="border-0 shadow-sm">
         <CCardHeader className="bg-transparent border-0 px-4 py-3">
@@ -286,7 +401,21 @@ const Orders = () => {
             </CTableHead>
 
             <CTableBody>
-              {orders.map((order) => {
+              {isLoading && (
+                <CTableRow>
+                  <CTableDataCell colSpan={8} className="py-4 text-center">
+                    Loading orders...
+                  </CTableDataCell>
+                </CTableRow>
+              )}
+              {!isLoading && orders.length === 0 && (
+                <CTableRow>
+                  <CTableDataCell colSpan={8} className="py-4 text-center">
+                    No orders found.
+                  </CTableDataCell>
+                </CTableRow>
+              )}
+              {!isLoading && orders.map((order) => {
                 const isExpanded =
                   expandedOrderId === order.id;
 
@@ -375,39 +504,7 @@ const Orders = () => {
 
                             {order.status}
                           </span>
-
-                          {!locked ? (
-                            <select
-                              value={order.status}
-                              onChange={(e) =>
-                                handleStatusChange(
-                                  order.id,
-                                  e.target.value,
-                                )
-                              }
-                              className="text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-200 cursor-pointer hover:border-gray-300 transition-colors"
-                            >
-                              <option value="Pending">
-                                Pending
-                              </option>
-
-                              <option value="Processing">
-                                Processing
-                              </option>
-
-                              <option value="Shipped">
-                                Shipped
-                              </option>
-
-                              <option value="Delivered">
-                                Delivered
-                              </option>
-
-                              <option value="Cancelled">
-                                Cancelled
-                              </option>
-                            </select>
-                          ) : (
+                          {locked && (
                             <span className="text-xs text-gray-400 italic">
                               Final
                             </span>
@@ -496,6 +593,168 @@ const Orders = () => {
                                 <p className="mb-0 text-body-secondary">
                                   Payment: {order.payment}
                                 </p>
+                              </CCol>
+                              <CCol md={12}>
+                                <div className="mt-3 border-top pt-3">
+                                  <div className="d-flex flex-wrap gap-2">
+                                    {order.status === "Pending" && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-primary"
+                                        disabled={loadingOrderId === order.id}
+                                        onClick={() => acceptOrder(order)}
+                                      >
+                                        Accept order
+                                      </button>
+                                    )}
+                                    {order.status === "Confirmed" && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-primary"
+                                        disabled={loadingOrderId === order.id}
+                                        onClick={() => markProcessing(order)}
+                                      >
+                                        Mark Processing
+                                      </button>
+                                    )}
+                                    {order.shipment && (
+                                      <button
+                                        type="button"
+                                        className="btn btn-sm btn-outline-secondary"
+                                        disabled={loadingOrderId === order.id}
+                                        onClick={() => loadTracking(order)}
+                                      >
+                                        {loadingOrderId === order.id
+                                          ? "Working..."
+                                          : "Refresh tracking"}
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  {order.shipment && order.status !== "Shipped" && (
+                                    <div className="mt-3">
+                                      <div className="row g-2 align-items-end">
+                                        <div className="col-md-4">
+                                          <label
+                                            className="form-label mb-1"
+                                            htmlFor={`pickup-postcode-${order.id}`}
+                                          >
+                                            Pickup postcode
+                                          </label>
+                                          <CFormInput
+                                            id={`pickup-postcode-${order.id}`}
+                                            inputMode="numeric"
+                                            maxLength={6}
+                                            placeholder="Optional if server-configured"
+                                            value={pickupPostcode}
+                                            onChange={(event) =>
+                                              setPickupPostcode(
+                                                event.target.value.replace(/\D/g, ""),
+                                              )
+                                            }
+                                          />
+                                        </div>
+                                        <div className="col-md-auto">
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm btn-outline-primary"
+                                            disabled={loadingOrderId === order.id}
+                                            onClick={() => loadCouriers(order)}
+                                          >
+                                            Get courier options
+                                          </button>
+                                        </div>
+                                        {courierOptions[order.id]?.length > 0 && (
+                                          <>
+                                            <div className="col-md-5">
+                                              <label
+                                                className="form-label mb-1"
+                                                htmlFor={`courier-${order.id}`}
+                                              >
+                                                Courier
+                                              </label>
+                                              <CFormSelect
+                                                id={`courier-${order.id}`}
+                                                value={selectedCouriers[order.id] || ""}
+                                                onChange={(event) =>
+                                                  setSelectedCouriers((current) => ({
+                                                    ...current,
+                                                    [order.id]: event.target.value,
+                                                  }))
+                                                }
+                                              >
+                                                <option value="">Select courier</option>
+                                                {courierOptions[order.id].map((courier) => (
+                                                  <option
+                                                    key={courier.courierCompanyId}
+                                                    value={courier.courierCompanyId}
+                                                  >
+                                                    {courier.courierName} · {courier.rate == null ? "Rate unavailable" : `₹${courier.rate}`} · {courier.estimatedDelivery || "ETA unavailable"}
+                                                  </option>
+                                                ))}
+                                              </CFormSelect>
+                                            </div>
+                                            <div className="col-md-auto">
+                                              <button
+                                                type="button"
+                                                className="btn btn-sm btn-outline-primary"
+                                                disabled={
+                                                  loadingOrderId === order.id ||
+                                                  !selectedCouriers[order.id]
+                                                }
+                                                onClick={() => assignCourier(order)}
+                                              >
+                                                Assign and generate AWB
+                                              </button>
+                                            </div>
+                                          </>
+                                        )}
+                                      </div>
+
+                                      {order.shipment.awbCode && (
+                                        <p className="mt-2 mb-0 small text-body-secondary">
+                                          {order.shipment.courierName || "Courier"} · AWB {order.shipment.awbCode}
+                                        </p>
+                                      )}
+
+                                      {order.status === "Processing" &&
+                                        order.shipment.awbCode &&
+                                        order.shipment.courierCompanyId && (
+                                          <button
+                                            type="button"
+                                            className="btn btn-sm btn-success mt-3"
+                                            disabled={loadingOrderId === order.id}
+                                            onClick={() => shipOrder(order)}
+                                          >
+                                            Ship order
+                                          </button>
+                                        )}
+                                    </div>
+                                  )}
+
+                                  {trackingByOrder[order.id] && (
+                                    <div className="mt-3 rounded border p-3">
+                                      <p className="mb-1 small">
+                                        Status: <strong>{trackingByOrder[order.id].currentStatus || order.status}</strong>
+                                      </p>
+                                      <p className="mb-1 small">
+                                        Courier: {trackingByOrder[order.id].courierName || "Not assigned"} · AWB {trackingByOrder[order.id].awbCode || "Not assigned"}
+                                      </p>
+                                      {trackingByOrder[order.id].estimatedDelivery && (
+                                        <p className="mb-1 small">
+                                          Estimated delivery: {trackingByOrder[order.id].estimatedDelivery}
+                                        </p>
+                                      )}
+                                      {trackingByOrder[order.id].history?.map((event, index) => (
+                                        <p key={`${event.date || event.activity || "event"}-${index}`} className="mb-0 small text-body-secondary">
+                                          {[event.activity || event.status, event.location, event.date]
+                                            .filter(Boolean)
+                                            .join(" · ")}
+                                        </p>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
                               </CCol>
                             </CRow>
                           </div>

@@ -5,7 +5,6 @@ import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import Dotter from "../Components/Dotter";
-import { products } from "../data/products";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
@@ -43,6 +42,8 @@ const addressDefaults = [];
 const orderDefaults = [];
 
 const statusStyles = {
+  Pending: "bg-slate-50 text-slate-700 ring-slate-200",
+  Confirmed: "bg-indigo-50 text-indigo-700 ring-indigo-100",
   Delivered: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   Processing: "bg-amber-50 text-amber-700 ring-amber-100",
   Shipped: "bg-sky-50 text-sky-700 ring-sky-100",
@@ -407,8 +408,8 @@ function AddressesPage({
   );
 }
 
-function OrderTracking({ order, onClose }) {
-  const steps = ["Processing", "Shipped", "Out for delivery", "Delivered"];
+function OrderTracking({ order, tracking, isLoading, onClose }) {
+  const steps = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
   const currentStep = steps.indexOf(order.status);
   return (
     <div className="mt-5 rounded-xl border border-[#d9ceff] bg-[#faf9ff] p-4 text-sm text-slate-600">
@@ -439,6 +440,32 @@ function OrderTracking({ order, onClose }) {
               );
             })}
           </div>
+          {isLoading && (
+            <p className="mt-4 text-xs text-slate-500">Loading live tracking...</p>
+          )}
+          {tracking && (
+            <div className="mt-4 border-t border-slate-200 pt-4">
+              <div className="grid gap-2 sm:grid-cols-2">
+                <p>Status: <strong>{tracking.currentStatus || order.status}</strong></p>
+                <p>Courier: <strong>{tracking.courierName || "Not assigned"}</strong></p>
+                <p>AWB: <strong>{tracking.awbCode || "Not assigned"}</strong></p>
+                {tracking.estimatedDelivery && (
+                  <p>Estimated delivery: <strong>{tracking.estimatedDelivery}</strong></p>
+                )}
+              </div>
+              {tracking.history?.length > 0 && (
+                <ul className="mt-3 space-y-2">
+                  {tracking.history.map((event, index) => (
+                    <li key={`${event.date || event.activity || "event"}-${index}`}>
+                      {[event.activity || event.status, event.location, event.date]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
         <button
           onClick={onClose}
@@ -452,7 +479,7 @@ function OrderTracking({ order, onClose }) {
   );
 }
 
-function OrdersPage({ orders, selectedOrder, onTrack, onCancel, onClose }) {
+function OrdersPage({ orders, selectedOrder, tracking, isTracking, onTrack, onClose }) {
   return (
     <>
       <PageIntro eyebrow="Purchase history" title="My Orders">
@@ -505,14 +532,6 @@ function OrdersPage({ orders, selectedOrder, onTrack, onCancel, onClose }) {
                   >
                     Track Order
                   </button>
-                  {["Processing", "Shipped"].includes(order.status) && (
-                    <button
-                      onClick={() => onCancel(order.id)}
-                      className="min-h-10 rounded-lg border border-rose-200 px-3.5 text-sm font-bold text-rose-600"
-                    >
-                      Cancel Order
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
@@ -525,7 +544,12 @@ function OrdersPage({ orders, selectedOrder, onTrack, onCancel, onClose }) {
         </div>
       )}
       {selectedOrder && (
-        <OrderTracking order={selectedOrder} onClose={onClose} />
+        <OrderTracking
+          order={selectedOrder}
+          tracking={tracking}
+          isLoading={isTracking}
+          onClose={onClose}
+        />
       )}
     </>
   );
@@ -580,6 +604,8 @@ function Account() {
   const [editingAddress, setEditingAddress] = useState(null);
   const [orders, setOrders] = useState(orderDefaults);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [tracking, setTracking] = useState(null);
+  const [isTracking, setIsTracking] = useState(false);
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [loadingAction, setLoadingAction] = useState("");
@@ -744,16 +770,24 @@ function Account() {
     }
   };
 
-  // NOTE: this only updates status on frontend for now, hook this up to
-  // a real cancel-order API route when you have one (e.g. PUT /order/cancel/:id)
-  const cancelOrder = (id) => {
-    setOrders(
-      orders.map((item) =>
-        item.id === id ? { ...item, status: "Cancelled" } : item,
-      ),
-    );
-    setSelectedOrder(null);
-    showNotice("Order cancelled successfully");
+  const trackOrder = async (order) => {
+    setSelectedOrder(order);
+    setTracking(null);
+    setIsTracking(true);
+
+    try {
+      const response = await axios.get(
+        `${API_URL}/shiprocket/shipments/${order.id}/tracking`,
+        getAuthConfig(),
+      );
+      setTracking(response.data?.tracking || null);
+    } catch (error) {
+      showNotice(
+        error.response?.data?.message || "Tracking is not available yet.",
+      );
+    } finally {
+      setIsTracking(false);
+    }
   };
 
   const saveProfile = async (data) => {
@@ -849,9 +883,13 @@ function Account() {
                 <OrdersPage
                   orders={orders}
                   selectedOrder={selectedOrder}
-                  onTrack={setSelectedOrder}
-                  onCancel={cancelOrder}
-                  onClose={() => setSelectedOrder(null)}
+                  tracking={tracking}
+                  isTracking={isTracking}
+                  onTrack={trackOrder}
+                  onClose={() => {
+                    setSelectedOrder(null);
+                    setTracking(null);
+                  }}
                 />
               )}
               {activePage === "addresses" && (
