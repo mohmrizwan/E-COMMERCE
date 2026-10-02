@@ -3,6 +3,7 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useState, useEffect } from "react";
+import Loader from "./Loader";
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -71,7 +72,7 @@ const Product = () => {
 
         {/* Product Cards */}
         <div className="product-cards my-6 grid grid-cols-2 gap-3 sm:my-8 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {loading && <p className="col-span-full text-sm text-[#6B7280]">Loading products...</p>}
+          {loading && <p className="col-span-full text-sm text-[#6B7280]"><Loader/></p>}
           {!loading && !errorMessage && products.length === 0 && (
             <p className="col-span-full text-sm text-[#6B7280]">No active products available.</p>
           )}
