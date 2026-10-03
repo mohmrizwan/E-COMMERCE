@@ -5,6 +5,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useState } from "react";
 import { useCart } from "../Components/CartContext";
+import FavoriteButton from "./FavoriteButton";
 
 // https://ecommerceba-6dtt.onrender.com/products/allProducts
 const Product = () => {
@@ -95,12 +96,7 @@ const Product = () => {
                 </div>
 
                 {/* Wishlist */}
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 hover:bg-[#6C3BFF] hover:text-white sm:right-3 sm:top-3 sm:h-9 sm:w-9"
-                >
-                  <i className="fa-regular fa-heart text-[11px] sm:text-sm"></i>
-                </button>
+                <FavoriteButton product={product} />
               </div>
 
               {/* ================= PRODUCT CONTENT ================= */}

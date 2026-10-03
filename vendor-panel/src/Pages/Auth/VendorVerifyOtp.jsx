@@ -12,6 +12,7 @@ const VendorVerifyOtp = () => {
 
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isResending, setIsResending] = useState(false);
 
   const vendorId = location.state?.vendorId;
   const email = location.state?.email;
@@ -48,6 +49,8 @@ const VendorVerifyOtp = () => {
   };
 
   const handleResend = async () => {
+    if (isResending) return;
+    setIsResending(true);
     try {
       const response = await axios.post(
         "https://ecommerceba-6dtt.onrender.com/vendor/resend",
@@ -63,6 +66,8 @@ const VendorVerifyOtp = () => {
         error.response?.data?.message || "Failed to resend OTP"
       );
       setMessage("");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -116,9 +121,10 @@ const VendorVerifyOtp = () => {
           <button
             type="button"
             onClick={handleResend}
-            className="font-semibold text-blue-600 hover:underline"
+            disabled={isResending}
+            className="font-semibold text-blue-600 hover:underline disabled:cursor-wait disabled:opacity-60"
           >
-            Resend OTP
+            {isResending ? "Sending..." : "Resend OTP"}
           </button>
         </div>
       </AuthLayout>

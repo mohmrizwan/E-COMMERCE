@@ -12,6 +12,7 @@ import {
   CFormTextarea,
   CRow,
   CButton,
+  CSpinner,
 } from "@coreui/react";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
@@ -27,6 +28,7 @@ const VendorProfile = () => {
   const [pickupAddress, setPickupAddress] = useState(emptyPickupAddress);
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
+  const [isLoadingPickupAddress, setIsLoadingPickupAddress] = useState(true);
   const [isSavingPickupAddress, setIsSavingPickupAddress] = useState(false);
 
   useEffect(() => {
@@ -51,6 +53,9 @@ const VendorProfile = () => {
             error.response?.data?.message || "Could not load the pickup address.",
           );
         }
+      })
+      .finally(() => {
+        if (isActive) setIsLoadingPickupAddress(false);
       });
 
     return () => {
@@ -163,7 +168,14 @@ const VendorProfile = () => {
           </p>
         </CCardHeader>
         <CCardBody className="px-4">
-          <CRow className="g-3">
+          {isLoadingPickupAddress ? (
+            <div role="status" className="flex min-h-28 items-center justify-center gap-2 text-sm text-body-secondary">
+              <CSpinner size="sm" aria-hidden="true" />
+              Loading pickup address...
+            </div>
+          ) : (
+            <>
+              <CRow className="g-3">
             <CCol md={6}>
               <CFormLabel>Registered Shiprocket pickup location name</CFormLabel>
               <CFormInput
@@ -232,7 +244,7 @@ const VendorProfile = () => {
                 }
               />
             </CCol>
-          </CRow>
+              </CRow>
           {(pickupAddressError || pickupAddressMessage) && (
             <p
               role={pickupAddressError ? "alert" : "status"}
@@ -245,11 +257,13 @@ const VendorProfile = () => {
             <CButton
               color="primary"
               onClick={savePickupAddress}
-              disabled={isSavingPickupAddress}
+              disabled={isLoadingPickupAddress || isSavingPickupAddress}
             >
               {isSavingPickupAddress ? "Saving..." : "Save pickup address"}
             </CButton>
           </div>
+            </>
+          )}
         </CCardBody>
       </CCard>
 

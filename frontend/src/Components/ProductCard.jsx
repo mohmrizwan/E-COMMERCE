@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import FavoriteButton from "./FavoriteButton";
 
 const ProductCard = ({ product }) => {
   const discount = Number(product.discount) || 0;
@@ -12,9 +13,7 @@ const ProductCard = ({ product }) => {
           <span className="w-fit rounded-full bg-[#6c3bff] px-3 py-1 text-[11px] font-semibold text-white">{product.status}</span>
           {discount > 0 && <span className="w-fit rounded-full bg-[#ffb020] px-3 py-1 text-[11px] font-semibold text-black">{discount}% OFF</span>}
         </div>
-        <button type="button" aria-label={`Add ${product.name} to wishlist`} className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#6b7280] shadow-sm transition hover:text-red-500">
-          <i className="fa-regular fa-heart" />
-        </button>
+        <FavoriteButton product={product} className="right-3 top-3" />
       </div>
       <div className="p-4">
         <p className="text-xs text-[#6b7280]">{product.store || "Store"}</p>

@@ -4,6 +4,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useState, useEffect } from "react";
 import Loader from "./Loader";
+import FavoriteButton from "./FavoriteButton";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -117,12 +118,7 @@ const Product = () => {
                 </div>
 
                 {/* Wishlist */}
-                <button
-                  type="button"
-                  className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm sm:right-3 sm:top-3 sm:h-9 sm:w-9"
-                >
-                  <i className="fa-regular fa-heart cursor-pointer text-[10px] font-semibold text-[#6B7280] transition duration-200 hover:text-red-500 sm:text-sm"></i>
-                </button>
+                <FavoriteButton product={product} />
               </div>
 
               {/* Product Content */}

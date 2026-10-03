@@ -12,6 +12,7 @@ import {
   CTableHead,
   CTableHeaderCell,
   CTableRow,
+  CSpinner,
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
@@ -26,6 +27,7 @@ const ProductTable = ({ search, category, status }) => {
   const [errorMessage, setErrorMessage] = useState("");
   const [message, setMessage] = useState("");
   const [products, setProducts] = useState([]);
+  const [deletingProductId, setDeletingProductId] = useState("");
 
   const filteredProducts = products.filter((product) => {
     const matchesSearch = product.name
@@ -72,6 +74,8 @@ const ProductTable = ({ search, category, status }) => {
   };
 
   const handleDeleteProduct = async (productId) => {
+    if (deletingProductId) return;
+    setDeletingProductId(productId);
     try {
       const token = localStorage.getItem("vendorToken");
 
@@ -94,6 +98,8 @@ const ProductTable = ({ search, category, status }) => {
       }, 2000);
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Something went wrong");
+    } finally {
+      setDeletingProductId("");
     }
   };
 
@@ -253,10 +259,15 @@ const ProductTable = ({ search, category, status }) => {
 
                         <CDropdownItem
                           className="text-danger"
+                          disabled={Boolean(deletingProductId)}
                           onClick={() => handleDeleteProduct(product._id)}
                         >
-                          <CIcon icon={cilTrash} className="me-2" />
-                          Delete
+                          {deletingProductId === product._id ? (
+                            <CSpinner size="sm" className="me-2" />
+                          ) : (
+                            <CIcon icon={cilTrash} className="me-2" />
+                          )}
+                          {deletingProductId === product._id ? "Deleting..." : "Delete"}
                         </CDropdownItem>
                       </CDropdownMenu>
                     </CDropdown>

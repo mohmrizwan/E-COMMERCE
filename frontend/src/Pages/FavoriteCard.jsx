@@ -1,74 +1,17 @@
-import { useCallback, useEffect, useState } from "react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
-
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
-
-const getAuthConfig = () => ({
-  headers: {
-    Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-  },
-});
+import { Link } from "react-router-dom";
+import useFavorites from "../Components/useFavorites";
 
 const FavoriteCard = () => {
-  const [products, setProducts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [removingId, setRemovingId] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const navigate = useNavigate();
-
-  const loadFavorites = useCallback(async () => {
-    const token = localStorage.getItem("userToken");
-    if (!token) {
-      navigate("/login", { replace: true });
-      return;
-    }
-
-    setIsLoading(true);
-    setErrorMessage("");
-    try {
-      const response = await axios.get(
-        `${API_URL}/profile/favorites`,
-        getAuthConfig(),
-      );
-      setProducts(response.data.favorites || []);
-    } catch (error) {
-      if (error.response?.status === 401) {
-        localStorage.removeItem("userToken");
-        navigate("/login", { replace: true });
-      } else {
-        setErrorMessage(
-          error.response?.data?.message || "Could not load your wishlist",
-        );
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [navigate]);
-
-  useEffect(() => {
-    loadFavorites();
-  }, [loadFavorites]);
-
-  const removeFavorite = async (productId) => {
-    setRemovingId(productId);
-    setErrorMessage("");
-    try {
-      await axios.delete(
-        `${API_URL}/profile/favorites/${productId}`,
-        getAuthConfig(),
-      );
-      setProducts((items) => items.filter((product) => product._id !== productId));
-    } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message || "Could not remove this product",
-      );
-    } finally {
-      setRemovingId("");
-    }
-  };
+  const {
+    products,
+    isLoading,
+    errorMessage,
+    loadFavorites,
+    pendingIds,
+    removeFavorite,
+  } = useFavorites();
 
   return (
     <>
@@ -96,7 +39,26 @@ const FavoriteCard = () => {
             </div>
           )}
           {isLoading ? (
-            <p className="my-12 text-center text-sm text-[#6B7280]">Loading wishlist...</p>
+            <div
+              aria-label="Loading wishlist"
+              aria-live="polite"
+              className="my-6 grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4"
+            >
+              {Array.from({ length: 4 }, (_, index) => (
+                <div
+                  key={`wishlist-skeleton-${index}`}
+                  aria-hidden="true"
+                  className="animate-pulse overflow-hidden rounded-2xl border border-[#dde3f0] bg-white"
+                >
+                  <div className="h-40 bg-[#E9E5FC] sm:h-60 md:h-64 lg:h-72" />
+                  <div className="space-y-3 p-3 sm:p-4">
+                    <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
+                    <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
+                    <div className="h-4 w-1/2 rounded bg-[#E9E5FC]" />
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : products.length === 0 ? (
             <div className="my-12 text-center">
               <p className="text-lg font-semibold text-[#111827]">Your wishlist is empty</p>
@@ -121,11 +83,15 @@ const FavoriteCard = () => {
                   <button
                     type="button"
                     aria-label={`Remove ${product.name} from wishlist`}
-                    disabled={removingId === product._id}
+                    disabled={pendingIds.includes(String(product._id))}
                     onClick={() => removeFavorite(product._id)}
                     className="absolute right-2 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full bg-white shadow-sm transition duration-200 hover:bg-[#6C3BFF] hover:text-white sm:right-3 sm:top-3 sm:h-9 sm:w-9"
                   >
-                    <i className="fa-solid fa-heart-crack text-[11px] sm:text-sm"></i>
+                    {pendingIds.includes(String(product._id)) ? (
+                      <i className="fa-solid fa-spinner animate-spin text-[11px] sm:text-sm" />
+                    ) : (
+                      <i className="fa-solid fa-heart-crack text-[11px] sm:text-sm"></i>
+                    )}
                   </button>
                 </div>
 

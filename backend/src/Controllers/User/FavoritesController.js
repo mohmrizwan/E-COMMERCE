@@ -34,7 +34,9 @@ export const addToFavorite = async (req, res) => {
     }
 
     // Check already exists
-    const alreadyFavorite = favorites.favorites.includes(productId);
+    const alreadyFavorite = favorites.favorites.some(
+      (favoriteId) => favoriteId.toString() === productId,
+    );
 
     if (alreadyFavorite) {
       // Remove
