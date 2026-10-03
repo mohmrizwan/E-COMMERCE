@@ -266,16 +266,30 @@ export const getAvailableCouriers = async (req, res) => {
       shiprocketResponse.data?.available_courier_companies ||
       shiprocketResponse.available_courier_companies ||
       [];
-    const courierCompanyId = String(
-      shipment.courierCompanyId || process.env.SHIPROCKET_COURIER_ID || ""
+    const vendorQuote = (order.vendorShippingQuotes || []).find(
+      (quote) => quote.vendorId.toString() === vendorId.toString()
     );
-    const configuredCourier = couriers.filter(
-      (courier) => String(courier.courier_company_id) === courierCompanyId
+    const preferredCourierCompanyId = String(
+      shipment.courierCompanyId ||
+        vendorQuote?.courierCompanyId ||
+        process.env.SHIPROCKET_COURIER_ID ||
+        ""
     );
+    const preferredCourier = couriers.find(
+      (courier) =>
+        String(courier.courier_company_id) === preferredCourierCompanyId
+    );
+    const couriersToReturn = preferredCourier
+      ? [preferredCourier]
+      : [...couriers].sort(
+          (left, right) =>
+            Number(left.rate ?? left.freight_charge ?? Infinity) -
+            Number(right.rate ?? right.freight_charge ?? Infinity)
+        );
 
     return res.status(200).json({
       success: true,
-      couriers: configuredCourier.map((courier) => ({
+      couriers: couriersToReturn.map((courier) => ({
         courierCompanyId: courier.courier_company_id,
         courierName: courier.courier_name,
         rate: courier.rate ?? courier.freight_charge ?? null,
@@ -310,33 +324,72 @@ export const assignCourier = async (req, res) => {
       return res.status(404).json({ message: "Shipment not found" });
     }
 
-    const configuredCourierCompanyId = String(
-      shipment.courierCompanyId || process.env.SHIPROCKET_COURIER_ID || ""
-    );
-    const requestedCourierCompanyId = req.body?.courierCompanyId
-      ? String(req.body.courierCompanyId)
-      : configuredCourierCompanyId;
-
-    if (
-      !/^\d+$/.test(configuredCourierCompanyId) ||
-      requestedCourierCompanyId !== configuredCourierCompanyId
-    ) {
-      return res.status(400).json({
-        message: "Only the configured Shiprocket courier can be assigned",
-      });
-    }
-
     if (shipment.awbCode) {
       return res.status(200).json({
         success: true,
-        message: "Configured courier and AWB are already assigned",
+        message: "Courier and AWB are already assigned",
         shipment,
+      });
+    }
+
+    const order = await orderModel.findById(shipment.orderId);
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const pickupPostcode = String(
+      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || ""
+    ).trim();
+    const deliveryPostcode = String(order.shippingAddress?.pincode || "").trim();
+    if (!/^\d{6}$/.test(pickupPostcode) || !/^\d{6}$/.test(deliveryPostcode)) {
+      return res.status(400).json({
+        message: "Vendor pickup and customer delivery addresses must both have valid six-digit pincodes",
+      });
+    }
+
+    const shiprocketResponse = await getAvailableShiprocketCouriers({
+      shipmentId: shipment.shiprocketShipmentId,
+      pickupPostcode,
+      deliveryPostcode,
+      weight: 0.5,
+      cod: order.paymentMethod?.toLowerCase() === "cod" ? 1 : 0,
+      declaredValue: order.totalAmount,
+    });
+    const availableCouriers =
+      shiprocketResponse.data?.available_courier_companies ||
+      shiprocketResponse.available_courier_companies ||
+      [];
+    const vendorQuote = (order.vendorShippingQuotes || []).find(
+      (quote) => quote.vendorId.toString() === req.vendor._id.toString()
+    );
+    const preferredCourierCompanyId = String(
+      shipment.courierCompanyId ||
+        vendorQuote?.courierCompanyId ||
+        process.env.SHIPROCKET_COURIER_ID ||
+        ""
+    );
+    const preferredIsAvailable = availableCouriers.some(
+      (courier) =>
+        String(courier.courier_company_id) === preferredCourierCompanyId
+    );
+    const requestedCourierCompanyId = String(
+      req.body?.courierCompanyId ||
+        (preferredIsAvailable ? preferredCourierCompanyId : "")
+    );
+    const requestedIsAvailable = availableCouriers.some(
+      (courier) =>
+        String(courier.courier_company_id) === requestedCourierCompanyId
+    );
+
+    if (!requestedIsAvailable || (preferredIsAvailable && requestedCourierCompanyId !== preferredCourierCompanyId)) {
+      return res.status(400).json({
+        message: "Select a courier available for this pickup and delivery route",
       });
     }
 
     const assignment = await assignShiprocketCourier(
       shipment.shiprocketShipmentId,
-      Number(configuredCourierCompanyId)
+      Number(requestedCourierCompanyId)
     );
     const assignmentData =
       assignment.response?.data || assignment.data || assignment.response || assignment;
@@ -350,7 +403,7 @@ export const assignCourier = async (req, res) => {
 
     shipment.awbCode = String(assignmentData.awb_code);
     shipment.courierCompanyId = String(
-      assignmentData.courier_company_id || configuredCourierCompanyId
+      assignmentData.courier_company_id || requestedCourierCompanyId
     );
     shipment.courierName = assignmentData.courier_name || "";
     shipment.status = "AWB_ASSIGNED";

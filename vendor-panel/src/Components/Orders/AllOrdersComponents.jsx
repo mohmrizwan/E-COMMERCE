@@ -571,7 +571,7 @@ const Orders = () => {
                                           Mark Processing
                                         </button>
                                       )}
-                                      {order.shipment && (
+                                      {order.shipment?.awbCode && (
                                         <button
                                           type="button"
                                           className="btn btn-sm btn-outline-secondary"
@@ -603,7 +603,7 @@ const Orders = () => {
                                                   loadCouriers(order)
                                                 }
                                               >
-                                                Load configured courier
+                                                Load available couriers
                                               </button>
                                             </div>
                                             {courierOptions[order.id]?.length >
