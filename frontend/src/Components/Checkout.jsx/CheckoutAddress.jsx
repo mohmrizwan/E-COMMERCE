@@ -93,6 +93,9 @@ const CheckoutAddress = ({
   );
 
   const updateForm = (field, value) => {
+    if (field === "pincode") {
+      value = value.replace(/\D/g, "").slice(0, 6);
+    }
     setForm((current) => ({ ...current, [field]: value }));
   };
 
@@ -145,7 +148,13 @@ const CheckoutAddress = ({
 
   const handleContinue = () => {
     if (!cart.length || !selectedAddress) return;
-    onContinue(selectedAddress);
+    const pincode = String(selectedAddress.pincode || "").trim();
+    if (!/^\d{6}$/.test(pincode)) {
+      setError("Enter a valid 6-digit pincode for this address.");
+      return;
+    }
+    setError("");
+    onContinue({ ...selectedAddress, pincode });
   };
 
   const hasMarkedDefault = addresses.some(
@@ -330,7 +339,10 @@ const CheckoutAddress = ({
                             {label}
                             <input
                               required
-                              type={field === "phone" ? "tel" : "text"}
+                              type={field === "phone" || field === "pincode" ? "tel" : "text"}
+                              inputMode={field === "pincode" ? "numeric" : undefined}
+                              maxLength={field === "pincode" ? 6 : undefined}
+                              pattern={field === "pincode" ? "[0-9]{6}" : undefined}
                               value={form[field] || ""}
                               onChange={(event) =>
                                 updateForm(field, event.target.value)
