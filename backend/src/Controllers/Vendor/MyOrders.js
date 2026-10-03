@@ -31,6 +31,8 @@ const getVendorOrderStatus = (shipment) => {
   switch (shipment.status) {
     case "AWB_ASSIGNED":
       return "Confirmed";
+    case "NEW":
+      return "Awaiting AWB";
     case "PROCESSING":
       return "Processing";
     case "PICKUP_REQUESTED":
@@ -39,7 +41,7 @@ const getVendorOrderStatus = (shipment) => {
     case "DELIVERED":
       return "Delivered";
     default:
-      return shipment.awbCode ? "Confirmed" : "Pending";
+      return shipment.awbCode ? "Confirmed" : "Awaiting AWB";
   }
 };
 
@@ -53,6 +55,7 @@ const refreshMarketplaceOrderStatus = async (order) => {
   );
   const statusStages = {
     Pending: 0,
+    "Awaiting AWB": 0,
     Confirmed: 1,
     Processing: 2,
     Shipped: 3,
@@ -211,6 +214,26 @@ export const acceptOrder = async (req, res) => {
       items: vendorItems,
     }, pickupAddress);
 
+    const newShipOrder = await shipOrder.create({
+      orderId: existingOrder._id,
+      userId: existingOrder.userId,
+      vendorId,
+      shiprocketOrderId: shiprocketOrder.order_id,
+      shiprocketShipmentId: shiprocketOrder.shipment_id,
+      awbCode: shiprocketOrder.awb_code
+        ? String(shiprocketOrder.awb_code)
+        : "",
+      courierCompanyId: String(
+        shiprocketOrder.courier_company_id || courierCompanyId
+      ),
+      courierName:
+        shiprocketOrder.courier_name || vendorShippingQuote?.courierName || "",
+      pickupLocationName,
+      pickupPostcode,
+      deliveryPostcode,
+      status: shiprocketOrder.awb_code ? "AWB_ASSIGNED" : "NEW",
+    });
+
     let assignmentData = shiprocketOrder;
 
     if (!shiprocketOrder.awb_code) {
@@ -240,28 +263,16 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
-    const newShipOrder = await shipOrder.create({
-      orderId: existingOrder._id,
-      userId: existingOrder.userId,
-      vendorId: vendorId,
-
-      shiprocketOrderId: shiprocketOrder.order_id,
-      shiprocketShipmentId: shiprocketOrder.shipment_id,
-
-      awbCode: String(awbCode),
-      courierCompanyId: assignedCourierCompanyId,
-      courierName:
-        assignmentData.courier_name ||
-        shiprocketOrder.courier_name ||
-        vendorShippingQuote?.courierName ||
-        existingOrder.shippingCourierName ||
-        "",
-      pickupLocationName,
-      pickupPostcode,
-      deliveryPostcode,
-
-      status: "AWB_ASSIGNED",
-    });
+    newShipOrder.awbCode = String(awbCode);
+    newShipOrder.courierCompanyId = assignedCourierCompanyId;
+    newShipOrder.courierName =
+      assignmentData.courier_name ||
+      shiprocketOrder.courier_name ||
+      vendorShippingQuote?.courierName ||
+      existingOrder.shippingCourierName ||
+      "";
+    newShipOrder.status = "AWB_ASSIGNED";
+    await newShipOrder.save();
 
     await refreshMarketplaceOrderStatus(existingOrder);
 

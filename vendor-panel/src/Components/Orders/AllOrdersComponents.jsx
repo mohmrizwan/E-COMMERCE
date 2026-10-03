@@ -136,6 +136,7 @@ const Orders = () => {
       await getMyOrders();
       setNotice(successMessage);
     } catch (error) {
+      await getMyOrders();
       setNotice(
         error.response?.data?.message || "Could not update this order.",
       );
@@ -634,7 +635,7 @@ const Orders = () => {
                                                     }
                                                   >
                                                     <option value="">
-                                                      Configured courier
+                                                      Select available courier
                                                     </option>
                                                     {courierOptions[
                                                       order.id
