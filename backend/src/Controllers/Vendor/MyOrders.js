@@ -213,13 +213,28 @@ export const acceptOrder = async (req, res) => {
       ...existingOrder.toObject(),
       items: vendorItems,
     }, pickupAddress);
+    const shiprocketOrderId = String(shiprocketOrder?.order_id || "").trim();
+    const shiprocketShipmentId = String(shiprocketOrder?.shipment_id || "").trim();
+
+    if (!shiprocketOrderId || !shiprocketShipmentId) {
+      shiprocketStep = "validate Shiprocket create-order response";
+      console.log("Shiprocket create-order response is missing required IDs", {
+        hasOrderId: Boolean(shiprocketOrderId),
+        hasShipmentId: Boolean(shiprocketShipmentId),
+        responseKeys: Object.keys(shiprocketOrder || {}),
+      });
+      return res.status(502).json({
+        success: false,
+        message: "Shiprocket did not return the required order and shipment IDs; the shipment could not be saved locally.",
+      });
+    }
 
     const newShipOrder = await shipOrder.create({
       orderId: existingOrder._id,
       userId: existingOrder.userId,
       vendorId,
-      shiprocketOrderId: shiprocketOrder.order_id,
-      shiprocketShipmentId: shiprocketOrder.shipment_id,
+      shiprocketOrderId,
+      shiprocketShipmentId,
       awbCode: shiprocketOrder.awb_code
         ? String(shiprocketOrder.awb_code)
         : "",
@@ -239,7 +254,7 @@ export const acceptOrder = async (req, res) => {
     if (!shiprocketOrder.awb_code) {
       shiprocketStep = "assign Shiprocket courier and AWB";
       const assignment = await assignShiprocketCourier(
-        shiprocketOrder.shipment_id,
+        shiprocketShipmentId,
         Number(courierCompanyId)
       );
       assignmentData =

@@ -1,5 +1,35 @@
 import axios from "axios";
 
+const normalizeShiprocketOrderResponse = (payload) => {
+  const candidates = [
+    payload?.data?.data,
+    payload?.data,
+    payload?.response?.data?.data,
+    payload?.response?.data,
+    payload?.response,
+    payload,
+  ];
+  const result = candidates.find(
+    (candidate) =>
+      candidate &&
+      typeof candidate === "object" &&
+      (candidate.order_id != null ||
+        candidate.orderId != null ||
+        candidate.shipment_id != null ||
+        candidate.shipmentId != null),
+  ) || payload;
+
+  return {
+    ...result,
+    order_id: result?.order_id ?? result?.orderId,
+    shipment_id: result?.shipment_id ?? result?.shipmentId,
+    awb_code: result?.awb_code ?? result?.awbCode ?? "",
+    courier_company_id:
+      result?.courier_company_id ?? result?.courierCompanyId,
+    courier_name: result?.courier_name ?? result?.courierName,
+  };
+};
+
 export const getShiprocketToken = async () => {
   try {
     const response = await axios.post(
@@ -132,7 +162,7 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) =
       }
     );
 
-    return response.data;
+    return normalizeShiprocketOrderResponse(response.data);
   } catch (error) {
     console.log(
       "Shiprocket Order Error:",
