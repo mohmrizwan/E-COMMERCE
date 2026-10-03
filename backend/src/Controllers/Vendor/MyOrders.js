@@ -25,6 +25,56 @@ const findVendorShipment = (shipOrderId, vendorId) => {
   return shipOrder.findOne(query);
 };
 
+const getVendorOrderStatus = (shipment) => {
+  if (!shipment) return "Pending";
+
+  switch (shipment.status) {
+    case "AWB_ASSIGNED":
+      return "Confirmed";
+    case "PROCESSING":
+      return "Processing";
+    case "PICKUP_REQUESTED":
+    case "SHIPPED":
+      return "Shipped";
+    case "DELIVERED":
+      return "Delivered";
+    default:
+      return shipment.awbCode ? "Confirmed" : "Pending";
+  }
+};
+
+const refreshMarketplaceOrderStatus = async (order) => {
+  const vendorIds = [
+    ...new Set(order.items.map((item) => item.vendorId.toString())),
+  ];
+  const shipments = await shipOrder.find({ orderId: order._id });
+  const shipmentByVendorId = new Map(
+    shipments.map((shipment) => [shipment.vendorId.toString(), shipment]),
+  );
+  const statusStages = {
+    Pending: 0,
+    Confirmed: 1,
+    Processing: 2,
+    Shipped: 3,
+    Delivered: 4,
+  };
+  const stageStatuses = [
+    "Pending",
+    "Confirmed",
+    "Processing",
+    "Shipped",
+    "Delivered",
+  ];
+  const vendorStages = vendorIds.map((vendorId) =>
+    statusStages[getVendorOrderStatus(shipmentByVendorId.get(vendorId))],
+  );
+
+  order.status = stageStatuses[
+    vendorStages.length ? Math.min(...vendorStages) : 0
+  ];
+  await order.save();
+};
+
 export const getMyOrders = async (req, res) => {
   try {
     const vendorId = req.vendor.id;
@@ -43,10 +93,14 @@ export const getMyOrders = async (req, res) => {
     const shipmentByOrderId = new Map(
       shipments.map((shipment) => [shipment.orderId.toString(), shipment])
     );
-    const ordersWithShipments = orders.map((order) => ({
-      ...order.toObject(),
-      shipment: shipmentByOrderId.get(order._id.toString()) || null,
-    }));
+    const ordersWithShipments = orders.map((order) => {
+      const shipment = shipmentByOrderId.get(order._id.toString()) || null;
+      return {
+        ...order.toObject(),
+        vendorStatus: getVendorOrderStatus(shipment),
+        shipment,
+      };
+    });
 
     return res.status(200).json({
       message: "Vendor orders fetched successfully",
@@ -63,6 +117,8 @@ export const getMyOrders = async (req, res) => {
 };
 
 export const acceptOrder = async (req, res) => {
+  let shiprocketStep = "prepare shipment";
+
   try {
     const { orderId } = req.params;
 
@@ -89,9 +145,19 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
-    if (existingOrder.status !== "Pending") {
+    if (existingOrder.status === "Cancelled") {
       return res.status(400).json({
         message: "Order cannot be accepted",
+      });
+    }
+
+    const existingVendorShipment = await shipOrder.findOne({
+      orderId: existingOrder._id,
+      vendorId,
+    });
+    if (existingVendorShipment) {
+      return res.status(400).json({
+        message: "This vendor has already accepted the order",
       });
     }
 
@@ -139,6 +205,7 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
+    shiprocketStep = "create Shiprocket shipment";
     const shiprocketOrder = await createShiprocketOrderFromOrder({
       ...existingOrder.toObject(),
       items: vendorItems,
@@ -147,6 +214,7 @@ export const acceptOrder = async (req, res) => {
     let assignmentData = shiprocketOrder;
 
     if (!shiprocketOrder.awb_code) {
+      shiprocketStep = "assign Shiprocket courier and AWB";
       const assignment = await assignShiprocketCourier(
         shiprocketOrder.shipment_id,
         Number(courierCompanyId)
@@ -195,9 +263,7 @@ export const acceptOrder = async (req, res) => {
       status: "AWB_ASSIGNED",
     });
 
-    existingOrder.status = "Confirmed";
-
-    await existingOrder.save();
+    await refreshMarketplaceOrderStatus(existingOrder);
 
     return res.status(200).json({
       success: true,
@@ -207,13 +273,15 @@ export const acceptOrder = async (req, res) => {
     });
   } catch (error) {
     console.log(
-      "Accept Order Error:",
-      error.response?.data || error.message
+      `Accept Order Error during ${shiprocketStep}:`,
+      error.response?.data || error.message,
     );
 
-    return res.status(500).json({
+    return res.status(error.response ? 502 : 500).json({
       success: false,
-      message: "Failed to accept order",
+      message: error.response?.status === 403
+        ? `Shiprocket denied permission during ${shiprocketStep}. Check the Shiprocket account/API access used by this backend.`
+        : "Failed to accept order",
       error: error.response?.data || error.message,
     });
   }
@@ -408,6 +476,7 @@ export const assignCourier = async (req, res) => {
     shipment.courierName = assignmentData.courier_name || "";
     shipment.status = "AWB_ASSIGNED";
     await shipment.save();
+    await refreshMarketplaceOrderStatus(order);
 
     return res.status(200).json({
       success: true,
@@ -449,14 +518,19 @@ export const markOrderProcessing = async (req, res) => {
       return res.status(403).json({ message: "You do not own items in this order" });
     }
 
-    if (order.status !== "Pending" && order.status !== "Confirmed") {
+    const shipment = await shipOrder.findOne({
+      orderId: order._id,
+      vendorId: req.vendor._id,
+    });
+    if (!shipment || !shipment.awbCode || shipment.status !== "AWB_ASSIGNED") {
       return res.status(400).json({
-        message: `Order cannot move to Processing from ${order.status}`,
+        message: "Accept this vendor order and assign an AWB before processing it",
       });
     }
 
-    order.status = "Processing";
-    await order.save();
+    shipment.status = "PROCESSING";
+    await shipment.save();
+    await refreshMarketplaceOrderStatus(order);
 
     return res.status(200).json({
       success: true,
@@ -495,12 +569,6 @@ export const shipVendorOrder = async (req, res) => {
       return res.status(403).json({ message: "You do not own items in this order" });
     }
 
-    if (order.status !== "Processing") {
-      return res.status(400).json({
-        message: "Order must be Processing before it can be shipped",
-      });
-    }
-
     const shipment = await shipOrder.findOne({
       orderId: order._id,
       vendorId: req.vendor._id,
@@ -513,6 +581,12 @@ export const shipVendorOrder = async (req, res) => {
     if (!shipment.awbCode || !shipment.courierCompanyId) {
       return res.status(400).json({
         message: "Assign a courier and AWB before shipping this order",
+      });
+    }
+
+    if (shipment.status !== "PROCESSING") {
+      return res.status(400).json({
+        message: "Mark this vendor's order as Processing before shipping it",
       });
     }
 
@@ -533,10 +607,8 @@ export const shipVendorOrder = async (req, res) => {
     }
 
     shipment.status = "PICKUP_REQUESTED";
-    order.status = "Shipped";
-
     await shipment.save();
-    await order.save();
+    await refreshMarketplaceOrderStatus(order);
 
     return res.status(200).json({
       success: true,

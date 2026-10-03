@@ -85,7 +85,7 @@ const Orders = () => {
 
             total: `₹${order.totalAmount || 0}`,
 
-            status: order.status || "Pending",
+            status: order.vendorStatus || order.status || "Pending",
 
             date: order.createdAt
               ? new Date(order.createdAt).toLocaleDateString()
