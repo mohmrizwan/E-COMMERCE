@@ -70,7 +70,8 @@ export const acceptOrder = async (req, res) => {
 
     const existingOrder = await orderModel
       .findById(orderId)
-      .populate("items.productId");
+      .populate("items.productId")
+      .populate("userId");
 
     if (!existingOrder) {
       return res.status(404).json({
