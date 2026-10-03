@@ -88,14 +88,35 @@ const VendorProfile = () => {
   };
 
   const savePickupAddress = async () => {
-    setIsSavingPickupAddress(true);
     setPickupAddressError("");
     setPickupAddressMessage("");
+
+    const normalizedPickupAddress = Object.fromEntries(
+      Object.entries(pickupAddress).map(([field, value]) => [
+        field,
+        String(value || "").trim(),
+      ]),
+    );
+    const hasEmptyField = Object.values(normalizedPickupAddress).some(
+      (value) => !value,
+    );
+
+    if (hasEmptyField) {
+      setPickupAddressError("Complete all pickup address fields before saving.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(normalizedPickupAddress.pincode)) {
+      setPickupAddressError("Pickup pincode must be exactly six digits.");
+      return;
+    }
+
+    setIsSavingPickupAddress(true);
 
     try {
       const response = await axios.put(
         `${API_URL}/vendor/profile/pickup-address`,
-        pickupAddress,
+        normalizedPickupAddress,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
@@ -146,6 +167,7 @@ const VendorProfile = () => {
             <CCol md={6}>
               <CFormLabel>Registered Shiprocket pickup location name</CFormLabel>
               <CFormInput
+                required
                 value={pickupAddress.shiprocketLocationName}
                 onChange={(event) =>
                   setPickupAddress((current) => ({
@@ -158,6 +180,7 @@ const VendorProfile = () => {
             <CCol md={6}>
               <CFormLabel>Pickup address</CFormLabel>
               <CFormInput
+                required
                 value={pickupAddress.address}
                 onChange={(event) =>
                   setPickupAddress((current) => ({
@@ -170,6 +193,7 @@ const VendorProfile = () => {
             <CCol md={4}>
               <CFormLabel>City</CFormLabel>
               <CFormInput
+                required
                 value={pickupAddress.city}
                 onChange={(event) =>
                   setPickupAddress((current) => ({
@@ -182,6 +206,7 @@ const VendorProfile = () => {
             <CCol md={4}>
               <CFormLabel>State</CFormLabel>
               <CFormInput
+                required
                 value={pickupAddress.state}
                 onChange={(event) =>
                   setPickupAddress((current) => ({
@@ -194,8 +219,10 @@ const VendorProfile = () => {
             <CCol md={4}>
               <CFormLabel>Pickup pincode</CFormLabel>
               <CFormInput
+                required
                 inputMode="numeric"
                 maxLength={6}
+                pattern="[0-9]{6}"
                 value={pickupAddress.pincode}
                 onChange={(event) =>
                   setPickupAddress((current) => ({

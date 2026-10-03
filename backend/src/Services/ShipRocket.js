@@ -304,22 +304,42 @@ export const getShiprocketShippingQuote = async ({
 
 export const assignShiprocketCourier = async (shipmentId, courierCompanyId) => {
   const token = await getShiprocketToken();
+  const endpoint =
+    "https://apiv2.shiprocket.in/v1/external/courier/assign/awb";
+  const payload = {
+    shipment_id: shipmentId,
+    courier_id: courierCompanyId,
+  };
 
-  const response = await axios.post(
-    "https://apiv2.shiprocket.in/v1/external/courier/assign/awb",
-    {
-      shipment_id: shipmentId,
-      courier_id: courierCompanyId,
-    },
-    {
+  console.log("Shiprocket assign-AWB request", {
+    endpoint,
+    payload,
+  });
+
+  try {
+    const response = await axios.post(endpoint, payload, {
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
-    }
-  );
+    });
 
-  return response.data;
+    return response.data;
+  } catch (error) {
+    console.log("Shiprocket assign-AWB HTTP error", {
+      endpoint,
+      payload,
+      httpStatus: error.response?.status,
+      responseBody: error.response?.data,
+      message: error.message,
+      details:
+        error.response?.data?.errors ||
+        error.response?.data?.details ||
+        error.response?.data?.error,
+    });
+
+    throw error;
+  }
 };
 
 export const generateShiprocketPickup = async (shipmentId) => {

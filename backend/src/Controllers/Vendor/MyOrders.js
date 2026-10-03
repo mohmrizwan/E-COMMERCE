@@ -528,14 +528,32 @@ export const assignCourier = async (req, res) => {
       shipment,
     });
   } catch (error) {
-    console.log(
-      "Assign Courier Error:",
-      error.response?.data || error.message
-    );
+    const shiprocketResponse = error.response?.data;
+    const shiprocketDetails =
+      shiprocketResponse?.message ||
+      shiprocketResponse?.errors ||
+      shiprocketResponse?.details ||
+      shiprocketResponse?.error;
+    const errorMessage =
+      typeof shiprocketDetails === "string"
+        ? shiprocketDetails
+        : shiprocketDetails
+          ? JSON.stringify(shiprocketDetails)
+          : error.message;
+
+    console.log("Assign Courier Error", {
+      httpStatus: error.response?.status,
+      responseBody: shiprocketResponse,
+      message: error.message,
+    });
 
     return res.status(error.response ? 502 : 500).json({
-      message: "Could not assign courier",
-      error: error.response?.data || error.message,
+      message: error.response
+        ? `Shiprocket AWB assignment failed: ${errorMessage}`
+        : "Could not assign courier",
+      httpStatus: error.response?.status,
+      shiprocketResponse,
+      error: shiprocketResponse || error.message,
     });
   }
 };
