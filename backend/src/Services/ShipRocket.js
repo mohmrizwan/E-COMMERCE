@@ -193,7 +193,7 @@ export const getShiprocketShippingQuote = async ({
 }) => {
   const normalizedPickupPostcode = String(pickupPostcode || "").trim();
   const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
-  const courierCompanyId = String(
+  const preferredCourierCompanyId = String(
     process.env.SHIPROCKET_COURIER_ID || ""
   ).trim();
 
@@ -205,8 +205,8 @@ export const getShiprocketShippingQuote = async ({
     throw new Error("Customer shipping address must have a valid six-digit pincode");
   }
 
-  if (!/^\d+$/.test(courierCompanyId)) {
-    throw new Error("SHIPROCKET_COURIER_ID must be configured");
+  if (preferredCourierCompanyId && !/^\d+$/.test(preferredCourierCompanyId)) {
+    throw new Error("SHIPROCKET_COURIER_ID must be numeric when configured");
   }
 
   const serviceability = await getAvailableShiprocketCouriers({
@@ -220,25 +220,37 @@ export const getShiprocketShippingQuote = async ({
     serviceability.data?.available_courier_companies ||
     serviceability.available_courier_companies ||
     [];
-  const courier = couriers.find(
-    (option) => String(option.courier_company_id) === courierCompanyId
-  );
+  const serviceableCouriers = couriers
+    .map((option) => ({
+      option,
+      courierCompanyId: String(option.courier_company_id || ""),
+      shippingAmount: Number(option.rate ?? option.freight_charge),
+    }))
+    .filter(
+      ({ courierCompanyId, shippingAmount }) =>
+        /^\d+$/.test(courierCompanyId) &&
+        Number.isFinite(shippingAmount) &&
+        shippingAmount >= 0,
+    );
+  const courier =
+    serviceableCouriers.find(
+      ({ courierCompanyId }) =>
+        courierCompanyId === preferredCourierCompanyId,
+    ) ||
+    serviceableCouriers.sort(
+      (left, right) => left.shippingAmount - right.shippingAmount,
+    )[0];
 
   if (!courier) {
-    throw new Error("The configured Shiprocket courier is unavailable for this postcode");
-  }
-
-  const shippingAmount = Number(courier.rate ?? courier.freight_charge);
-
-  if (!Number.isFinite(shippingAmount) || shippingAmount < 0) {
-    throw new Error("Shiprocket did not return a valid delivery charge");
+    throw new Error("Shiprocket returned no serviceable couriers with valid rates for this route");
   }
 
   return {
-    shippingAmount: Math.round(shippingAmount * 100) / 100,
-    courierCompanyId,
-    courierName: courier.courier_name || "",
-    estimatedDelivery: courier.etd || courier.estimated_delivery_days || null,
+    shippingAmount: Math.round(courier.shippingAmount * 100) / 100,
+    courierCompanyId: courier.courierCompanyId,
+    courierName: courier.option.courier_name || "",
+    estimatedDelivery:
+      courier.option.etd || courier.option.estimated_delivery_days || null,
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
     weight,
