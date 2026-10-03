@@ -13,6 +13,7 @@ export const order = async (req, res) => {
   try {
     const userId = req.user.id || req.user.userId || req.user._id;
     const { items, shippingAddress } = req.body;
+    const deliveryPostcode = String(shippingAddress?.pincode || "").trim();
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "No items found" });
@@ -24,10 +25,15 @@ export const order = async (req, res) => {
       !shippingAddress?.address ||
       !shippingAddress?.city ||
       !shippingAddress?.state ||
-      !/^\d{6}$/.test(String(shippingAddress?.pincode || ""))
+      !/^\d{6}$/.test(deliveryPostcode)
     ) {
       return res.status(400).json({ message: "A valid shipping address is required" });
     }
+
+    const normalizedShippingAddress = {
+      ...shippingAddress,
+      pincode: deliveryPostcode,
+    };
 
     const checkoutItems = [];
     let subtotalPaise = 0;
@@ -63,7 +69,7 @@ export const order = async (req, res) => {
 
     const subtotalAmount = subtotalPaise / 100;
     const shippingQuote = await getShiprocketShippingQuote({
-      deliveryPostcode: String(shippingAddress.pincode).trim(),
+      deliveryPostcode,
       weight: 0.5,
       cod: 0,
       declaredValue: subtotalAmount,
@@ -86,7 +92,7 @@ export const order = async (req, res) => {
       shippingAmount: shippingPaise / 100,
       finalTotal,
       items: checkoutItems,
-      shippingAddress,
+      shippingAddress: normalizedShippingAddress,
       shippingCourierCompanyId: shippingQuote.courierCompanyId,
       shippingCourierName: shippingQuote.courierName,
       shippingPickupPostcode: shippingQuote.pickupPostcode,
