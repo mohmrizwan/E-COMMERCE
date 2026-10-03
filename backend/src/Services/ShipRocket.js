@@ -162,12 +162,27 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) =
       }
     );
 
-    return normalizeShiprocketOrderResponse(response.data);
+    console.log("Shiprocket create-order raw response", {
+      httpStatus: response.status,
+      responseData: response.data,
+    });
+
+    const normalizedResponse = normalizeShiprocketOrderResponse(response.data);
+    console.log("Shiprocket create-order normalized IDs", {
+      order_id: normalizedResponse.order_id,
+      shipment_id: normalizedResponse.shipment_id,
+    });
+
+    return {
+      ...normalizedResponse,
+      rawResponse: response.data,
+    };
   } catch (error) {
-    console.log(
-      "Shiprocket Order Error:",
-      error.response?.data || error.message
-    );
+    console.log("Shiprocket create-order HTTP error", {
+      httpStatus: error.response?.status,
+      responseData: error.response?.data,
+      message: error.message,
+    });
 
     throw error;
   }

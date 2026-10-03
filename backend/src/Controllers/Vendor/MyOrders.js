@@ -218,14 +218,32 @@ export const acceptOrder = async (req, res) => {
 
     if (!shiprocketOrderId || !shiprocketShipmentId) {
       shiprocketStep = "validate Shiprocket create-order response";
+      const rawResponse = shiprocketOrder?.rawResponse ?? shiprocketOrder;
+      const shiprocketError =
+        rawResponse?.errors ||
+        rawResponse?.error ||
+        rawResponse?.data?.errors ||
+        rawResponse?.data?.error ||
+        rawResponse?.data?.message ||
+        rawResponse?.message;
+      const errorDetails =
+        typeof shiprocketError === "string"
+          ? shiprocketError
+          : shiprocketError
+            ? JSON.stringify(shiprocketError)
+            : "";
+
       console.log("Shiprocket create-order response is missing required IDs", {
         hasOrderId: Boolean(shiprocketOrderId),
         hasShipmentId: Boolean(shiprocketShipmentId),
-        responseKeys: Object.keys(shiprocketOrder || {}),
+        responseData: rawResponse,
       });
       return res.status(502).json({
         success: false,
-        message: "Shiprocket did not return the required order and shipment IDs; the shipment could not be saved locally.",
+        message: errorDetails
+          ? `Shiprocket order creation failed: ${errorDetails}`
+          : "Shiprocket did not return the required order and shipment IDs; the shipment could not be saved locally.",
+        shiprocketResponse: rawResponse,
       });
     }
 
