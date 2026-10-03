@@ -47,8 +47,28 @@ export const createShiprocketOrder = async (orderData) => {
   }
 };
 
-export const createShiprocketOrderFromOrder = async (orderData) => {
+export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) => {
   try {
+    const pickupPostcode = String(pickupAddress?.pincode || "").trim();
+    const deliveryPostcode = String(
+      orderData.shippingAddress?.pincode || ""
+    ).trim();
+    const pickupLocationName = String(
+      pickupAddress?.shiprocketLocationName || ""
+    ).trim();
+
+    if (!/^\d{6}$/.test(pickupPostcode)) {
+      throw new Error("Vendor pickup address must have a valid six-digit pincode");
+    }
+
+    if (!/^\d{6}$/.test(deliveryPostcode)) {
+      throw new Error("Customer shipping address must have a valid six-digit pincode");
+    }
+
+    if (!pickupLocationName) {
+      throw new Error("Vendor Shiprocket pickup location name is missing");
+    }
+
     const token = await getShiprocketToken();
 
     let subTotal = 0;
@@ -70,7 +90,7 @@ export const createShiprocketOrderFromOrder = async (orderData) => {
       order_id: orderData._id.toString(),
       order_date: orderData.createdAt.toISOString(),
 
-      pickup_location: "Home",
+      pickup_location: pickupLocationName,
 
       billing_customer_name: orderData.shippingAddress.name,
       billing_last_name: "",
@@ -79,7 +99,7 @@ export const createShiprocketOrderFromOrder = async (orderData) => {
       billing_address_2: "",
 
       billing_city: orderData.shippingAddress.city,
-      billing_pincode: orderData.shippingAddress.pincode,
+      billing_pincode: deliveryPostcode,
       billing_state: orderData.shippingAddress.state,
       billing_country: "India",
 
@@ -131,6 +151,17 @@ export const getAvailableShiprocketCouriers = async ({
   cod,
   declaredValue,
 }) => {
+  const normalizedPickupPostcode = String(pickupPostcode || "").trim();
+  const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
+
+  if (!/^\d{6}$/.test(normalizedPickupPostcode)) {
+    throw new Error("Vendor pickup address must have a valid six-digit pincode");
+  }
+
+  if (!/^\d{6}$/.test(normalizedDeliveryPostcode)) {
+    throw new Error("Customer shipping address must have a valid six-digit pincode");
+  }
+
   const token = await getShiprocketToken();
 
   const response = await axios.get(
@@ -138,8 +169,8 @@ export const getAvailableShiprocketCouriers = async ({
     {
       params: {
         shipment_id: shipmentId,
-        pickup_postcode: pickupPostcode,
-        delivery_postcode: deliveryPostcode,
+        pickup_postcode: normalizedPickupPostcode,
+        delivery_postcode: normalizedDeliveryPostcode,
         weight,
         cod,
         declared_value: declaredValue,
@@ -154,20 +185,24 @@ export const getAvailableShiprocketCouriers = async ({
 };
 
 export const getShiprocketShippingQuote = async ({
+  pickupPostcode,
   deliveryPostcode,
   weight,
   cod = 0,
   declaredValue,
 }) => {
-  const pickupPostcode = String(
-    process.env.SHIPROCKET_PICKUP_POSTCODE || ""
-  ).trim();
+  const normalizedPickupPostcode = String(pickupPostcode || "").trim();
+  const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
   const courierCompanyId = String(
     process.env.SHIPROCKET_COURIER_ID || ""
   ).trim();
 
-  if (!/^\d{6}$/.test(pickupPostcode)) {
-    throw new Error("SHIPROCKET_PICKUP_POSTCODE must be a valid six-digit postcode");
+  if (!/^\d{6}$/.test(normalizedPickupPostcode)) {
+    throw new Error("Vendor pickup address must have a valid six-digit pincode");
+  }
+
+  if (!/^\d{6}$/.test(normalizedDeliveryPostcode)) {
+    throw new Error("Customer shipping address must have a valid six-digit pincode");
   }
 
   if (!/^\d+$/.test(courierCompanyId)) {
@@ -175,8 +210,8 @@ export const getShiprocketShippingQuote = async ({
   }
 
   const serviceability = await getAvailableShiprocketCouriers({
-    pickupPostcode,
-    deliveryPostcode,
+    pickupPostcode: normalizedPickupPostcode,
+    deliveryPostcode: normalizedDeliveryPostcode,
     weight,
     cod,
     declaredValue,
@@ -204,8 +239,8 @@ export const getShiprocketShippingQuote = async ({
     courierCompanyId,
     courierName: courier.courier_name || "",
     estimatedDelivery: courier.etd || courier.estimated_delivery_days || null,
-    pickupPostcode,
-    deliveryPostcode: String(deliveryPostcode),
+    pickupPostcode: normalizedPickupPostcode,
+    deliveryPostcode: normalizedDeliveryPostcode,
     weight,
   };
 };

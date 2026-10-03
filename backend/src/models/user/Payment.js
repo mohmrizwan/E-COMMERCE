@@ -62,6 +62,19 @@ const paymentSchema = new Schema({
   shippingPickupPostcode: String,
   shippingWeight: Number,
   estimatedDelivery: String,
+  vendorShippingQuotes: [
+    {
+      vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
+      pickupLocationName: { type: String, required: true },
+      pickupPostcode: { type: String, required: true },
+      deliveryPostcode: { type: String, required: true },
+      shippingAmount: { type: Number, required: true },
+      courierCompanyId: { type: String, required: true },
+      courierName: String,
+      estimatedDelivery: String,
+      weight: Number,
+    },
+  ],
   paymentStatus: {
     type: String,
     enum: ["Pending", "Paid", "Failed"],

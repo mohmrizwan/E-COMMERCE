@@ -45,6 +45,21 @@ const shipSchema = new mongoose.Schema(
       default: "",
     },
 
+    pickupLocationName: {
+      type: String,
+      default: "",
+    },
+
+    pickupPostcode: {
+      type: String,
+      default: "",
+    },
+
+    deliveryPostcode: {
+      type: String,
+      default: "",
+    },
+
     status: {
       type: String,
       default: "NEW",

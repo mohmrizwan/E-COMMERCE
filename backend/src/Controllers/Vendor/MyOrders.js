@@ -95,8 +95,42 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
+    const pickupAddress = req.vendor.pickupAddress;
+    const pickupPostcode = String(pickupAddress?.pincode || "").trim();
+    const pickupLocationName = String(
+      pickupAddress?.shiprocketLocationName || ""
+    ).trim();
+    const deliveryPostcode = String(
+      existingOrder.shippingAddress?.pincode || ""
+    ).trim();
+
+    if (
+      !pickupLocationName ||
+      !pickupAddress?.address ||
+      !pickupAddress?.city ||
+      !pickupAddress?.state ||
+      !/^\d{6}$/.test(pickupPostcode)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Save a complete vendor pickup address with a valid six-digit pincode and registered Shiprocket pickup location before accepting this order",
+      });
+    }
+
+    if (!/^\d{6}$/.test(deliveryPostcode)) {
+      return res.status(400).json({
+        success: false,
+        message: "The customer's shipping address must have a valid six-digit pincode",
+      });
+    }
+
+    const vendorShippingQuote = (existingOrder.vendorShippingQuotes || []).find(
+      (quote) => quote.vendorId.toString() === vendorId.toString()
+    );
     const courierCompanyId = String(
-      existingOrder.shippingCourierCompanyId || ""
+      vendorShippingQuote?.courierCompanyId ||
+        existingOrder.shippingCourierCompanyId ||
+        ""
     ).trim();
 
     if (!/^\d+$/.test(courierCompanyId)) {
@@ -108,7 +142,7 @@ export const acceptOrder = async (req, res) => {
     const shiprocketOrder = await createShiprocketOrderFromOrder({
       ...existingOrder.toObject(),
       items: vendorItems,
-    });
+    }, pickupAddress);
 
     let assignmentData = shiprocketOrder;
 
@@ -151,8 +185,12 @@ export const acceptOrder = async (req, res) => {
       courierName:
         assignmentData.courier_name ||
         shiprocketOrder.courier_name ||
+        vendorShippingQuote?.courierName ||
         existingOrder.shippingCourierName ||
         "",
+      pickupLocationName,
+      pickupPostcode,
+      deliveryPostcode,
 
       status: "AWB_ASSIGNED",
     });
@@ -185,21 +223,11 @@ export const getAvailableCouriers = async (req, res) => {
   try {
     const { shipOrderId } = req.params;
     const vendorId = req.vendor._id;
-    const pickupPostcode = String(
-      req.query.pickupPostcode || process.env.SHIPROCKET_PICKUP_POSTCODE || ""
-    ).trim();
 
     const shipment = await findVendorShipment(shipOrderId, vendorId);
 
     if (!shipment) {
       return res.status(404).json({ message: "Shipment not found" });
-    }
-
-    if (!/^\d{6}$/.test(pickupPostcode)) {
-      return res.status(400).json({
-        message:
-          "A valid six-digit pickupPostcode query or SHIPROCKET_PICKUP_POSTCODE setting is required",
-      });
     }
 
     const order = await orderModel.findById(shipment.orderId);
@@ -208,7 +236,16 @@ export const getAvailableCouriers = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    const pickupPostcode = String(
+      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || ""
+    ).trim();
     const deliveryPostcode = String(order.shippingAddress?.pincode || "").trim();
+
+    if (!/^\d{6}$/.test(pickupPostcode)) {
+      return res.status(400).json({
+        message: "Vendor pickup pincode is missing or invalid; save a valid pickup address in your profile",
+      });
+    }
 
     if (!/^\d{6}$/.test(deliveryPostcode)) {
       return res.status(400).json({

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   CCard,
   CCardBody,
@@ -13,7 +14,50 @@ import {
   CButton,
 } from "@coreui/react";
 
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
+const emptyPickupAddress = {
+  shiprocketLocationName: "",
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+};
+
 const VendorProfile = () => {
+  const [pickupAddress, setPickupAddress] = useState(emptyPickupAddress);
+  const [pickupAddressError, setPickupAddressError] = useState("");
+  const [pickupAddressMessage, setPickupAddressMessage] = useState("");
+  const [isSavingPickupAddress, setIsSavingPickupAddress] = useState(false);
+
+  useEffect(() => {
+    let isActive = true;
+    axios
+      .get(`${API_URL}/vendor/profile/pickup-address`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+        },
+      })
+      .then((response) => {
+        if (isActive) {
+          setPickupAddress({
+            ...emptyPickupAddress,
+            ...response.data.pickupAddress,
+          });
+        }
+      })
+      .catch((error) => {
+        if (isActive) {
+          setPickupAddressError(
+            error.response?.data?.message || "Could not load the pickup address.",
+          );
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
   const [formData, setFormData] = useState({
     shopName: "Urban Store",
     ownerName: "Mohammad Rizwan",
@@ -43,6 +87,32 @@ const VendorProfile = () => {
     setEditMode(false);
   };
 
+  const savePickupAddress = async () => {
+    setIsSavingPickupAddress(true);
+    setPickupAddressError("");
+    setPickupAddressMessage("");
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/vendor/profile/pickup-address`,
+        pickupAddress,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+          },
+        },
+      );
+      setPickupAddress(response.data.pickupAddress);
+      setPickupAddressMessage(response.data.message);
+    } catch (error) {
+      setPickupAddressError(
+        error.response?.data?.message || "Could not save the pickup address.",
+      );
+    } finally {
+      setIsSavingPickupAddress(false);
+    }
+  };
+
   return (
     <CContainer fluid className="py-3">
       <CRow className="align-items-end mb-4">
@@ -63,6 +133,98 @@ const VendorProfile = () => {
           )}
         </CCol>
       </CRow>
+
+      <CCard className="mb-4 border-0 shadow-sm">
+        <CCardHeader className="bg-white border-0 px-4 pt-4">
+          <h5 className="mb-1">Shiprocket pickup / warehouse address</h5>
+          <p className="text-body-secondary small mb-0">
+            The location name must exactly match a pickup location registered in your Shiprocket account.
+          </p>
+        </CCardHeader>
+        <CCardBody className="px-4">
+          <CRow className="g-3">
+            <CCol md={6}>
+              <CFormLabel>Registered Shiprocket pickup location name</CFormLabel>
+              <CFormInput
+                value={pickupAddress.shiprocketLocationName}
+                onChange={(event) =>
+                  setPickupAddress((current) => ({
+                    ...current,
+                    shiprocketLocationName: event.target.value,
+                  }))
+                }
+              />
+            </CCol>
+            <CCol md={6}>
+              <CFormLabel>Pickup address</CFormLabel>
+              <CFormInput
+                value={pickupAddress.address}
+                onChange={(event) =>
+                  setPickupAddress((current) => ({
+                    ...current,
+                    address: event.target.value,
+                  }))
+                }
+              />
+            </CCol>
+            <CCol md={4}>
+              <CFormLabel>City</CFormLabel>
+              <CFormInput
+                value={pickupAddress.city}
+                onChange={(event) =>
+                  setPickupAddress((current) => ({
+                    ...current,
+                    city: event.target.value,
+                  }))
+                }
+              />
+            </CCol>
+            <CCol md={4}>
+              <CFormLabel>State</CFormLabel>
+              <CFormInput
+                value={pickupAddress.state}
+                onChange={(event) =>
+                  setPickupAddress((current) => ({
+                    ...current,
+                    state: event.target.value,
+                  }))
+                }
+              />
+            </CCol>
+            <CCol md={4}>
+              <CFormLabel>Pickup pincode</CFormLabel>
+              <CFormInput
+                inputMode="numeric"
+                maxLength={6}
+                value={pickupAddress.pincode}
+                onChange={(event) =>
+                  setPickupAddress((current) => ({
+                    ...current,
+                    pincode: event.target.value.replace(/\D/g, "").slice(0, 6),
+                  }))
+                }
+              />
+            </CCol>
+          </CRow>
+          {(pickupAddressError || pickupAddressMessage) && (
+            <p
+              role={pickupAddressError ? "alert" : "status"}
+              className={`mt-3 mb-0 small ${pickupAddressError ? "text-danger" : "text-success"}`}
+            >
+              {pickupAddressError || pickupAddressMessage}
+            </p>
+          )}
+          <div className="d-flex justify-content-end mt-3">
+            <CButton
+              color="primary"
+              onClick={savePickupAddress}
+              disabled={isSavingPickupAddress}
+            >
+              {isSavingPickupAddress ? "Saving..." : "Save pickup address"}
+            </CButton>
+          </div>
+        </CCardBody>
+      </CCard>
 
       <CRow className="g-4">
         <CCol xl={4}>

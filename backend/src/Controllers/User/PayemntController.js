@@ -1,6 +1,7 @@
 import Razorpay from "razorpay";
 import crypto from "crypto";
 import productModel from "../../models/vendor/ProductModel.js";
+import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
 import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
 
@@ -36,6 +37,7 @@ export const order = async (req, res) => {
     };
 
     const checkoutItems = [];
+    const vendorSubtotalsPaise = new Map();
     let subtotalPaise = 0;
 
     for (const item of items) {
@@ -57,6 +59,16 @@ export const order = async (req, res) => {
 
       const unitPricePaise = Math.round(Number(product.pricing) * 100);
       subtotalPaise += unitPricePaise * quantity;
+      const vendorId = String(product.vendorId || "");
+      if (!vendorId) {
+        return res.status(400).json({
+          message: "A cart product is missing its vendor",
+        });
+      }
+      vendorSubtotalsPaise.set(
+        vendorId,
+        (vendorSubtotalsPaise.get(vendorId) || 0) + unitPricePaise * quantity,
+      );
       checkoutItems.push({
         productId: product._id,
         vendorId: product.vendorId,
@@ -68,13 +80,60 @@ export const order = async (req, res) => {
     }
 
     const subtotalAmount = subtotalPaise / 100;
-    const shippingQuote = await getShiprocketShippingQuote({
-      deliveryPostcode,
-      weight: 0.5,
-      cod: 0,
-      declaredValue: subtotalAmount,
-    });
-    const shippingPaise = Math.round(shippingQuote.shippingAmount * 100);
+    const vendorShippingQuotes = [];
+    let shippingPaise = 0;
+
+    for (const [vendorId, vendorSubtotalPaise] of vendorSubtotalsPaise) {
+      const vendor = await VendorModel.findById(vendorId).select("pickupAddress");
+      const pickupAddress = vendor?.pickupAddress;
+      const pickupPostcode = String(pickupAddress?.pincode || "").trim();
+      const pickupLocationName = String(
+        pickupAddress?.shiprocketLocationName || "",
+      ).trim();
+
+      if (!vendor) {
+        return res.status(400).json({
+          message: "A vendor for this cart could not be found",
+        });
+      }
+
+      if (
+        !pickupLocationName ||
+        !pickupAddress?.address ||
+        !pickupAddress?.city ||
+        !pickupAddress?.state ||
+        !/^\d{6}$/.test(pickupPostcode)
+      ) {
+        return res.status(400).json({
+          message: `${vendor.businessName} must save a complete pickup address with a valid six-digit pincode and registered Shiprocket pickup location before checkout`,
+        });
+      }
+
+      const quote = await getShiprocketShippingQuote({
+        pickupPostcode,
+        deliveryPostcode,
+        weight: 0.5,
+        cod: 0,
+        declaredValue: vendorSubtotalPaise / 100,
+      });
+      const vendorShippingPaise = Math.round(quote.shippingAmount * 100);
+      shippingPaise += vendorShippingPaise;
+      vendorShippingQuotes.push({
+        vendorId: vendor._id,
+        pickupLocationName,
+        pickupPostcode,
+        deliveryPostcode,
+        shippingAmount: vendorShippingPaise / 100,
+        courierCompanyId: quote.courierCompanyId,
+        courierName: quote.courierName,
+        estimatedDelivery: quote.estimatedDelivery,
+        weight: quote.weight,
+      });
+    }
+
+    const primaryQuote = vendorShippingQuotes.length === 1
+      ? vendorShippingQuotes[0]
+      : null;
     const amountPaise = subtotalPaise + shippingPaise;
     const finalTotal = amountPaise / 100;
     const option = {
@@ -93,11 +152,12 @@ export const order = async (req, res) => {
       finalTotal,
       items: checkoutItems,
       shippingAddress: normalizedShippingAddress,
-      shippingCourierCompanyId: shippingQuote.courierCompanyId,
-      shippingCourierName: shippingQuote.courierName,
-      shippingPickupPostcode: shippingQuote.pickupPostcode,
-      shippingWeight: shippingQuote.weight,
-      estimatedDelivery: shippingQuote.estimatedDelivery,
+      shippingCourierCompanyId: vendorShippingQuotes[0]?.courierCompanyId || "",
+      shippingCourierName: primaryQuote?.courierName || "",
+      shippingPickupPostcode: primaryQuote?.pickupPostcode || "",
+      shippingWeight: primaryQuote?.weight || 0.5,
+      estimatedDelivery: primaryQuote?.estimatedDelivery || "",
+      vendorShippingQuotes,
     });
 
     return res.status(201).json({
@@ -107,9 +167,10 @@ export const order = async (req, res) => {
         subtotalAmount,
         shippingAmount: shippingPaise / 100,
         finalTotal,
-        shippingCourierCompanyId: shippingQuote.courierCompanyId,
-        shippingCourierName: shippingQuote.courierName,
-        estimatedDelivery: shippingQuote.estimatedDelivery,
+        shippingCourierCompanyId: vendorShippingQuotes[0]?.courierCompanyId || "",
+        shippingCourierName: primaryQuote?.courierName || "",
+        estimatedDelivery: primaryQuote?.estimatedDelivery || "",
+        vendorShippingQuotes,
       },
     });
   } catch (error) {

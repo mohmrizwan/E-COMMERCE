@@ -29,6 +29,14 @@ const AuthSchema = new mongoose.Schema(
       trim: true,
     },
 
+    pickupAddress: {
+      shiprocketLocationName: { type: String, trim: true, default: "" },
+      address: { type: String, trim: true, default: "" },
+      city: { type: String, trim: true, default: "" },
+      state: { type: String, trim: true, default: "" },
+      pincode: { type: String, trim: true, default: "" },
+    },
+
     password: {
       type: String,
       required: true,

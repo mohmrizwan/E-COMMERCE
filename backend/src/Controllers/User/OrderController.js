@@ -65,6 +65,7 @@ export const createOrder = async (req, res) => {
       shippingPickupPostcode: payment.shippingPickupPostcode,
       shippingWeight: payment.shippingWeight,
       estimatedDelivery: payment.estimatedDelivery,
+      vendorShippingQuotes: payment.vendorShippingQuotes,
       razorpayOrderId: payment.razorpay_order_id,
       status: "Pending",
       paymentMethod: "Razorpay",

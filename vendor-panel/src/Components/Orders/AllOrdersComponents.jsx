@@ -28,7 +28,6 @@ const Orders = () => {
   const [courierOptions, setCourierOptions] = useState({});
   const [selectedCouriers, setSelectedCouriers] = useState({});
   const [trackingByOrder, setTrackingByOrder] = useState({});
-  const [pickupPostcode, setPickupPostcode] = useState("");
   const [loadingOrderId, setLoadingOrderId] = useState("");
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -176,10 +175,7 @@ const Orders = () => {
     try {
       const response = await axios.get(
         `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/couriers`,
-        {
-          ...getVendorConfig(),
-          params: pickupPostcode ? { pickupPostcode } : undefined,
-        },
+        getVendorConfig(),
       );
       setCourierOptions((current) => ({
         ...current,
@@ -596,29 +592,6 @@ const Orders = () => {
                                             className="row g-2 align-items-end"
                                             hidden={Boolean(order.shipment.awbCode)}
                                           >
-                                            <div className="col-md-4">
-                                              <label
-                                                className="form-label mb-1"
-                                                htmlFor={`pickup-postcode-${order.id}`}
-                                              >
-                                                Pickup postcode
-                                              </label>
-                                              <CFormInput
-                                                id={`pickup-postcode-${order.id}`}
-                                                inputMode="numeric"
-                                                maxLength={6}
-                                                placeholder="Optional if server-configured"
-                                                value={pickupPostcode}
-                                                onChange={(event) =>
-                                                  setPickupPostcode(
-                                                    event.target.value.replace(
-                                                      /\D/g,
-                                                      "",
-                                                    ),
-                                                  )
-                                                }
-                                              />
-                                            </div>
                                             <div className="col-md-auto">
                                               <button
                                                 type="button"

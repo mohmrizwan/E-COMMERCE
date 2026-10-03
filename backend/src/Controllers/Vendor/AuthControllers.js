@@ -343,3 +343,56 @@ export const resetPassword = async (req, res) => {
     return res.status(500).json({ message: "Server error" });
   }
 };
+
+export const getVendorPickupAddress = async (req, res) => {
+  return res.status(200).json({
+    success: true,
+    pickupAddress: req.vendor.pickupAddress || {},
+  });
+};
+
+export const updateVendorPickupAddress = async (req, res) => {
+  const pickupAddress = {
+    shiprocketLocationName: String(req.body?.shiprocketLocationName || "").trim(),
+    address: String(req.body?.address || "").trim(),
+    city: String(req.body?.city || "").trim(),
+    state: String(req.body?.state || "").trim(),
+    pincode: String(req.body?.pincode || "").trim(),
+  };
+
+  if (
+    !pickupAddress.shiprocketLocationName ||
+    !pickupAddress.address ||
+    !pickupAddress.city ||
+    !pickupAddress.state ||
+    !pickupAddress.pincode
+  ) {
+    return res.status(400).json({
+      success: false,
+      message: "Enter the Shiprocket pickup location name and complete pickup address",
+    });
+  }
+
+  if (!/^\d{6}$/.test(pickupAddress.pincode)) {
+    return res.status(400).json({
+      success: false,
+      message: "Vendor pickup pincode must be exactly six digits",
+    });
+  }
+
+  try {
+    req.vendor.pickupAddress = pickupAddress;
+    await req.vendor.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Pickup address saved successfully",
+      pickupAddress: req.vendor.pickupAddress,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Could not save the vendor pickup address",
+    });
+  }
+};

@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import VendorLayout from "./Layout/Layouts";
 import Dashboard from "./Pages/Dashboard";
 import AllProducts from "./Pages/Products/AllProducts";
@@ -41,6 +41,7 @@ function App() {
       {/* Protected Vendor Panel */}
       <Route element={<ProtectedRoute />}>
         <Route path="/" element={<VendorLayout />}>
+          <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
 
           <Route path="products" element={<AllProducts />} />
