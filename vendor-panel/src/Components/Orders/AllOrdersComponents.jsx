@@ -592,7 +592,10 @@ const Orders = () => {
                                     {order.shipment &&
                                       order.status !== "Shipped" && (
                                         <div className="mt-3">
-                                          <div className="row g-2 align-items-end">
+                                          <div
+                                            className="row g-2 align-items-end"
+                                            hidden={Boolean(order.shipment.awbCode)}
+                                          >
                                             <div className="col-md-4">
                                               <label
                                                 className="form-label mb-1"
@@ -627,7 +630,7 @@ const Orders = () => {
                                                   loadCouriers(order)
                                                 }
                                               >
-                                                Get courier options
+                                                Load configured courier
                                               </button>
                                             </div>
                                             {courierOptions[order.id]?.length >
@@ -658,7 +661,7 @@ const Orders = () => {
                                                     }
                                                   >
                                                     <option value="">
-                                                      Select courier
+                                                      Configured courier
                                                     </option>
                                                     {courierOptions[
                                                       order.id

@@ -95,10 +95,48 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
+    const courierCompanyId = String(
+      existingOrder.shippingCourierCompanyId || ""
+    ).trim();
+
+    if (!/^\d+$/.test(courierCompanyId)) {
+      return res.status(400).json({
+        message: "The order does not have a configured Shiprocket courier",
+      });
+    }
+
     const shiprocketOrder = await createShiprocketOrderFromOrder({
       ...existingOrder.toObject(),
       items: vendorItems,
     });
+
+    let assignmentData = shiprocketOrder;
+
+    if (!shiprocketOrder.awb_code) {
+      const assignment = await assignShiprocketCourier(
+        shiprocketOrder.shipment_id,
+        Number(courierCompanyId)
+      );
+      assignmentData =
+        assignment.response?.data ||
+        assignment.data ||
+        assignment.response ||
+        assignment;
+    }
+
+    const awbCode = assignmentData.awb_code || shiprocketOrder.awb_code;
+    const assignedCourierCompanyId = String(
+      assignmentData.courier_company_id ||
+        shiprocketOrder.courier_company_id ||
+        courierCompanyId
+    );
+
+    if (!awbCode || assignedCourierCompanyId !== courierCompanyId) {
+      return res.status(502).json({
+        success: false,
+        message: "Shiprocket could not assign the configured courier and AWB",
+      });
+    }
 
     const newShipOrder = await shipOrder.create({
       orderId: existingOrder._id,
@@ -108,11 +146,15 @@ export const acceptOrder = async (req, res) => {
       shiprocketOrderId: shiprocketOrder.order_id,
       shiprocketShipmentId: shiprocketOrder.shipment_id,
 
-      awbCode: shiprocketOrder.awb_code || "",
-      courierCompanyId: shiprocketOrder.courier_company_id || "",
-      courierName: shiprocketOrder.courier_name || "",
+      awbCode: String(awbCode),
+      courierCompanyId: assignedCourierCompanyId,
+      courierName:
+        assignmentData.courier_name ||
+        shiprocketOrder.courier_name ||
+        existingOrder.shippingCourierName ||
+        "",
 
-      status: shiprocketOrder.status || "NEW",
+      status: "AWB_ASSIGNED",
     });
 
     existingOrder.status = "Confirmed";
@@ -187,10 +229,16 @@ export const getAvailableCouriers = async (req, res) => {
       shiprocketResponse.data?.available_courier_companies ||
       shiprocketResponse.available_courier_companies ||
       [];
+    const courierCompanyId = String(
+      shipment.courierCompanyId || process.env.SHIPROCKET_COURIER_ID || ""
+    );
+    const configuredCourier = couriers.filter(
+      (courier) => String(courier.courier_company_id) === courierCompanyId
+    );
 
     return res.status(200).json({
       success: true,
-      couriers: couriers.map((courier) => ({
+      couriers: configuredCourier.map((courier) => ({
         courierCompanyId: courier.courier_company_id,
         courierName: courier.courier_name,
         rate: courier.rate ?? courier.freight_charge ?? null,
@@ -219,23 +267,39 @@ export const getAvailableCouriers = async (req, res) => {
 export const assignCourier = async (req, res) => {
   try {
     const { shipOrderId } = req.params;
-    const courierCompanyId = Number(req.body?.courierCompanyId);
-
-    if (!Number.isInteger(courierCompanyId) || courierCompanyId <= 0) {
-      return res.status(400).json({
-        message: "A valid courierCompanyId is required",
-      });
-    }
-
     const shipment = await findVendorShipment(shipOrderId, req.vendor._id);
 
     if (!shipment) {
       return res.status(404).json({ message: "Shipment not found" });
     }
 
+    const configuredCourierCompanyId = String(
+      shipment.courierCompanyId || process.env.SHIPROCKET_COURIER_ID || ""
+    );
+    const requestedCourierCompanyId = req.body?.courierCompanyId
+      ? String(req.body.courierCompanyId)
+      : configuredCourierCompanyId;
+
+    if (
+      !/^\d+$/.test(configuredCourierCompanyId) ||
+      requestedCourierCompanyId !== configuredCourierCompanyId
+    ) {
+      return res.status(400).json({
+        message: "Only the configured Shiprocket courier can be assigned",
+      });
+    }
+
+    if (shipment.awbCode) {
+      return res.status(200).json({
+        success: true,
+        message: "Configured courier and AWB are already assigned",
+        shipment,
+      });
+    }
+
     const assignment = await assignShiprocketCourier(
       shipment.shiprocketShipmentId,
-      courierCompanyId
+      Number(configuredCourierCompanyId)
     );
     const assignmentData =
       assignment.response?.data || assignment.data || assignment.response || assignment;
@@ -249,7 +313,7 @@ export const assignCourier = async (req, res) => {
 
     shipment.awbCode = String(assignmentData.awb_code);
     shipment.courierCompanyId = String(
-      assignmentData.courier_company_id || courierCompanyId
+      assignmentData.courier_company_id || configuredCourierCompanyId
     );
     shipment.courierName = assignmentData.courier_name || "";
     shipment.status = "AWB_ASSIGNED";

@@ -24,7 +24,13 @@ const getAuthConfig = () => ({
   },
 });
 
-const CheckoutAddress = ({ cart, initialAddress, onContinue }) => {
+const CheckoutAddress = ({
+  cart,
+  initialAddress,
+  onContinue,
+  isContinuing,
+  continueError,
+}) => {
   const initialAddressId = initialAddress?._id
     ? String(initialAddress._id)
     : "";
@@ -389,12 +395,24 @@ const CheckoutAddress = ({ cart, initialAddress, onContinue }) => {
                     <button
                       type="button"
                       onClick={handleContinue}
-                      disabled={!cart.length || !selectedAddress || isLoading}
+                      disabled={
+                        !cart.length ||
+                        !selectedAddress ||
+                        isLoading ||
+                        isContinuing
+                      }
                       className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6"
                     >
-                      Continue to Payment
+                      {isContinuing
+                        ? "Calculating delivery..."
+                        : "Continue to Payment"}
                     </button>
                   </div>
+                  {continueError && (
+                    <p role="alert" className="mt-3 text-sm text-red-600">
+                      {continueError}
+                    </p>
+                  )}
                 </>
               )}
             </section>

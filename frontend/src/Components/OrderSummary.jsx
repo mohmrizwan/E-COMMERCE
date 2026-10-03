@@ -96,7 +96,7 @@ const OrderSummary = ({ orderData }) => {
 
           <div className="flex justify-between">
             <span className="font-[inter] text-sm text-[#6B7280]">
-              Shipping
+              Delivery Charge
             </span>
 
             <span className="font-[inter] text-sm font-medium text-[#111827]">
@@ -118,7 +118,7 @@ const OrderSummary = ({ orderData }) => {
 
         <div className="flex items-center justify-between">
           <span className="font-[inter] text-base font-bold text-[#111827]">
-            Total
+            Final Total
           </span>
 
           <span className="font-[inter] text-xl font-bold text-[#6C3BFF]">

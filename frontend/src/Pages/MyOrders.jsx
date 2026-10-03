@@ -74,7 +74,7 @@ const MyOrders = () => {
                 0,
               ),
               price: firstItem?.price || 0,
-              total: order.totalAmount || 0,
+              total: order.finalTotal ?? order.totalAmount ?? 0,
             };
           }),
         );

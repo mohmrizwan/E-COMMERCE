@@ -39,6 +39,52 @@ const OrderSchema = new mongoose.Schema(
       required: true,
     },
 
+    subtotalAmount: {
+      type: Number,
+      required: true,
+    },
+
+    shippingAmount: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+
+    finalTotal: {
+      type: Number,
+      required: true,
+    },
+
+    shippingCourierCompanyId: {
+      type: String,
+      default: "",
+    },
+
+    shippingCourierName: {
+      type: String,
+      default: "",
+    },
+
+    shippingPickupPostcode: {
+      type: String,
+      default: "",
+    },
+
+    shippingWeight: {
+      type: Number,
+      default: 0.5,
+    },
+
+    estimatedDelivery: {
+      type: String,
+      default: "",
+    },
+
+    razorpayOrderId: {
+      type: String,
+      required: true,
+    },
+
     status: {
       type: String,
       enum: [

@@ -666,7 +666,7 @@ function Account() {
             image: firstItem?.productId?.image || "",
             quantity: firstItem?.quantity ?? 0,
             price: firstItem?.price ?? 0,
-            total: order?.totalAmount ?? 0,
+            total: order?.finalTotal ?? order?.totalAmount ?? 0,
             status: order?.status || "Pending",
           };
         });

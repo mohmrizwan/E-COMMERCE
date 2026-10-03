@@ -153,6 +153,63 @@ export const getAvailableShiprocketCouriers = async ({
   return response.data;
 };
 
+export const getShiprocketShippingQuote = async ({
+  deliveryPostcode,
+  weight,
+  cod = 0,
+  declaredValue,
+}) => {
+  const pickupPostcode = String(
+    process.env.SHIPROCKET_PICKUP_POSTCODE || ""
+  ).trim();
+  const courierCompanyId = String(
+    process.env.SHIPROCKET_COURIER_ID || ""
+  ).trim();
+
+  if (!/^\d{6}$/.test(pickupPostcode)) {
+    throw new Error("SHIPROCKET_PICKUP_POSTCODE must be a valid six-digit postcode");
+  }
+
+  if (!/^\d+$/.test(courierCompanyId)) {
+    throw new Error("SHIPROCKET_COURIER_ID must be configured");
+  }
+
+  const serviceability = await getAvailableShiprocketCouriers({
+    pickupPostcode,
+    deliveryPostcode,
+    weight,
+    cod,
+    declaredValue,
+  });
+  const couriers =
+    serviceability.data?.available_courier_companies ||
+    serviceability.available_courier_companies ||
+    [];
+  const courier = couriers.find(
+    (option) => String(option.courier_company_id) === courierCompanyId
+  );
+
+  if (!courier) {
+    throw new Error("The configured Shiprocket courier is unavailable for this postcode");
+  }
+
+  const shippingAmount = Number(courier.rate ?? courier.freight_charge);
+
+  if (!Number.isFinite(shippingAmount) || shippingAmount < 0) {
+    throw new Error("Shiprocket did not return a valid delivery charge");
+  }
+
+  return {
+    shippingAmount: Math.round(shippingAmount * 100) / 100,
+    courierCompanyId,
+    courierName: courier.courier_name || "",
+    estimatedDelivery: courier.etd || courier.estimated_delivery_days || null,
+    pickupPostcode,
+    deliveryPostcode: String(deliveryPostcode),
+    weight,
+  };
+};
+
 export const assignShiprocketCourier = async (shipmentId, courierCompanyId) => {
   const token = await getShiprocketToken();
 

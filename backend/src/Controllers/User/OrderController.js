@@ -1,82 +1,84 @@
 import order from "../../models/user/MyOrdersModel.js";
+import Payment from "../../models/user/Payment.js";
 import productModel from "../../models/vendor/ProductModel.js";
 
 // Create Order
 export const createOrder = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user.id || req.user.userId || req.user._id;
+    const { razorpay_order_id } = req.body;
 
-    const { items, shippingAddress, paymentMethod, paymentStatus } = req.body;
-
-    // Check items
-    if (!items || items.length === 0) {
-      return res.status(400).json({
-        message: "No items found",
-      });
+    if (!razorpay_order_id) {
+      return res.status(400).json({ message: "Razorpay order ID is required" });
     }
 
-    // Check shipping address
-    if (!shippingAddress) {
-      return res.status(400).json({
-        message: "Shipping address is required",
-      });
+    const payment = await Payment.findOne({
+      razorpay_order_id,
+      userId,
+      paymentStatus: "Paid",
+    });
+
+    if (!payment) {
+      return res.status(400).json({ message: "A verified payment is required" });
     }
 
-    let totalAmount = 0;
+    if (payment.orderId) {
+      const existingOrder = await order.findById(payment.orderId);
+      if (existingOrder) {
+        return res.status(200).json({
+          message: "Order already created for this payment",
+          order: existingOrder,
+        });
+      }
+    }
 
     const orderItems = [];
+    const productsToUpdate = [];
 
-    for (const item of items) {
+    for (const item of payment.items) {
       const product = await productModel.findById(item.productId);
 
-      if (!product) {
-        return res.status(404).json({
-          message: "Product not found",
-        });
-      }
-
-      if (item.quantity <= 0) {
+      if (!product || product.stockQuantity < item.quantity) {
         return res.status(400).json({
-          message: "Invalid quantity",
+          message: `${item.name || "A product"} is no longer available in the requested quantity`,
         });
       }
-
-      if (product.stockQuantity < item.quantity) {
-        return res.status(400).json({
-          message: `${product.name} is out of stock`,
-        });
-      }
-
-      const itemTotal = product.pricing * item.quantity;
-
-      totalAmount += itemTotal;
 
       orderItems.push({
         productId: product._id,
-        vendorId: product.vendorId,
+        vendorId: item.vendorId,
         quantity: item.quantity,
-        price: product.pricing,
+        price: item.price,
       });
+      productsToUpdate.push({ product, quantity: item.quantity });
     }
 
     const newOrder = await order.create({
       userId,
       items: orderItems,
-      totalAmount,
+      subtotalAmount: payment.subtotalAmount,
+      shippingAmount: payment.shippingAmount,
+      totalAmount: payment.subtotalAmount,
+      finalTotal: payment.finalTotal,
+      shippingCourierCompanyId: payment.shippingCourierCompanyId,
+      shippingCourierName: payment.shippingCourierName,
+      shippingPickupPostcode: payment.shippingPickupPostcode,
+      shippingWeight: payment.shippingWeight,
+      estimatedDelivery: payment.estimatedDelivery,
+      razorpayOrderId: payment.razorpay_order_id,
       status: "Pending",
-      paymentMethod,
-      paymentStatus: paymentStatus || "Pending",
-      shippingAddress,
+      paymentMethod: "Razorpay",
+      paymentStatus: "Paid",
+      shippingAddress: payment.shippingAddress,
     });
 
-    // Reduce product stock
-    for (const item of items) {
-      const product = await productModel.findById(item.productId);
-
-      product.stockQuantity -= item.quantity;
-
+    for (const { product, quantity } of productsToUpdate) {
+      product.stockQuantity -= quantity;
       await product.save();
     }
+
+    payment.orderId = newOrder._id;
+    await payment.save();
 
     return res.status(201).json({
       message: "Order created successfully",

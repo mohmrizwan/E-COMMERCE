@@ -2,84 +2,36 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 import axios from "axios";
-import toast, { Toaster } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
-const paymentMethods = [
-  // {
-  //   id: "upi",
-  //   label: "UPI",
-  //   detail: "Pay with any UPI app",
-  //   icon: "fa-brands fa-google-pay",
-  // },
-  // {
-  //   id: "card",
-  //   label: "Credit / Debit Card",
-  //   detail: "Visa, Mastercard and more",
-  //   icon: "fa-regular fa-credit-card",
-  // },
-  // {
-  //   id: "netbanking",
-  //   label: "Net Banking",
-  //   detail: "All major banks",
-  //   icon: "fa-solid fa-building-columns",
-  // },
-  // {
-  //   id: "cod",
-  //   label: "Cash on Delivery",
-  //   detail: "Pay when your order arrives",
-  //   icon: "fa-solid fa-money-bill-wave",
-  // },
-];
 
-const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
-  const [selectedMethod, setSelectedMethod] = useState("upi");
+const Payment = ({ setStep, orderData, onPlaceOrder }) => {
   const [paymentState, setPaymentState] = useState("idle");
   const [paymentError, setPaymentError] = useState("");
+  const [paymentVerified, setPaymentVerified] = useState(false);
   const isBusy = paymentState === "initiating" || paymentState === "processing";
-  const canPay = Boolean(orderData?.items?.length && orderData?.address);
-  // const [amount, setAmount] = useState(350);
-  // const handlePayNow = async () => {
-  //   if (!canPay || isBusy) return;
+  const canPay = Boolean(
+    orderData?.items?.length &&
+      orderData?.address &&
+      orderData?.razorpayOrder?.id,
+  );
+  const createStoreOrder = async (razorpayOrderId) => {
+    const orderResponse = await axios.post(
+      `${API_URL}/order/createOrder`,
+      { razorpay_order_id: razorpayOrderId },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+        },
+      },
+    );
 
-  //   setPaymentError("");
-  //   if (typeof onInitiatePayment !== "function") {
-  //     setPaymentState("unavailable");
-  //     setPaymentError(
-  //       "Payment and order placement are not connected yet. No payment was taken and no order was placed.",
-  //     );
-  //     return;
-  //   }
+    if (!orderResponse.data?.order) {
+      throw new Error("Payment was verified, but the order was not created.");
+    }
 
-  //   setPaymentState("initiating");
-  //   try {
-  //     const result = await onInitiatePayment({
-  //       orderData,
-  //       paymentMethod: selectedMethod,
-  //     });
-  //     const nextState = ["processing", "success", "failed", "cancelled"].includes(
-  //       result?.status,
-  //     )
-  //       ? result.status
-  //       : "failed";
-
-  //     setPaymentState(nextState);
-  //     if (nextState === "success") {
-  //       onPlaceOrder(selectedMethod);
-  //     } else if (nextState === "failed") {
-  //       setPaymentError(result?.message || "Payment could not be completed.");
-  //     } else if (nextState === "cancelled") {
-  //       setPaymentError("Payment was cancelled. You can try again.");
-  //     }
-  //   } catch (error) {
-  //     setPaymentState("failed");
-  //     setPaymentError(error?.message || "Payment could not be started.");
-  //   }
-  // };
-
-  const retryPayment = () => {
-    setPaymentState("idle");
-    setPaymentError("");
-    handlePayNow();
+    setPaymentState("success");
+    onPlaceOrder(orderResponse.data);
   };
 
   const handlePayNow = async () => {
@@ -88,36 +40,31 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
     setPaymentError("");
     setPaymentState("initiating");
 
-    try {
-      const response = await axios.post(
-        `${API_URL}/payment/get-payment`,
-        {
-          amount: orderData.total,
-        },
-      );
-      const data = response.data?.data;
-
-      if (!data?.id || !data.amount || !data.currency) {
-        throw new Error("The server did not return a valid Razorpay order.");
+    if (paymentVerified) {
+      try {
+        await createStoreOrder(orderData.razorpayOrder.id);
+      } catch (error) {
+        setPaymentState("failed");
+        setPaymentError(
+          error.response?.data?.message ||
+            error.message ||
+            "Payment was verified, but order creation failed. Retry to finish placing the order.",
+        );
       }
-
-      handlePaymentVerify(data);
-    } catch (error) {
-      console.log(error);
-      setPaymentState("failed");
-      setPaymentError(
-        error.response?.data?.message ||
-          error.message ||
-          "Could not start payment.",
-      );
+      return;
     }
-  };
 
-  const handlePaymentVerify = async (data) => {
+    const data = orderData.razorpayOrder;
+    if (!data?.id || !data.amount || !data.currency) {
+      setPaymentState("failed");
+      setPaymentError("The server did not return a valid Razorpay order.");
+      return;
+    }
+
     if (typeof window.Razorpay !== "function") {
-      throw new Error(
-        "Razorpay Checkout did not load. Please refresh and try again.",
-      );
+      setPaymentState("failed");
+      setPaymentError("Razorpay Checkout did not load. Please refresh and try again.");
+      return;
     }
 
     const option = {
@@ -129,8 +76,6 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
       order_id: data.id,
 
       handler: async (response) => {
-        console.log("RAZORPAY RESPONSE:", response);
-
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
           response;
 
@@ -155,37 +100,34 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
               razorpay_payment_id,
               razorpay_signature,
             },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("userToken")}`,
+              },
+            },
           );
 
-          console.log("VERIFY:", verifyResponse.data);
-
-          if (verifyResponse.data.success) {
-            const orderResponse = await axios.post(
-              `${API_URL}/order/createOrder`,
-              {
-                items: orderData.items,
-                shippingAddress: orderData.address,
-                paymentMethod: "Razorpay",
-                paymentStatus: "Paid",
-              },
-              {
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("userToken")}`,
-                },
-              },
-            );
-
-            console.log("Order Created:", orderResponse.data);
-
-            setPaymentState("success");
+          if (!verifyResponse.data.success) {
+            throw new Error("Payment verification failed.");
           }
+
+          setPaymentVerified(true);
+          await createStoreOrder(razorpay_order_id);
         } catch (error) {
-          console.log("Payment Error:", error);
           setPaymentState("failed");
           setPaymentError(
-            error.response?.data?.message || "Payment verification failed.",
+            error.response?.data?.message ||
+              error.message ||
+              "Payment verification or order creation failed.",
           );
         }
+      },
+
+      modal: {
+        ondismiss: () => {
+          setPaymentState("cancelled");
+          setPaymentError("Payment was cancelled. You can try again.");
+        },
       },
 
       theme: {
@@ -194,15 +136,27 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
     };
 
     const razorpay = new window.Razorpay(option);
+    razorpay.on("payment.failed", (response) => {
+      setPaymentState("failed");
+      setPaymentError(
+        response.error?.description || "Payment could not be completed.",
+      );
+    });
 
     setPaymentState("processing");
     razorpay.open();
   };
 
+  const retryPayment = () => {
+    setPaymentState("idle");
+    setPaymentError("");
+    handlePayNow();
+  };
+
   const statusMessage = {
     initiating: "Opening secure payment...",
     processing: "Payment is processing. Please wait for confirmation.",
-    success: "Payment confirmed.",
+    success: "Payment confirmed and order placed.",
     failed: paymentError,
     cancelled: paymentError,
     unavailable: paymentError,
@@ -318,53 +272,13 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
                   </div>
                 </section>
 
-                <section>
+                <section className="rounded-xl border border-[#E5E7EB] p-4">
                   <h4 className="font-[inter] text-sm font-bold text-[#111827]">
-                    Choose a payment method
+                    Pay securely with Razorpay
                   </h4>
                   <p className="mt-1 text-xs leading-5 text-[#6B7280]">
-                    Payment options will be enabled when secure checkout is
-                    connected.
+                    Your product subtotal and delivery charge are included in the amount below.
                   </p>
-                  <div
-                    role="radiogroup"
-                    aria-label="Payment method"
-                    className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
-                  >
-                    {paymentMethods.map((method) => (
-                      <button
-                        key={method.id}
-                        type="button"
-                        role="radio"
-                        aria-checked={selectedMethod === method.id}
-                        onClick={() => setSelectedMethod(method.id)}
-                        className={`flex min-w-0 items-start gap-3 rounded-xl border p-4 text-left transition ${
-                          selectedMethod === method.id
-                            ? "border-[#6C3BFF] bg-[#F7F5FF] text-[#6C3BFF]"
-                            : "border-[#E5E7EB] bg-white text-[#111827] hover:border-[#b6a5e7]"
-                        }`}
-                      >
-                        <i
-                          className={`${method.icon} mt-0.5 w-5 shrink-0 text-center`}
-                        />
-                        <span className="min-w-0">
-                          <span className="block wrap-break-word text-sm font-semibold">
-                            {method.label}
-                          </span>
-                          <span className="mt-1 block text-xs leading-5 text-[#6B7280]">
-                            {method.detail}
-                          </span>
-                        </span>
-                        <span
-                          className={`ml-auto mt-1 h-4 w-4 shrink-0 rounded-full border ${
-                            selectedMethod === method.id
-                              ? "border-4 border-[#6C3BFF]"
-                              : "border-[#9CA3AF]"
-                          }`}
-                        />
-                      </button>
-                    ))}
-                  </div>
                 </section>
 
                 {statusMessage && (
@@ -420,8 +334,6 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onInitiatePayment }) => {
                         <i className="fa-solid fa-spinner animate-spin" />
                         Starting secure payment...
                       </>
-                    ) : selectedMethod === "cod" ? (
-                      `Place COD order · ₹${Number(orderData?.total || 0).toLocaleString("en-IN")}`
                     ) : (
                       `Pay ₹${Number(orderData?.total || 0).toLocaleString("en-IN")}`
                     )}
