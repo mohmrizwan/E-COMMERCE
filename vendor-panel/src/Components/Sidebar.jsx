@@ -175,15 +175,7 @@ function Sidebar({ visible, setVisible }) {
           Customers
         </CNavItem>
 
-        {/* Reviews */}
 
-        <CNavItem
-          href="/reviews"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
-        >
-          <CIcon icon={cilStar} customClassName="nav-icon !text-violet-400" />
-          Reviews
-        </CNavItem>
 
         {/* ---------- FINANCE ---------- */}
 
@@ -193,15 +185,6 @@ function Sidebar({ visible, setVisible }) {
           </span>
         </div>
 
-        {/* Earnings */}
-
-        <CNavItem
-          href="/earnings"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
-        >
-          <CIcon icon={cilWallet} customClassName="nav-icon !text-violet-400" />
-          Earnings
-        </CNavItem>
 
         {/* Transactions */}
 
@@ -217,26 +200,7 @@ function Sidebar({ visible, setVisible }) {
 
 
 
-        {/* ---------- SUPPORT ---------- */}
-
-        <div className="px-3 mt-5 mb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Support
-          </span>
-        </div>
-
-        {/* Messages */}
-
-        <CNavItem
-          href="/messages"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
-        >
-          <CIcon
-            icon={cilChatBubble}
-            customClassName="nav-icon !text-violet-400"
-          />
-          Messages
-        </CNavItem>
+      
 
         {/* Notifications */}
 
