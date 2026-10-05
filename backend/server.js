@@ -6,7 +6,12 @@ const PORT = Number(process.env.PORT) || 3000;
 
 console.log("MONGO URI LOADED:", !!process.env.MONGODB_URI);
 
-dbConnect();
+try {
+  await dbConnect();
+} catch (error) {
+  console.error("Server startup failed:", error.message);
+  process.exit(1);
+}
 
 createApp().listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
