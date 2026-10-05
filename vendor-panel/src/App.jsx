@@ -8,6 +8,7 @@ import AllOrders from "./Pages/Orders/AllOrders";
 import Processing from "./Pages/Orders/Processing";
 import Shipped from "./Pages/Orders/Shipped";
 import Deliverd from "./Pages/Orders/Deliverd";
+import Cancelled from "./Pages/Orders/Cancelled";
 import Customers from "./Pages/Customer/Customers";
 import Review from "./Pages/Review/Review";
 import Earning from "./Pages/Finance/Earning";
@@ -53,6 +54,7 @@ function App() {
           <Route path="orders/processing" element={<Processing />} />
           <Route path="orders/shipped" element={<Shipped />} />
           <Route path="orders/delivered" element={<Deliverd />} />
+          <Route path="orders/cancelled" element={<Cancelled />} />
 
           <Route path="customers" element={<Customers />} />
           <Route path="reviews" element={<Review />} />

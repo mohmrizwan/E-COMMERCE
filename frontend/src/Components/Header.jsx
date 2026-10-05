@@ -117,51 +117,7 @@ const Header = () => {
           </div>
         </div>
 
-        <div className="mx-auto overflow-x-auto px-4 pb-3 scrollbar-hide sm:px-6 lg:px-10">
-          <nav className="flex min-w-max items-center gap-6 sm:gap-7">
-            <Link
-              to="/categories"
-              className="whitespace-nowrap font-[inter] text-sm font-semibold text-[#6c3bff]"
-            >
-              All Categories
-            </Link>
-
-            <Link
-              to="/electronics"
-              className="whitespace-nowrap text-sm font-semibold text-gray-400 transition-colors duration-300 hover:text-black"
-            >
-              Electronics
-            </Link>
-
-            <Link
-              to="/fashion"
-              className="whitespace-nowrap text-sm font-semibold text-gray-400 transition-colors duration-300 hover:text-black"
-            >
-              Fashion
-            </Link>
-
-            <Link
-              to="/home-living"
-              className="whitespace-nowrap text-sm font-semibold text-gray-400 transition-colors duration-300 hover:text-black"
-            >
-              Home & Living
-            </Link>
-
-            <Link
-              to="/sports"
-              className="whitespace-nowrap text-sm font-semibold text-gray-400 transition-colors duration-300 hover:text-black"
-            >
-              Sports
-            </Link>
-
-            <Link
-              to="/accessories"
-              className="whitespace-nowrap text-sm font-semibold text-gray-400 transition-colors duration-300 hover:text-black"
-            >
-              Accessories
-            </Link>
-          </nav>
-        </div>
+      
       </header>
     </>
   );

@@ -1,11 +1,5 @@
-import React from "react";
-import DeliveredOrders from "../../Components/Orders/DelieveredComponents";
-const Deliverd = () => {
-  return (
-    <>
-      <DeliveredOrders />
-    </>
-  );
-};
+import VendorStatusOrders from "../../Components/Orders/VendorStatusOrders";
+
+const Deliverd = () => <VendorStatusOrders status="Delivered" title="Delivered Orders" />;
 
 export default Deliverd;

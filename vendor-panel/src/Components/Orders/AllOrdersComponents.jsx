@@ -20,7 +20,11 @@ import CIcon from "@coreui/icons-react";
 import { cilSearch, cilChevronBottom, cilChevronRight } from "@coreui/icons";
 import ProductLoader from "../ProductLoader";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.DEV
+    ? "http://localhost:3000"
+    : "https://ecommerceba-6dtt.onrender.com");
 
 const Orders = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
@@ -31,6 +35,9 @@ const Orders = () => {
   const [loadingOrderId, setLoadingOrderId] = useState("");
   const [notice, setNotice] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   const getVendorConfig = () => ({
     headers: {
@@ -47,8 +54,6 @@ const Orders = () => {
           Authorization: `Bearer ${vendorToken}`,
         },
       });
-
-      console.log("VENDOR ORDERS RESPONSE:", response.data);
 
       if (response.status === 200) {
         const backendOrders = response.data.orders || [];
@@ -83,13 +88,17 @@ const Orders = () => {
 
             items: totalItems,
 
-            total: `₹${order.totalAmount || 0}`,
+            total: `₹${order.finalTotal ?? order.totalAmount ?? 0}`,
 
-            status: order.vendorStatus || order.status || "Pending",
+            status:
+              order.status === "Cancelled"
+                ? "Cancelled"
+                : order.vendorStatus || order.status || "Pending",
 
             date: order.createdAt
               ? new Date(order.createdAt).toLocaleDateString()
               : "N/A",
+            createdAt: order.createdAt,
 
             payment: order.paymentStatus || "Pending",
 
@@ -105,14 +114,11 @@ const Orders = () => {
           };
         });
 
-        console.log("FORMATTED VENDOR ORDERS:", formattedOrders);
-
         setOrders(formattedOrders);
       }
     } catch (error) {
       console.error("Error fetching my orders:", error);
-      console.log("Backend error:", error.response?.data);
-
+      setNotice(error.response?.data?.message || "Could not load orders.");
       setOrders([]);
     } finally {
       setIsLoading(false);
@@ -122,6 +128,32 @@ const Orders = () => {
   useEffect(() => {
     getMyOrders();
   }, []);
+
+  const filteredOrders = orders.filter((order) => {
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      [order.id, order.customer, order.email, order.products, order.status, order.payment]
+        .some((value) => String(value || "").toLowerCase().includes(query));
+    const matchesStatus = !statusFilter || order.status === statusFilter;
+
+    let matchesDate = true;
+    if (dateFilter) {
+      const orderDate = new Date(order.createdAt);
+      const startDate = new Date();
+      startDate.setHours(0, 0, 0, 0);
+
+      if (dateFilter === "7days") {
+        startDate.setDate(startDate.getDate() - 7);
+      } else if (dateFilter === "30days") {
+        startDate.setDate(startDate.getDate() - 30);
+      }
+
+      matchesDate = !Number.isNaN(orderDate.getTime()) && orderDate >= startDate;
+    }
+
+    return matchesSearch && matchesStatus && matchesDate;
+  });
 
   const toggleOrderDetails = (orderId) => {
     setExpandedOrderId((prev) => (prev === orderId ? null : orderId));
@@ -295,12 +327,17 @@ const Orders = () => {
                 <CFormInput
                   placeholder="Search by order ID or customer..."
                   className="ps-5"
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
                 />
               </div>
             </CCol>
 
             <CCol md={3}>
-              <CFormSelect>
+              <CFormSelect
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+              >
                 <option value="">All Status</option>
                 <option value="Pending">Pending</option>
                 <option value="Processing">Processing</option>
@@ -311,7 +348,10 @@ const Orders = () => {
             </CCol>
 
             <CCol md={3}>
-              <CFormSelect>
+              <CFormSelect
+                value={dateFilter}
+                onChange={(event) => setDateFilter(event.target.value)}
+              >
                 <option value="">All Dates</option>
                 <option value="today">Today</option>
                 <option value="7days">Last 7 Days</option>
@@ -336,7 +376,7 @@ const Orders = () => {
               <h5 className="fw-semibold mb-1">All Orders</h5>
 
               <small className="text-body-secondary">
-                {orders.length} orders found
+                {filteredOrders.length} orders found
               </small>
             </div>
           </div>
@@ -389,15 +429,15 @@ const Orders = () => {
                   </CTableDataCell>
                 </CTableRow>
               )}
-              {!isLoading && orders.length === 0 && (
+              {!isLoading && filteredOrders.length === 0 && (
                 <CTableRow>
                   <CTableDataCell colSpan={8} className="py-4 text-center">
-                    No orders found.
+                    {orders.length ? "No orders match these filters." : "No orders found."}
                   </CTableDataCell>
                 </CTableRow>
               )}
               {!isLoading &&
-                orders.map((order) => {
+                filteredOrders.map((order) => {
                   const isExpanded = expandedOrderId === order.id;
 
                   const statusStyle = getStatusStyles(order.status);

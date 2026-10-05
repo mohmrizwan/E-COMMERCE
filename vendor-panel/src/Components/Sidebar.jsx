@@ -156,6 +156,13 @@ function Sidebar({ visible, setVisible }) {
           >
             Delivered
           </CNavItem>
+
+          <CNavItem
+            href="/orders/cancelled"
+            className="!text-slate-400 hover:!text-white"
+          >
+            Cancelled
+          </CNavItem>
         </CNavGroup>
 
         {/* Customers */}

@@ -1,11 +1,5 @@
-import React from "react";
-import ProcessingComponents from "../../Components/Orders/ProcessingComponents";
-const Processing = () => {
-  return (
-    <>
-      <ProcessingComponents />
-    </>
-  );
-};
+import VendorStatusOrders from "../../Components/Orders/VendorStatusOrders";
+
+const Processing = () => <VendorStatusOrders status="Processing" title="Processing Orders" />;
 
 export default Processing;
