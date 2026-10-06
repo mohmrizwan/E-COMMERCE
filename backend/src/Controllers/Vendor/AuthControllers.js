@@ -144,7 +144,6 @@ export const verifyOtp = async (req, res) => {
     vendor.otp = null;
     vendor.otpExpiresAt = null;
 
-
     await vendor.save();
     return res
       .status(200)
@@ -353,7 +352,9 @@ export const getVendorPickupAddress = async (req, res) => {
 
 export const updateVendorPickupAddress = async (req, res) => {
   const pickupAddress = {
-    shiprocketLocationName: String(req.body?.shiprocketLocationName || "").trim(),
+    shiprocketLocationName: String(
+      req.body?.shiprocketLocationName || "",
+    ).trim(),
     address: String(req.body?.address || "").trim(),
     city: String(req.body?.city || "").trim(),
     state: String(req.body?.state || "").trim(),
@@ -369,7 +370,8 @@ export const updateVendorPickupAddress = async (req, res) => {
   ) {
     return res.status(400).json({
       success: false,
-      message: "Enter the Shiprocket pickup location name and complete pickup address",
+      message:
+        "Enter the Shiprocket pickup location name and complete pickup address",
     });
   }
 
@@ -393,6 +395,32 @@ export const updateVendorPickupAddress = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Could not save the vendor pickup address",
+    });
+  }
+};
+
+export const getVendorProfile = async (req, res) => {
+  try {
+    const vendor = req.vendor.id;
+
+    if (!vendor) {
+      return res.status(404).json({
+        success: false,
+        message: "Vendor not found",
+      });
+    }
+
+    const vendorProfile = await VendorModel.findById(vendor).select(
+      "-password -otp -otpExpiresAt",
+    );
+    return res.status(200).json({
+      success: true,
+      vendorProfile,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Could not fetch vendor profile",
     });
   }
 };

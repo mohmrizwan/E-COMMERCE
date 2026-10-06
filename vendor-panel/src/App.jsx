@@ -11,7 +11,7 @@ import Deliverd from "./Pages/Orders/Deliverd";
 import Cancelled from "./Pages/Orders/Cancelled";
 import Customers from "./Pages/Customer/Customers";
 import Review from "./Pages/Review/Review";
-import Earning from "./Pages/Finance/Earning";
+// import Earning from "./Pages/Finance/Earning";
 import Transaction from "./Pages/Finance/Transaction";
 import Message from "./Pages/Messages/Message";
 import Profile from "./Pages/Profile/Profile";
@@ -58,7 +58,7 @@ function App() {
 
           <Route path="customers" element={<Customers />} />
           <Route path="reviews" element={<Review />} />
-          <Route path="earnings" element={<Earning />} />
+          {/* <Route path="earnings" element={<Earning />} /> */}
           <Route path="transactions" element={<Transaction />} />
           <Route path="messages" element={<Message />} />
           <Route path="profile" element={<Profile />} />

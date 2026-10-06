@@ -8,7 +8,8 @@ import Product from "../../backend/src/Routes/Users/ProductRoutes.js";
 import Payment from "../../backend/src/Routes/Users/PaymnetRoutes.js";
 import Order from "../../backend/src/Routes/Users/OrderRoutes.js";
 import VendorOrderRoutes from "./Routes/Vendor/OrderRoutes.js";
-import shiprocketRoutes from "../../backend/src/Routes/Shiprocket/ShipRocketRoutes.js"
+import shiprocketRoutes from "../../backend/src/Routes/Shiprocket/ShipRocketRoutes.js";
+import TransactionRoutes from "./Routes/Vendor/TransactionRoutes.js";
 export default function createApp() {
   const app = express();
 
@@ -26,6 +27,7 @@ export default function createApp() {
   app.use("/vendor", VendorRoutes);
   app.use("/vendor/products", ProductsRoutes);
   app.use("/vendor/orders", VendorOrderRoutes);
+  app.use("/vendor/transactions", TransactionRoutes);
 
   return app;
 }

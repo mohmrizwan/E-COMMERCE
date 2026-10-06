@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import {
-    LoginAccount,
+  LoginAccount,
   forgotPassword,
   getVendorPickupAddress,
   resetPassword,
@@ -10,6 +10,7 @@ import {
   registerVendor,
   resendOtp,
   verifyOtp,
+  getVendorProfile,
 } from "../../Controllers/Vendor/AuthControllers.js";
 import VendorAuthMiddleware from "../../middlewares/VendorAuthMiddleware.js";
 
@@ -20,7 +21,16 @@ router.post("/login", LoginAccount);
 router.post("/forgot-password", forgotPassword);
 router.post("/verify-reset-otp", verifyResetOtp);
 router.post("/reset-password", resetPassword);
-router.get("/profile/pickup-address", VendorAuthMiddleware, getVendorPickupAddress);
-router.put("/profile/pickup-address", VendorAuthMiddleware, updateVendorPickupAddress);
+router.get(
+  "/profile/pickup-address",
+  VendorAuthMiddleware,
+  getVendorPickupAddress,
+);
+router.put(
+  "/profile/pickup-address",
+  VendorAuthMiddleware,
+  updateVendorPickupAddress,
+);
+router.get("/myProfile", VendorAuthMiddleware, getVendorProfile);
 
 export default router;

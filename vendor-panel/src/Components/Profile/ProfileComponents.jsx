@@ -14,8 +14,11 @@ import {
   CButton,
   CSpinner,
 } from "@coreui/react";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const API_URL = "https://ecommerceba-6dtt.onrender.com";
+
 const emptyPickupAddress = {
   shiprocketLocationName: "",
   address: "",
@@ -25,14 +28,53 @@ const emptyPickupAddress = {
 };
 
 const VendorProfile = () => {
-  const [pickupAddress, setPickupAddress] = useState(emptyPickupAddress);
+  // Vendor profile data
+  const [formData, setFormData] = useState({
+    businessName: "",
+    ownerName: "",
+    email: "",
+    phone: "",
+    address: "",
+    description: "",
+    accountHolderName: "",
+    bankName: "",
+    accountNumber: "",
+    ifscCode: "",
+    upiId: "",
+    payoutMethod: "bank",
+  });
+
+  const [message, setMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
+  // Pickup address
+  const [pickupAddress, setPickupAddress] = useState(
+    emptyPickupAddress,
+  );
+
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
-  const [isLoadingPickupAddress, setIsLoadingPickupAddress] = useState(true);
-  const [isSavingPickupAddress, setIsSavingPickupAddress] = useState(false);
 
+  const [isLoadingPickupAddress, setIsLoadingPickupAddress] =
+    useState(true);
+
+  const [isSavingPickupAddress, setIsSavingPickupAddress] =
+    useState(false);
+
+  const [editMode, setEditMode] = useState(false);
+  const shiprocketAddress = [
+    pickupAddress.address,
+    pickupAddress.city,
+    pickupAddress.state,
+    pickupAddress.pincode,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  // Get Pickup Address
   useEffect(() => {
     let isActive = true;
+
     axios
       .get(`${API_URL}/vendor/profile/pickup-address`, {
         headers: {
@@ -50,12 +92,15 @@ const VendorProfile = () => {
       .catch((error) => {
         if (isActive) {
           setPickupAddressError(
-            error.response?.data?.message || "Could not load the pickup address.",
+            error.response?.data?.message ||
+              "Could not load the pickup address.",
           );
         }
       })
       .finally(() => {
-        if (isActive) setIsLoadingPickupAddress(false);
+        if (isActive) {
+          setIsLoadingPickupAddress(false);
+        }
       });
 
     return () => {
@@ -63,24 +108,53 @@ const VendorProfile = () => {
     };
   }, []);
 
-  const [formData, setFormData] = useState({
-    shopName: "Urban Store",
-    ownerName: "Mohammad Rizwan",
-    email: "vendor@gmail.com",
-    phone: "+91 9876543210",
-    address: "Indore, Madhya Pradesh, India",
-    description:
-      "We provide quality products at affordable prices for our customers.",
-    accountHolderName: "Mohammad Rizwan",
-    bankName: "State Bank of India",
-    accountNumber: "123456789012",
-    ifscCode: "SBIN0001234",
-    upiId: "mohammad@upi",
-    payoutMethod: "bank",
-  });
+  // Get vendor profile
+  const getProfileData = async () => {
+    try {
+      const vendorToken = localStorage.getItem("vendorToken");
 
-  const [editMode, setEditMode] = useState(false);
+      const response = await axios.get(
+        `http://localhost:3000/vendor/myProfile`,
+        {
+          headers: {
+            Authorization: `Bearer ${vendorToken}`,
+          },
+        },
+      );
+      const vendorProfile = response.data.vendorProfile;
 
+      setFormData({
+        businessName: vendorProfile.businessName || "",
+        ownerName: vendorProfile.ownerName || "",
+        email: vendorProfile.email || "",
+        phone: vendorProfile.phone || "",
+        address: vendorProfile.address || "",
+        description: vendorProfile.description || "",
+        accountHolderName: vendorProfile.accountHolderName || "",
+        bankName: vendorProfile.bankName || "",
+        accountNumber: vendorProfile.accountNumber || "",
+        ifscCode: vendorProfile.ifscCode || "",
+        upiId: vendorProfile.upiId || "",
+        payoutMethod: vendorProfile.payoutMethod || "bank",
+      });
+
+      setErrorMessage("");
+    } catch (error) {
+      setErrorMessage(
+        error.response?.data?.message ||
+          "Something went wrong",
+      );
+
+      setMessage("");
+    }
+  };
+
+  // Get profile data when page loads
+  useEffect(() => {
+    getProfileData();
+  }, []);
+
+  // Profile input change
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -88,10 +162,12 @@ const VendorProfile = () => {
     });
   };
 
+  // Profile save
   const handleSave = () => {
     setEditMode(false);
   };
 
+  // Save Pickup Address
   const savePickupAddress = async () => {
     setPickupAddressError("");
     setPickupAddressMessage("");
@@ -102,17 +178,22 @@ const VendorProfile = () => {
         String(value || "").trim(),
       ]),
     );
-    const hasEmptyField = Object.values(normalizedPickupAddress).some(
-      (value) => !value,
-    );
+
+    const hasEmptyField = Object.values(
+      normalizedPickupAddress,
+    ).some((value) => !value);
 
     if (hasEmptyField) {
-      setPickupAddressError("Complete all pickup address fields before saving.");
+      setPickupAddressError(
+        "Complete all pickup address fields before saving.",
+      );
       return;
     }
 
     if (!/^\d{6}$/.test(normalizedPickupAddress.pincode)) {
-      setPickupAddressError("Pickup pincode must be exactly six digits.");
+      setPickupAddressError(
+        "Pickup pincode must be exactly six digits.",
+      );
       return;
     }
 
@@ -124,15 +205,19 @@ const VendorProfile = () => {
         normalizedPickupAddress,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(
+              "vendorToken",
+            )}`,
           },
         },
       );
+
       setPickupAddress(response.data.pickupAddress);
       setPickupAddressMessage(response.data.message);
     } catch (error) {
       setPickupAddressError(
-        error.response?.data?.message || "Could not save the pickup address.",
+        error.response?.data?.message ||
+          "Could not save the pickup address.",
       );
     } finally {
       setIsSavingPickupAddress(false);
@@ -141,279 +226,552 @@ const VendorProfile = () => {
 
   return (
     <CContainer fluid className="py-3">
+      {/* Success Snackbar */}
+      <Snackbar
+        open={Boolean(message)}
+        autoHideDuration={3000}
+        onClose={() => setMessage("")}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Alert
+          onClose={() => setMessage("")}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {message}
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={Boolean(errorMessage)}
+        autoHideDuration={3000}
+        onClose={() => setErrorMessage("")}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+      >
+        <Alert
+          onClose={() => setErrorMessage("")}
+          severity="error"
+          variant="filled"
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
+
+      {/* Header */}
       <CRow className="align-items-end mb-4">
         <CCol>
           <p className="text-uppercase text-primary fw-semibold small mb-1">
             Account center
           </p>
-          <h3 className="fw-bold mb-1">Vendor Profile</h3>
+
+          <h3 className="fw-bold mb-1">
+            Vendor Profile
+          </h3>
+
           <p className="text-body-secondary mb-0">
-            Keep your store identity and payout information up to date.
+            Keep your store identity and payout information up to
+            date.
           </p>
         </CCol>
+
         <CCol xs="auto">
           {!editMode && (
-            <CButton color="primary" onClick={() => setEditMode(true)}>
+            <CButton
+              color="primary"
+              onClick={() => setEditMode(true)}
+            >
               Edit Profile
             </CButton>
           )}
         </CCol>
       </CRow>
 
+      {/* Shiprocket Pickup Address */}
       <CCard className="mb-4 border-0 shadow-sm">
         <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <h5 className="mb-1">Shiprocket pickup / warehouse address</h5>
+          <h5 className="mb-1">
+            Shiprocket pickup / warehouse address
+          </h5>
+
           <p className="text-body-secondary small mb-0">
-            The location name must exactly match a pickup location registered in your Shiprocket account.
+            The location name must exactly match a pickup location
+            registered in your Shiprocket account.
           </p>
         </CCardHeader>
+
         <CCardBody className="px-4">
           {isLoadingPickupAddress ? (
-            <div role="status" className="flex min-h-28 items-center justify-center gap-2 text-sm text-body-secondary">
+            <div
+              role="status"
+              className="d-flex align-items-center justify-content-center gap-2 text-sm text-body-secondary"
+              style={{ minHeight: "112px" }}
+            >
               <CSpinner size="sm" aria-hidden="true" />
               Loading pickup address...
             </div>
           ) : (
             <>
               <CRow className="g-3">
-            <CCol md={6}>
-              <CFormLabel>Registered Shiprocket pickup location name</CFormLabel>
-              <CFormInput
-                required
-                value={pickupAddress.shiprocketLocationName}
-                onChange={(event) =>
-                  setPickupAddress((current) => ({
-                    ...current,
-                    shiprocketLocationName: event.target.value,
-                  }))
-                }
-              />
-            </CCol>
-            <CCol md={6}>
-              <CFormLabel>Pickup address</CFormLabel>
-              <CFormInput
-                required
-                value={pickupAddress.address}
-                onChange={(event) =>
-                  setPickupAddress((current) => ({
-                    ...current,
-                    address: event.target.value,
-                  }))
-                }
-              />
-            </CCol>
-            <CCol md={4}>
-              <CFormLabel>City</CFormLabel>
-              <CFormInput
-                required
-                value={pickupAddress.city}
-                onChange={(event) =>
-                  setPickupAddress((current) => ({
-                    ...current,
-                    city: event.target.value,
-                  }))
-                }
-              />
-            </CCol>
-            <CCol md={4}>
-              <CFormLabel>State</CFormLabel>
-              <CFormInput
-                required
-                value={pickupAddress.state}
-                onChange={(event) =>
-                  setPickupAddress((current) => ({
-                    ...current,
-                    state: event.target.value,
-                  }))
-                }
-              />
-            </CCol>
-            <CCol md={4}>
-              <CFormLabel>Pickup pincode</CFormLabel>
-              <CFormInput
-                required
-                inputMode="numeric"
-                maxLength={6}
-                pattern="[0-9]{6}"
-                value={pickupAddress.pincode}
-                onChange={(event) =>
-                  setPickupAddress((current) => ({
-                    ...current,
-                    pincode: event.target.value.replace(/\D/g, "").slice(0, 6),
-                  }))
-                }
-              />
-            </CCol>
+                <CCol md={6}>
+                  <CFormLabel>
+                    Registered Shiprocket pickup location name
+                  </CFormLabel>
+
+                  <CFormInput
+                    required
+                    value={
+                      pickupAddress.shiprocketLocationName
+                    }
+                    onChange={(event) =>
+                      setPickupAddress((current) => ({
+                        ...current,
+                        shiprocketLocationName:
+                          event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+
+                <CCol md={6}>
+                  <CFormLabel>
+                    Pickup address
+                  </CFormLabel>
+
+                  <CFormInput
+                    required
+                    value={pickupAddress.address}
+                    onChange={(event) =>
+                      setPickupAddress((current) => ({
+                        ...current,
+                        address: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+
+                <CCol md={4}>
+                  <CFormLabel>City</CFormLabel>
+
+                  <CFormInput
+                    required
+                    value={pickupAddress.city}
+                    onChange={(event) =>
+                      setPickupAddress((current) => ({
+                        ...current,
+                        city: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+
+                <CCol md={4}>
+                  <CFormLabel>State</CFormLabel>
+
+                  <CFormInput
+                    required
+                    value={pickupAddress.state}
+                    onChange={(event) =>
+                      setPickupAddress((current) => ({
+                        ...current,
+                        state: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+
+                <CCol md={4}>
+                  <CFormLabel>
+                    Pickup pincode
+                  </CFormLabel>
+
+                  <CFormInput
+                    required
+                    inputMode="numeric"
+                    maxLength={6}
+                    pattern="[0-9]{6}"
+                    value={pickupAddress.pincode}
+                    onChange={(event) =>
+                      setPickupAddress((current) => ({
+                        ...current,
+                        pincode: event.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 6),
+                      }))
+                    }
+                  />
+                </CCol>
               </CRow>
-          {(pickupAddressError || pickupAddressMessage) && (
-            <p
-              role={pickupAddressError ? "alert" : "status"}
-              className={`mt-3 mb-0 small ${pickupAddressError ? "text-danger" : "text-success"}`}
-            >
-              {pickupAddressError || pickupAddressMessage}
-            </p>
-          )}
-          <div className="d-flex justify-content-end mt-3">
-            <CButton
-              color="primary"
-              onClick={savePickupAddress}
-              disabled={isLoadingPickupAddress || isSavingPickupAddress}
-            >
-              {isSavingPickupAddress ? "Saving..." : "Save pickup address"}
-            </CButton>
-          </div>
+
+              {(pickupAddressError ||
+                pickupAddressMessage) && (
+                <p
+                  role={
+                    pickupAddressError
+                      ? "alert"
+                      : "status"
+                  }
+                  className={`mt-3 mb-0 small ${
+                    pickupAddressError
+                      ? "text-danger"
+                      : "text-success"
+                  }`}
+                >
+                  {pickupAddressError ||
+                    pickupAddressMessage}
+                </p>
+              )}
+
+              <div className="d-flex justify-content-end mt-3">
+                <CButton
+                  color="primary"
+                  onClick={savePickupAddress}
+                  disabled={
+                    isLoadingPickupAddress ||
+                    isSavingPickupAddress
+                  }
+                >
+                  {isSavingPickupAddress
+                    ? "Saving..."
+                    : "Save pickup address"}
+                </CButton>
+              </div>
             </>
           )}
         </CCardBody>
       </CCard>
 
+      {/* Profile */}
       <CRow className="g-4">
+        {/* Left Profile Card */}
         <CCol xl={4}>
-          <CCard className="h-100 border-0 shadow-sm overflow-hidden">
-            <div className="bg-primary px-4 pt-4 pb-5 text-white">
-              <div className="d-flex justify-content-between align-items-start">
-                <span className="small text-white-50">Vendor account</span>
-                <span className="badge rounded-pill bg-white text-primary">
+          <CCard className="h-100 border-0 shadow-sm">
+            {/* Profile Header */}
+            <div className="bg-primary text-white p-4">
+              <div className="d-flex justify-content-between align-items-start gap-3">
+                <div>
+                  <div className="small text-white-50 mb-1">
+                    Vendor Account
+                  </div>
+
+                  <h4 className="fw-bold mb-1">
+                    {formData.businessName}
+                  </h4>
+
+                  <p className="mb-0 text-white-50">
+                    {formData.ownerName ||
+                      "Owner"}
+                  </p>
+                </div>
+
+                <span className="badge rounded-pill bg-white text-primary px-3 py-2">
                   Active
                 </span>
               </div>
-              <h4 className="mt-4 mb-1">{formData.shopName}</h4>
-              <p className="mb-0 text-white-50">{formData.ownerName}</p>
             </div>
-            <CCardBody className="position-relative pt-0">
-              <div className="d-flex align-items-end gap-3" style={{ marginTop: "-42px" }}>
-                <img
-                  src="https://i.pravatar.cc/100?img=12"
-                  alt="Vendor profile"
-                  width="84"
-                  height="84"
-                  className="rounded-circle border border-4 border-white shadow-sm"
-                />
-                {editMode && (
-                  <CButton color="light" variant="outline" className="mb-2">
-                    Change Photo
-                  </CButton>
-                )}
+
+            {/* Profile Details */}
+            <CCardBody className="p-4">
+              <div className="mb-4">
+                <div className="small text-body-secondary mb-1">
+                  Email Address
+                </div>
+
+                <div className="fw-semibold text-break">
+                  {formData.email ||
+                    "Not available"}
+                </div>
               </div>
 
-              <div className="mt-4">
-                <div className="border-bottom pb-3 mb-3">
-                  <div className="small text-body-secondary">Email</div>
-                  <div className="fw-semibold text-break">{formData.email}</div>
+              <div className="border-top pt-3 mb-4">
+                <div className="small text-body-secondary mb-1">
+                  Phone Number
                 </div>
-                <div className="border-bottom pb-3 mb-3">
-                  <div className="small text-body-secondary">Phone</div>
-                  <div className="fw-semibold">{formData.phone}</div>
+
+                <div className="fw-semibold">
+                  {formData.phone ||
+                    "Not available"}
                 </div>
-                <div>
-                  <div className="small text-body-secondary">Shop location</div>
-                  <div className="fw-semibold">{formData.address}</div>
+              </div>
+
+              <div className="border-top pt-3 mb-4">
+                <div className="small text-body-secondary mb-1">
+                  Shop Address
+                </div>
+
+                <div className="fw-semibold">
+                  {shiprocketAddress ||
+                    "Not available"}
+                </div>
+              </div>
+
+              <div className="border-top pt-3">
+                <div className="small text-body-secondary mb-1">
+                  Account Status
+                </div>
+
+                <div className="d-flex align-items-center gap-2">
+                  <span
+                    className="rounded-circle bg-success"
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      display: "inline-block",
+                    }}
+                  />
+
+                  <span className="fw-semibold text-success">
+                    Account Active
+                  </span>
                 </div>
               </div>
             </CCardBody>
           </CCard>
         </CCol>
 
+        {/* Right Side */}
         <CCol xl={8}>
+          {/* Business Information */}
           <CCard className="border-0 shadow-sm mb-4">
             <CCardHeader className="bg-white border-0 px-4 pt-4">
-              <h5 className="mb-1">Business information</h5>
+              <h5 className="mb-1">
+                Business information
+              </h5>
+
               <p className="text-body-secondary small mb-0">
-                Details customers and the marketplace use to identify your store.
+                Details customers and the marketplace use
+                to identify your store.
               </p>
             </CCardHeader>
+
             <CCardBody className="px-4">
               <CRow>
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Shop Name</CFormLabel>
-                    <CFormInput name="shopName" value={formData.shopName} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Shop Name
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="businessName"
+                      value={formData.businessName}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Owner Name</CFormLabel>
-                    <CFormInput name="ownerName" value={formData.ownerName} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Owner Name
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="ownerName"
+                      value={formData.ownerName}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Email</CFormLabel>
-                    <CFormInput type="email" name="email" value={formData.email} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Email
+                    </CFormLabel>
+
+                    <CFormInput
+                      type="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Phone</CFormLabel>
-                    <CFormInput name="phone" value={formData.phone} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Phone
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol xs={12}>
                   <div className="mb-3">
-                    <CFormLabel>Shop Address</CFormLabel>
-                    <CFormInput name="address" value={formData.address} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Shop Address
+                    </CFormLabel>
+
+                    <CFormInput
+                      value={shiprocketAddress}
+                      readOnly
+                    />
                   </div>
                 </CCol>
+
                 <CCol xs={12}>
                   <div className="mb-2">
-                    <CFormLabel>Business Description</CFormLabel>
-                    <CFormTextarea rows={3} name="description" value={formData.description} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Business Description
+                    </CFormLabel>
+
+                    <CFormTextarea
+                      rows={3}
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
               </CRow>
             </CCardBody>
           </CCard>
 
+          {/* Payment & Bank Details */}
           <CCard className="border-0 shadow-sm">
             <CCardHeader className="bg-white border-0 px-4 pt-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
                 <div>
-                  <h5 className="mb-1">Payment & Bank Details</h5>
+                  <h5 className="mb-1">
+                    Payment & Bank Details
+                  </h5>
+
                   <p className="text-body-secondary small mb-0">
-                    Where your marketplace earnings will be deposited.
+                    Where your marketplace earnings will
+                    be deposited.
                   </p>
                 </div>
-                <span className="badge bg-success-subtle text-success">Payout ready</span>
+
+                <span className="badge bg-success-subtle text-success">
+                  Payout ready
+                </span>
               </div>
             </CCardHeader>
+
             <CCardBody className="px-4">
               <CRow>
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Account Holder Name</CFormLabel>
-                    <CFormInput name="accountHolderName" value={formData.accountHolderName} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Account Holder Name
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="accountHolderName"
+                      value={
+                        formData.accountHolderName
+                      }
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Bank Name</CFormLabel>
-                    <CFormInput name="bankName" value={formData.bankName} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Bank Name
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="bankName"
+                      value={formData.bankName}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Account Number</CFormLabel>
-                    <CFormInput type="text" inputMode="numeric" name="accountNumber" value={formData.accountNumber} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      Account Number
+                    </CFormLabel>
+
+                    <CFormInput
+                      type="text"
+                      inputMode="numeric"
+                      name="accountNumber"
+                      value={
+                        formData.accountNumber
+                      }
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>IFSC Code</CFormLabel>
-                    <CFormInput name="ifscCode" value={formData.ifscCode} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      IFSC Code
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="ifscCode"
+                      value={formData.ifscCode}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>UPI ID (Optional)</CFormLabel>
-                    <CFormInput name="upiId" value={formData.upiId} onChange={handleChange} disabled={!editMode} />
+                    <CFormLabel>
+                      UPI ID (Optional)
+                    </CFormLabel>
+
+                    <CFormInput
+                      name="upiId"
+                      value={formData.upiId}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
                   </div>
                 </CCol>
+
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>Preferred Payout Method</CFormLabel>
-                    <CFormSelect name="payoutMethod" value={formData.payoutMethod} onChange={handleChange} disabled={!editMode}>
-                      <option value="bank">Bank Account</option>
-                      <option value="upi">UPI</option>
+                    <CFormLabel>
+                      Preferred Payout Method
+                    </CFormLabel>
+
+                    <CFormSelect
+                      name="payoutMethod"
+                      value={
+                        formData.payoutMethod
+                      }
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    >
+                      <option value="bank">
+                        Bank Account
+                      </option>
+
+                      <option value="upi">
+                        UPI
+                      </option>
                     </CFormSelect>
                   </div>
                 </CCol>
@@ -421,10 +779,20 @@ const VendorProfile = () => {
 
               {editMode && (
                 <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2">
-                  <CButton color="secondary" variant="outline" onClick={() => setEditMode(false)}>
+                  <CButton
+                    color="secondary"
+                    variant="outline"
+                    onClick={() =>
+                      setEditMode(false)
+                    }
+                  >
                     Cancel
                   </CButton>
-                  <CButton color="primary" onClick={handleSave}>
+
+                  <CButton
+                    color="primary"
+                    onClick={handleSave}
+                  >
                     Save Changes
                   </CButton>
                 </div>
@@ -438,3 +806,4 @@ const VendorProfile = () => {
 };
 
 export default VendorProfile;
+
