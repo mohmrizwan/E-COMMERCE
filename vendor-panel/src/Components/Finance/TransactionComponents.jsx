@@ -41,7 +41,7 @@ const Transactions = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        "http://localhost:3000/vendor/transactions/myTransactions",
+        "https://ecommerceba-6dtt.onrender.com/vendor/transactions/myTransactions",
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,

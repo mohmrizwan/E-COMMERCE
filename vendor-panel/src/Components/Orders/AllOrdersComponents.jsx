@@ -22,9 +22,7 @@ import ProductLoader from "../ProductLoader";
 
 const API_URL =
   import.meta.env.VITE_API_URL ||
-  (import.meta.env.DEV
-    ? "http://localhost:3000"
-    : "https://ecommerceba-6dtt.onrender.com");
+  "https://ecommerceba-6dtt.onrender.com";
 
 const Orders = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);

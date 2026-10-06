@@ -114,7 +114,7 @@ const VendorProfile = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        `http://localhost:3000/vendor/myProfile`,
+        `${API_URL}/vendor/myProfile`,
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,
