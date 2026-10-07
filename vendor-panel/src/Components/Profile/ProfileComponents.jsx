@@ -7,6 +7,7 @@ import {
   CCol,
   CContainer,
   CFormInput,
+  CFormCheck,
   CFormLabel,
   CFormSelect,
   CFormTextarea,
@@ -31,6 +32,25 @@ const emptyShiprocketStatus = {
   enabled: false,
   hasEmail: false,
   hasPassword: false,
+};
+
+const emptyRazorpayStatus = {
+  isLinked: false,
+  enabled: false,
+  accountStatus: "",
+  productActivationStatus: "",
+  settlementVerificationStatus: "",
+};
+
+const emptyRazorpayForm = {
+  legalBusinessName: "",
+  businessType: "",
+  pan: "",
+  gst: "",
+  beneficiaryName: "",
+  accountNumber: "",
+  ifscCode: "",
+  tncAccepted: false,
 };
 
 const VendorProfile = () => {
@@ -71,6 +91,10 @@ const VendorProfile = () => {
   const [shiprocketSettingsError, setShiprocketSettingsError] = useState("");
   const [shiprocketSettingsMessage, setShiprocketSettingsMessage] =
     useState("");
+  const [razorpayStatus, setRazorpayStatus] = useState(emptyRazorpayStatus);
+  const [razorpayForm, setRazorpayForm] = useState(emptyRazorpayForm);
+  const [razorpayError, setRazorpayError] = useState("");
+  const [razorpayMessage, setRazorpayMessage] = useState("");
 
   const [isLoadingPickupAddress, setIsLoadingPickupAddress] =
     useState(true);
@@ -81,6 +105,11 @@ const VendorProfile = () => {
     useState(false);
   const [isSavingShiprocketSettings, setIsSavingShiprocketSettings] =
     useState(false);
+  const [isLoadingRazorpayStatus, setIsLoadingRazorpayStatus] =
+    useState(true);
+  const [isSubmittingRazorpay, setIsSubmittingRazorpay] = useState(false);
+  const [razorpayStatusRefreshCount, setRazorpayStatusRefreshCount] =
+    useState(0);
 
   const [editMode, setEditMode] = useState(false);
   const shiprocketAddress = [
@@ -143,6 +172,9 @@ const VendorProfile = () => {
 
         const status = response.data.integrations?.shiprocket ||
           emptyShiprocketStatus;
+        setRazorpayStatus(
+          response.data.integrations?.razorpay || emptyRazorpayStatus,
+        );
         setShiprocketStatus(status);
         setShiprocketCredentials((current) => ({
           ...current,
@@ -165,6 +197,47 @@ const VendorProfile = () => {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const refreshStatus = async () => {
+      if (!razorpayStatus.isLinked) {
+        setIsLoadingRazorpayStatus(false);
+        return;
+      }
+
+      setIsLoadingRazorpayStatus(true);
+      try {
+        const response = await axios.get(
+          `${API_URL}/vendor/integrations/razorpay/status`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+            },
+          },
+        );
+        if (isActive) {
+          setRazorpayStatus(response.data.razorpay || emptyRazorpayStatus);
+          setRazorpayError("");
+        }
+      } catch (error) {
+        if (isActive) {
+          setRazorpayError(
+            error.response?.data?.message ||
+              "Could not refresh Razorpay verification status.",
+          );
+        }
+      } finally {
+        if (isActive) setIsLoadingRazorpayStatus(false);
+      }
+    };
+
+    refreshStatus();
+    return () => {
+      isActive = false;
+    };
+  }, [razorpayStatus.isLinked, razorpayStatusRefreshCount]);
 
   // Get vendor profile
   const getProfileData = async () => {
@@ -354,6 +427,40 @@ const VendorProfile = () => {
       );
     } finally {
       setIsSavingShiprocketSettings(false);
+    }
+  };
+
+  const submitRazorpayOnboarding = async () => {
+    setRazorpayError("");
+    setRazorpayMessage("");
+
+    if (!razorpayForm.tncAccepted) {
+      setRazorpayError("Accept Razorpay Route terms before continuing.");
+      return;
+    }
+
+    setIsSubmittingRazorpay(true);
+    try {
+      const response = await axios.post(
+        `${API_URL}/vendor/integrations/razorpay/onboard`,
+        razorpayForm,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+          },
+        },
+      );
+
+      setRazorpayStatus(response.data.razorpay || emptyRazorpayStatus);
+      setRazorpayForm(emptyRazorpayForm);
+      setRazorpayMessage(response.data.message);
+    } catch (error) {
+      setRazorpayError(
+        error.response?.data?.message ||
+          "Could not submit Razorpay Route onboarding.",
+      );
+    } finally {
+      setIsSubmittingRazorpay(false);
     }
   };
 
@@ -687,6 +794,247 @@ const VendorProfile = () => {
                   {isSavingShiprocketSettings
                     ? "Saving..."
                     : "Save Shiprocket settings"}
+                </CButton>
+              </div>
+            </>
+          )}
+        </CCardBody>
+      </CCard>
+
+      <CCard className="mb-4 border-0 shadow-sm">
+        <CCardHeader className="bg-white border-0 px-4 pt-4">
+          <h5 className="mb-1">Razorpay marketplace payouts</h5>
+          <p className="text-body-secondary small mb-0">
+            Complete Route onboarding so marketplace payouts can be linked to
+            your settlement account. Your bank and PAN details are submitted
+            to Razorpay; this app stores only the linked account and its status.
+          </p>
+        </CCardHeader>
+        <CCardBody className="px-4">
+          {isLoadingRazorpayStatus ? (
+            <div
+              role="status"
+              className="d-flex align-items-center justify-content-center gap-2 text-sm text-body-secondary"
+              style={{ minHeight: "112px" }}
+            >
+              <CSpinner size="sm" aria-hidden="true" />
+              Loading Razorpay status...
+            </div>
+          ) : razorpayStatus.isLinked ? (
+            <>
+              <CRow className="g-3">
+                <CCol md={4}>
+                  <div className="small text-body-secondary">Account</div>
+                  <div className="fw-semibold">
+                    {razorpayStatus.accountStatus || "Submitted"}
+                  </div>
+                </CCol>
+                <CCol md={4}>
+                  <div className="small text-body-secondary">Route activation</div>
+                  <div className="fw-semibold">
+                    {razorpayStatus.productActivationStatus || "Pending"}
+                  </div>
+                </CCol>
+                <CCol md={4}>
+                  <div className="small text-body-secondary">
+                    Bank verification
+                  </div>
+                  <div className="fw-semibold">
+                    {razorpayStatus.settlementVerificationStatus || "Pending"}
+                  </div>
+                </CCol>
+              </CRow>
+              {!razorpayStatus.enabled && (
+                <p className="text-body-secondary small mt-3 mb-0">
+                  Payouts become available after Razorpay activates Route and
+                  verifies the settlement account.
+                </p>
+              )}
+              <div className="d-flex justify-content-end mt-3">
+                <CButton
+                  color="primary"
+                  variant="outline"
+                  onClick={() =>
+                    setRazorpayStatusRefreshCount((count) => count + 1)
+                  }
+                  disabled={isLoadingRazorpayStatus}
+                >
+                  Refresh verification status
+                </CButton>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="small text-body-secondary mb-3">
+                Razorpay account contact: {formData.email || "Loading profile"}
+                {formData.phone ? ` · ${formData.phone}` : ""}
+              </p>
+              <CRow className="g-3">
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-legal-name">
+                    Legal business name
+                  </CFormLabel>
+                  <CFormInput
+                    id="razorpay-legal-name"
+                    autoComplete="organization"
+                    value={razorpayForm.legalBusinessName}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        legalBusinessName: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-business-type">
+                    Business type
+                  </CFormLabel>
+                  <CFormSelect
+                    id="razorpay-business-type"
+                    value={razorpayForm.businessType}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        businessType: event.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Select business type</option>
+                    <option value="individual">Individual</option>
+                    <option value="proprietorship">Proprietorship</option>
+                    <option value="partnership">Partnership</option>
+                    <option value="llp">LLP</option>
+                    <option value="private_limited">Private limited</option>
+                    <option value="public_limited">Public limited</option>
+                    <option value="ngo">NGO</option>
+                    <option value="society">Society</option>
+                    <option value="trust">Trust</option>
+                    <option value="educational_institutes">
+                      Educational institute
+                    </option>
+                    <option value="other">Other</option>
+                  </CFormSelect>
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-pan">PAN</CFormLabel>
+                  <CFormInput
+                    id="razorpay-pan"
+                    autoComplete="off"
+                    maxLength={10}
+                    value={razorpayForm.pan}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        pan: event.target.value.toUpperCase().slice(0, 10),
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-gst">GSTIN (if applicable)</CFormLabel>
+                  <CFormInput
+                    id="razorpay-gst"
+                    autoComplete="off"
+                    maxLength={15}
+                    value={razorpayForm.gst}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        gst: event.target.value.toUpperCase().slice(0, 15),
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-beneficiary">
+                    Bank account holder name
+                  </CFormLabel>
+                  <CFormInput
+                    id="razorpay-beneficiary"
+                    autoComplete="name"
+                    value={razorpayForm.beneficiaryName}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        beneficiaryName: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-account-number">
+                    Bank account number
+                  </CFormLabel>
+                  <CFormInput
+                    id="razorpay-account-number"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    maxLength={20}
+                    value={razorpayForm.accountNumber}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        accountNumber: event.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 20),
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="razorpay-ifsc">IFSC code</CFormLabel>
+                  <CFormInput
+                    id="razorpay-ifsc"
+                    autoComplete="off"
+                    maxLength={11}
+                    value={razorpayForm.ifscCode}
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        ifscCode: event.target.value
+                          .toUpperCase()
+                          .replace(/[^A-Z0-9]/g, "")
+                          .slice(0, 11),
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol xs={12}>
+                  <CFormCheck
+                    id="razorpay-route-terms"
+                    checked={razorpayForm.tncAccepted}
+                    label="I accept Razorpay Route terms for this vendor account."
+                    onChange={(event) =>
+                      setRazorpayForm((current) => ({
+                        ...current,
+                        tncAccepted: event.target.checked,
+                      }))
+                    }
+                  />
+                </CCol>
+              </CRow>
+
+              {(razorpayError || razorpayMessage) && (
+                <p
+                  role={razorpayError ? "alert" : "status"}
+                  className={`mt-3 mb-0 small ${
+                    razorpayError ? "text-danger" : "text-success"
+                  }`}
+                >
+                  {razorpayError || razorpayMessage}
+                </p>
+              )}
+
+              <div className="d-flex justify-content-end mt-3">
+                <CButton
+                  color="primary"
+                  onClick={submitRazorpayOnboarding}
+                  disabled={isSubmittingRazorpay}
+                >
+                  {isSubmittingRazorpay
+                    ? "Submitting..."
+                    : "Submit Razorpay onboarding"}
                 </CButton>
               </div>
             </>

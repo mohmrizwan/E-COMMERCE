@@ -1,9 +1,15 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { useCart } from "./CartContext";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
+  const { cart } = useCart();
+  const cartItemCount = cart.reduce(
+    (count, item) => count + Number(item.quantity || 1),
+    0,
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -106,12 +112,13 @@ const Header = () => {
 
             <Link
               to="/cart"
+              aria-label={`Shopping cart, ${cartItemCount} items`}
               className="relative flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:h-10 sm:w-10"
             >
               <i className="fa-solid fa-bag-shopping"></i>
 
               <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#6c3bff] px-1 text-[10px] font-semibold text-white">
-                0
+                {cartItemCount}
               </span>
             </Link>
           </div>
