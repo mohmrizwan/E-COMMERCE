@@ -8,7 +8,7 @@ import {
 
 export const testShiprocket = async (req, res) => {
   try {
-    await getShiprocketToken();
+    await getShiprocketToken(req.vendor._id);
 
     return res.status(200).json({
       success: true,
@@ -25,7 +25,7 @@ export const testShiprocket = async (req, res) => {
 
 export const testCreateShiprocketOrder = async (req, res) => {
   try {
-    const shiprocketOrder = await createShiprocketOrder(req.body);
+    const shiprocketOrder = await createShiprocketOrder(req.body, req.vendor._id);
 
     return res.status(200).json({
       success: true,
@@ -60,6 +60,7 @@ export const getCustomerShipmentTracking = async (req, res) => {
     const trackingResponse = await getShiprocketTracking({
       awbCode: shipment.awbCode,
       shipmentId: shipment.shiprocketShipmentId,
+      vendorId: shipment.vendorId,
     });
     const trackingData =
       trackingResponse.tracking_data ||

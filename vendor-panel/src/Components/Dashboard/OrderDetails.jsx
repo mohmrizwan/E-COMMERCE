@@ -1,4 +1,5 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   CTable,
   CTableHead,
@@ -9,41 +10,48 @@ import {
   CBadge,
 } from "@coreui/react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const RecentOrders = () => {
-  const orders = [
-    {
-      id: "#ORD001",
-      customer: "Mohammad Rizwan",
-      product: "Nike Air Max",
-      amount: "₹4,999",
-      status: "Delivered",
-      date: "01 Sep 2026",
-    },
-    {
-      id: "#ORD002",
-      customer: "Aman Sharma",
-      product: "iPhone Case",
-      amount: "₹899",
-      status: "Pending",
-      date: "01 Sep 2026",
-    },
-    {
-      id: "#ORD003",
-      customer: "Rahul Verma",
-      product: "Adidas Shoes",
-      amount: "₹3,499",
-      status: "Shipped",
-      date: "31 Aug 2026",
-    },
-    {
-      id: "#ORD004",
-      customer: "Arjun Singh",
-      product: "Smart Watch",
-      amount: "₹2,999",
-      status: "Processing",
-      date: "31 Aug 2026",
-    },
-  ];
+  const [orders, setOrders] = useState([]);
+
+  useEffect(() => {
+    const getRecentOrders = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/dashboard/recent-orders`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+            },
+          },
+        );
+        setOrders(response.data.recentOrders || []);
+      } catch (error) {
+        console.error(
+          "Could not load recent orders:",
+          error.response?.data?.message || error.message,
+        );
+      }
+    };
+
+    getRecentOrders();
+  }, []);
+
+  const formatAmount = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(amount);
+
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -95,7 +103,7 @@ const RecentOrders = () => {
           <CTableRow key={order.id}>
             {/* Order ID */}
             <CTableDataCell>
-              <span className="fw-semibold text-primary">{order.id}</span>
+              <span className="fw-semibold text-primary">#{order.id.slice(-6).toUpperCase()}</span>
             </CTableDataCell>
 
             {/* Customer */}
@@ -109,7 +117,7 @@ const RecentOrders = () => {
 
             {/* Amount */}
             <CTableDataCell>
-              <span className="fw-bold">{order.amount}</span>
+              <span className="fw-bold">{formatAmount(order.amount)}</span>
             </CTableDataCell>
 
             {/* Status */}
@@ -125,7 +133,7 @@ const RecentOrders = () => {
 
             {/* Date */}
             <CTableDataCell>
-              <span className="text-body-secondary">{order.date}</span>
+              <span className="text-body-secondary">{formatDate(order.date)}</span>
             </CTableDataCell>
           </CTableRow>
         ))}

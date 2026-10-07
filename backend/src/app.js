@@ -10,6 +10,8 @@ import Order from "../../backend/src/Routes/Users/OrderRoutes.js";
 import VendorOrderRoutes from "./Routes/Vendor/OrderRoutes.js";
 import shiprocketRoutes from "../../backend/src/Routes/Shiprocket/ShipRocketRoutes.js";
 import TransactionRoutes from "./Routes/Vendor/TransactionRoutes.js";
+import VendorIntegrationRoutes from "./Routes/Vendor/IntegrationRoutes.js";
+import Dashboard from "../src/Routes/Vendor/Dashboard.js";
 export default function createApp() {
   const app = express();
 
@@ -25,9 +27,11 @@ export default function createApp() {
 
   app.use("/shiprocket", shiprocketRoutes);
   app.use("/vendor", VendorRoutes);
+  app.use("/vendor/integrations", VendorIntegrationRoutes);
   app.use("/vendor/products", ProductsRoutes);
   app.use("/vendor/orders", VendorOrderRoutes);
   app.use("/vendor/transactions", TransactionRoutes);
+  app.use("/dashboard", Dashboard);
 
   return app;
 }

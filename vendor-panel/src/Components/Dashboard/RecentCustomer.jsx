@@ -1,4 +1,5 @@
-import React from "react";
+import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   CTable,
   CTableHead,
@@ -10,54 +11,48 @@ import {
   CBadge,
 } from "@coreui/react";
 
+const API_URL =
+  import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const RecentCustomers = () => {
-  const customers = [
-    {
-      id: 1,
-      name: "Mohammad Rizwan",
-      email: "rizwan@gmail.com",
-      orders: 12,
-      spent: "₹24,500",
-      status: "Active",
-      joined: "01 Sep 2026",
-    },
-    {
-      id: 2,
-      name: "Aman Sharma",
-      email: "aman@gmail.com",
-      orders: 8,
-      spent: "₹18,200",
-      status: "Active",
-      joined: "31 Aug 2026",
-    },
-    {
-      id: 3,
-      name: "Rahul Verma",
-      email: "rahul@gmail.com",
-      orders: 6,
-      spent: "₹12,800",
-      status: "Active",
-      joined: "30 Aug 2026",
-    },
-    {
-      id: 4,
-      name: "Arjun Singh",
-      email: "arjun@gmail.com",
-      orders: 4,
-      spent: "₹8,450",
-      status: "Inactive",
-      joined: "29 Aug 2026",
-    },
-    {
-      id: 5,
-      name: "Priya Patel",
-      email: "priya@gmail.com",
-      orders: 9,
-      spent: "₹16,700",
-      status: "Active",
-      joined: "28 Aug 2026",
-    },
-  ];
+  const [customers, setCustomers] = useState([]);
+
+  useEffect(() => {
+    const getRecentCustomers = async () => {
+      try {
+        const response = await axios.get(
+          `${API_URL}/dashboard/recent-customers`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+            },
+          },
+        );
+        setCustomers(response.data.recentCustomers || []);
+      } catch (error) {
+        console.error(
+          "Could not load recent customers:",
+          error.response?.data?.message || error.message,
+        );
+      }
+    };
+
+    getRecentCustomers();
+  }, []);
+
+  const formatAmount = (amount) =>
+    new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency: "INR",
+      maximumFractionDigits: 2,
+    }).format(amount);
+
+  const formatDate = (date) =>
+    new Date(date).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
 
   return (
     <CTable
@@ -129,7 +124,7 @@ const RecentCustomers = () => {
             {/* Total Spent */}
             <CTableDataCell>
               <span className="fw-bold">
-                {customer.spent}
+                {formatAmount(customer.spent)}
               </span>
             </CTableDataCell>
 
@@ -151,7 +146,7 @@ const RecentCustomers = () => {
             {/* Joined */}
             <CTableDataCell>
               <span className="text-body-secondary">
-                {customer.joined}
+                {formatDate(customer.joined)}
               </span>
             </CTableDataCell>
 

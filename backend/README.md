@@ -178,6 +178,22 @@ By default, the server starts on:
 http://localhost:3000
 ```
 
+## Vendor Integrations
+
+Set `INTEGRATION_ENCRYPTION_KEY` in the backend environment to a randomly generated 32-byte hex value. Generate one with:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Keep this key in the backend secret store only. Losing or rotating it without re-encrypting stored credentials makes vendor Shiprocket credentials unreadable.
+
+Authenticated vendors can read integration status at `GET /vendor/integrations` and update Shiprocket credentials at `PUT /vendor/integrations` with a `shiprocket` object containing `email`, `password`, and optionally `enabled`. GET and PUT responses report whether credentials are present, never their values. A blank credential on update leaves its stored value unchanged. The vendor identity comes from the bearer token; clients cannot select another vendor's record.
+
+Shiprocket calls resolve credentials from the order's or shipment's vendor ID. Legacy global Shiprocket login credentials are no longer used by the service. Configure each vendor before checkout or fulfillment that requires that vendor's Shiprocket account.
+
+For Razorpay Route, a vendor record stores the platform-provisioned linked-account ID, not vendor API credentials. The vendor settings endpoint deliberately rejects client-supplied linked-account IDs; mapping a vendor to a payout destination must be done by a trusted platform onboarding flow.
+
 ## Main Dependencies
 
 - `express` - HTTP server framework.

@@ -352,6 +352,8 @@ export const getVendorPickupAddress = async (req, res) => {
 
 export const updateVendorPickupAddress = async (req, res) => {
   const pickupAddress = {
+    name: String(req.body?.name || "").trim(),
+    phone: String(req.body?.phone || "").trim(),
     shiprocketLocationName: String(
       req.body?.shiprocketLocationName || "",
     ).trim(),

@@ -1,4 +1,3 @@
-import React from "react";
 import Report from "../Components/Dashboard/Report";
 import OrdersChart from "../Components/Dashboard/OrdersChart";
 import CategoryChart from "../Components/Dashboard/CategoryChart";
@@ -10,13 +9,13 @@ const Dashboard = () => {
       <div className="">
         <h1 className="text-2xl font-extrabold">Dashboard</h1>
         <p className="text-md  text-gray-400">
-          What's Happening in your store?{" "}
+          What&apos;s Happening in your store?{" "}
         </p>
       </div>
 
       <Report />
       <div>
-        <p className="text-lg  text-gray-400">Order's Overview </p>
+        <p className="text-lg  text-gray-400">Order&apos;s Overview </p>
       </div>
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="w-full lg:w-[80%]">

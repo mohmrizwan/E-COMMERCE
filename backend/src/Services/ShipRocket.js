@@ -1,4 +1,5 @@
 import axios from "axios";
+import { getVendorShippingConfig } from "./VendorIntegrationConfig.js";
 
 const normalizeShiprocketOrderResponse = (payload) => {
   const candidates = [
@@ -30,14 +31,12 @@ const normalizeShiprocketOrderResponse = (payload) => {
   };
 };
 
-export const getShiprocketToken = async () => {
+export const getShiprocketToken = async (vendorId) => {
   try {
+    const credentials = await getVendorShippingConfig(vendorId);
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
-      {
-        email: process.env.SHIPROCKET_EMAIL,
-        password: process.env.SHIPROCKET_PASSWORD,
-      }
+      credentials,
     );
 
     return response.data.token;
@@ -51,9 +50,9 @@ export const getShiprocketToken = async () => {
   }
 };
 
-export const createShiprocketOrder = async (orderData) => {
+export const createShiprocketOrder = async (orderData, vendorId) => {
   try {
-    const token = await getShiprocketToken();
+    const token = await getShiprocketToken(vendorId);
 
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc",
@@ -77,7 +76,7 @@ export const createShiprocketOrder = async (orderData) => {
   }
 };
 
-export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) => {
+export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, vendorId) => {
   try {
     const pickupPostcode = String(pickupAddress?.pincode || "").trim();
     const deliveryPostcode = String(
@@ -99,7 +98,7 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) =
       throw new Error("Vendor Shiprocket pickup location name is missing");
     }
 
-    const token = await getShiprocketToken();
+    const token = await getShiprocketToken(vendorId);
 
     let subTotal = 0;
 
@@ -189,6 +188,7 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress) =
 };
 
 export const getAvailableShiprocketCouriers = async ({
+  vendorId,
   shipmentId,
   pickupPostcode,
   deliveryPostcode,
@@ -207,7 +207,7 @@ export const getAvailableShiprocketCouriers = async ({
     throw new Error("Customer shipping address must have a valid six-digit pincode");
   }
 
-  const token = await getShiprocketToken();
+  const token = await getShiprocketToken(vendorId);
 
   const response = await axios.get(
     "https://apiv2.shiprocket.in/v1/external/courier/serviceability/",
@@ -230,6 +230,7 @@ export const getAvailableShiprocketCouriers = async ({
 };
 
 export const getShiprocketShippingQuote = async ({
+  vendorId,
   pickupPostcode,
   deliveryPostcode,
   weight,
@@ -255,6 +256,7 @@ export const getShiprocketShippingQuote = async ({
   }
 
   const serviceability = await getAvailableShiprocketCouriers({
+    vendorId,
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
     weight,
@@ -302,8 +304,8 @@ export const getShiprocketShippingQuote = async ({
   };
 };
 
-export const assignShiprocketCourier = async (shipmentId, courierCompanyId) => {
-  const token = await getShiprocketToken();
+export const assignShiprocketCourier = async (shipmentId, courierCompanyId, vendorId) => {
+  const token = await getShiprocketToken(vendorId);
   const endpoint =
     "https://apiv2.shiprocket.in/v1/external/courier/assign/awb";
   const payload = {
@@ -342,8 +344,8 @@ export const assignShiprocketCourier = async (shipmentId, courierCompanyId) => {
   }
 };
 
-export const generateShiprocketPickup = async (shipmentId) => {
-  const token = await getShiprocketToken();
+export const generateShiprocketPickup = async (shipmentId, vendorId) => {
+  const token = await getShiprocketToken(vendorId);
 
   const response = await axios.post(
     "https://apiv2.shiprocket.in/v1/external/courier/generate/pickup",
@@ -359,8 +361,8 @@ export const generateShiprocketPickup = async (shipmentId) => {
   return response.data;
 };
 
-export const getShiprocketTracking = async ({ awbCode, shipmentId }) => {
-  const token = await getShiprocketToken();
+export const getShiprocketTracking = async ({ awbCode, shipmentId, vendorId }) => {
+  const token = await getShiprocketToken(vendorId);
   const trackingUrl = awbCode
     ? `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${encodeURIComponent(awbCode)}`
     : `https://apiv2.shiprocket.in/v1/external/courier/track/shipment/${encodeURIComponent(shipmentId)}`;

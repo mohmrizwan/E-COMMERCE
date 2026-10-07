@@ -1,5 +1,20 @@
 import mongoose from "mongoose";
 
+const IntegrationSchema = new mongoose.Schema(
+  {
+    razorpay: {
+      linkedAccountId: { type: String, trim: true, default: "" },
+      enabled: { type: Boolean, default: false },
+    },
+    shiprocket: {
+      emailEncrypted: { type: String, select: false, default: "" },
+      passwordEncrypted: { type: String, select: false, default: "" },
+      enabled: { type: Boolean, default: false },
+    },
+  },
+  { _id: false },
+);
+
 const AuthSchema = new mongoose.Schema(
   {
     businessName: {
@@ -30,11 +45,18 @@ const AuthSchema = new mongoose.Schema(
     },
 
     pickupAddress: {
+      name: { type: String, trim: true, default: "" },
+      phone: { type: String, trim: true, default: "" },
       shiprocketLocationName: { type: String, trim: true, default: "" },
       address: { type: String, trim: true, default: "" },
       city: { type: String, trim: true, default: "" },
       state: { type: String, trim: true, default: "" },
       pincode: { type: String, trim: true, default: "" },
+    },
+
+    integrations: {
+      type: IntegrationSchema,
+      default: () => ({}),
     },
 
     password: {

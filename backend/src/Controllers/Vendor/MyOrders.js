@@ -212,7 +212,7 @@ export const acceptOrder = async (req, res) => {
     const shiprocketOrder = await createShiprocketOrderFromOrder({
       ...existingOrder.toObject(),
       items: vendorItems,
-    }, pickupAddress);
+    }, pickupAddress, vendorId);
     const shiprocketOrderId = String(shiprocketOrder?.order_id || "").trim();
     const shiprocketShipmentId = String(shiprocketOrder?.shipment_id || "").trim();
 
@@ -273,7 +273,8 @@ export const acceptOrder = async (req, res) => {
       shiprocketStep = "assign Shiprocket courier and AWB";
       const assignment = await assignShiprocketCourier(
         shiprocketShipmentId,
-        Number(courierCompanyId)
+        Number(courierCompanyId),
+        vendorId,
       );
       assignmentData =
         assignment.response?.data ||
@@ -366,6 +367,7 @@ export const getAvailableCouriers = async (req, res) => {
     }
 
     const shiprocketResponse = await getAvailableShiprocketCouriers({
+      vendorId,
       shipmentId: shipment.shiprocketShipmentId,
       pickupPostcode,
       deliveryPostcode,
@@ -460,6 +462,7 @@ export const assignCourier = async (req, res) => {
     }
 
     const shiprocketResponse = await getAvailableShiprocketCouriers({
+      vendorId: req.vendor._id,
       shipmentId: shipment.shiprocketShipmentId,
       pickupPostcode,
       deliveryPostcode,
@@ -501,7 +504,8 @@ export const assignCourier = async (req, res) => {
 
     const assignment = await assignShiprocketCourier(
       shipment.shiprocketShipmentId,
-      Number(requestedCourierCompanyId)
+      Number(requestedCourierCompanyId),
+      req.vendor._id,
     );
     const assignmentData =
       assignment.response?.data || assignment.data || assignment.response || assignment;
@@ -653,7 +657,8 @@ export const shipVendorOrder = async (req, res) => {
     }
 
     const pickupResponse = await generateShiprocketPickup(
-      shipment.shiprocketShipmentId
+      shipment.shiprocketShipmentId,
+      req.vendor._id,
     );
 
     if (
@@ -714,6 +719,7 @@ export const getVendorShipmentTracking = async (req, res) => {
     const trackingResponse = await getShiprocketTracking({
       awbCode: shipment.awbCode,
       shipmentId: shipment.shiprocketShipmentId,
+      vendorId: req.vendor._id,
     });
     const trackingData =
       trackingResponse.tracking_data ||
@@ -752,3 +758,4 @@ export const getVendorShipmentTracking = async (req, res) => {
     });
   }
 };
+

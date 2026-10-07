@@ -110,6 +110,7 @@ export const order = async (req, res) => {
       }
 
       const quote = await getShiprocketShippingQuote({
+        vendorId: vendor._id,
         pickupPostcode,
         deliveryPostcode,
         weight: 0.5,
