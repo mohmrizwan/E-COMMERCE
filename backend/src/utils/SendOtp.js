@@ -4,14 +4,18 @@ const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 465,
   secure: true,
+
+  family: 4,
+
   auth: {
     user: process.env.EMAIL_USER?.trim(),
     pass: process.env.EMAIL_PASS?.replace(/\s/g, ""),
   },
+
   connectionTimeout: 30000,
   greetingTimeout: 30000,
   socketTimeout: 30000,
-});;
+});
 
 const sendOtp = async (email, otp) => {
   try {
@@ -62,6 +66,7 @@ const sendOtp = async (email, otp) => {
     return true;
   } catch (error) {
     console.error("Send OTP Error:", error);
+
     return false;
   }
 };
