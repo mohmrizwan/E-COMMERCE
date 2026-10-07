@@ -11,9 +11,7 @@ import {
   CBadge,
 } from "@coreui/react";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
-
+const API_URL ="https://ecommerceba-6dtt.onrender.com";
 const RecentCustomers = () => {
   const [customers, setCustomers] = useState([]);
 

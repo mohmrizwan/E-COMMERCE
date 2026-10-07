@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { CChartDoughnut } from "@coreui/react-chartjs";
 import axios from "axios";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+const API_URL ="https://ecommerceba-6dtt.onrender.com";
 
 const CategoryChart = () => {
   const [categories, setCategories] = useState([]);

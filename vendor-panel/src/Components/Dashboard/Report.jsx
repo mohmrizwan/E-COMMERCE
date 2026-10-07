@@ -16,8 +16,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useEffect } from "react";
 
-const API_URL =
-  import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
 function Report() {
   const [message, setMessage] = useState("");
@@ -34,14 +33,11 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        `${API_URL}/dashboard/income`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(`${API_URL}/dashboard/income`, {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
       setTotalIncome(response.data.totalIncome);
       setMonthlyIncome(response.data.monthlyIncome);
     } catch (error) {
@@ -54,14 +50,11 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        `${API_URL}/dashboard/orders`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(`${API_URL}/dashboard/orders`, {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
 
       setOrdersCount(response.data.ordersCount);
       setMonthlyOrders(response.data.monthlyOrders);
@@ -75,14 +68,11 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        `${API_URL}/dashboard/products`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(`${API_URL}/dashboard/products`, {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
 
       setProductsCount(response.data.productsCount);
       setMonthlyProducts(response.data.monthlyProducts);
@@ -96,14 +86,11 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        `${API_URL}/dashboard/customers`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(`${API_URL}/dashboard/customers`, {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
 
       setCustomersCount(response.data.customersCount);
       setMonthlyCustomers(response.data.monthlyCustomers);
