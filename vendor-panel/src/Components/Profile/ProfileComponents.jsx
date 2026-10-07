@@ -164,6 +164,22 @@ const VendorProfile = () => {
 
   // Profile save
   const handleSave = () => {
+    const requiredFields = [
+      ["businessName", "Shop Name"],
+      ["ownerName", "Owner Name"],
+      ["email", "Email"],
+      ["phone", "Phone"],
+    ];
+    const emptyFields = requiredFields
+      .filter(([field]) => !String(formData[field] || "").trim())
+      .map(([, label]) => label);
+
+    if (emptyFields.length) {
+      setErrorMessage(`Please fill in: ${emptyFields.join(", ")}.`);
+      return;
+    }
+
+    setErrorMessage("");
     setEditMode(false);
   };
 
@@ -561,6 +577,7 @@ const VendorProfile = () => {
                     </CFormLabel>
 
                     <CFormInput
+                      required
                       name="businessName"
                       value={formData.businessName}
                       onChange={handleChange}
@@ -576,6 +593,7 @@ const VendorProfile = () => {
                     </CFormLabel>
 
                     <CFormInput
+                      required
                       name="ownerName"
                       value={formData.ownerName}
                       onChange={handleChange}
@@ -591,6 +609,7 @@ const VendorProfile = () => {
                     </CFormLabel>
 
                     <CFormInput
+                      required
                       type="email"
                       name="email"
                       value={formData.email}
@@ -607,6 +626,7 @@ const VendorProfile = () => {
                     </CFormLabel>
 
                     <CFormInput
+                      required
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
