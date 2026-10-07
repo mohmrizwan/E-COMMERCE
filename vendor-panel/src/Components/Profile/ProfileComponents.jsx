@@ -27,6 +27,12 @@ const emptyPickupAddress = {
   pincode: "",
 };
 
+const emptyShiprocketStatus = {
+  enabled: false,
+  hasEmail: false,
+  hasPassword: false,
+};
+
 const VendorProfile = () => {
   // Vendor profile data
   const [formData, setFormData] = useState({
@@ -54,11 +60,26 @@ const VendorProfile = () => {
 
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
+  const [shiprocketStatus, setShiprocketStatus] = useState(
+    emptyShiprocketStatus,
+  );
+  const [shiprocketCredentials, setShiprocketCredentials] = useState({
+    email: "",
+    password: "",
+    enabled: false,
+  });
+  const [shiprocketSettingsError, setShiprocketSettingsError] = useState("");
+  const [shiprocketSettingsMessage, setShiprocketSettingsMessage] =
+    useState("");
 
   const [isLoadingPickupAddress, setIsLoadingPickupAddress] =
     useState(true);
+  const [isLoadingShiprocketSettings, setIsLoadingShiprocketSettings] =
+    useState(true);
 
   const [isSavingPickupAddress, setIsSavingPickupAddress] =
+    useState(false);
+  const [isSavingShiprocketSettings, setIsSavingShiprocketSettings] =
     useState(false);
 
   const [editMode, setEditMode] = useState(false);
@@ -101,6 +122,43 @@ const VendorProfile = () => {
         if (isActive) {
           setIsLoadingPickupAddress(false);
         }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    axios
+      .get(`${API_URL}/vendor/integrations`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+        },
+      })
+      .then((response) => {
+        if (!isActive) return;
+
+        const status = response.data.integrations?.shiprocket ||
+          emptyShiprocketStatus;
+        setShiprocketStatus(status);
+        setShiprocketCredentials((current) => ({
+          ...current,
+          enabled: Boolean(status.enabled),
+        }));
+      })
+      .catch((error) => {
+        if (isActive) {
+          setShiprocketSettingsError(
+            error.response?.data?.message ||
+              "Could not load Shiprocket settings.",
+          );
+        }
+      })
+      .finally(() => {
+        if (isActive) setIsLoadingShiprocketSettings(false);
       });
 
     return () => {
@@ -237,6 +295,65 @@ const VendorProfile = () => {
       );
     } finally {
       setIsSavingPickupAddress(false);
+    }
+  };
+
+  const saveShiprocketSettings = async () => {
+    setShiprocketSettingsError("");
+    setShiprocketSettingsMessage("");
+
+    const email = shiprocketCredentials.email.trim();
+    const password = shiprocketCredentials.password.trim();
+    const hasSavedCredentials =
+      shiprocketStatus.hasEmail && shiprocketStatus.hasPassword;
+
+    if (
+      shiprocketCredentials.enabled &&
+      !hasSavedCredentials &&
+      (!email || !password)
+    ) {
+      setShiprocketSettingsError(
+        "Enter your Shiprocket email and password before enabling the integration.",
+      );
+      return;
+    }
+
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setShiprocketSettingsError("Enter a valid Shiprocket account email.");
+      return;
+    }
+
+    setIsSavingShiprocketSettings(true);
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/vendor/integrations`,
+        {
+          shiprocket: {
+            email,
+            password,
+            enabled: shiprocketCredentials.enabled,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+          },
+        },
+      );
+
+      const status = response.data.integrations?.shiprocket ||
+        emptyShiprocketStatus;
+      setShiprocketStatus(status);
+      setShiprocketCredentials({ email: "", password: "", enabled: status.enabled });
+      setShiprocketSettingsMessage(response.data.message);
+    } catch (error) {
+      setShiprocketSettingsError(
+        error.response?.data?.message ||
+          "Could not save Shiprocket settings.",
+      );
+    } finally {
+      setIsSavingShiprocketSettings(false);
     }
   };
 
@@ -458,6 +575,118 @@ const VendorProfile = () => {
                   {isSavingPickupAddress
                     ? "Saving..."
                     : "Save pickup address"}
+                </CButton>
+              </div>
+            </>
+          )}
+        </CCardBody>
+      </CCard>
+
+      <CCard className="mb-4 border-0 shadow-sm">
+        <CCardHeader className="bg-white border-0 px-4 pt-4">
+          <h5 className="mb-1">Shiprocket account</h5>
+          <p className="text-body-secondary small mb-0">
+            Connect your own Shiprocket account. Credentials are encrypted on
+            the backend and never returned to this page.
+          </p>
+        </CCardHeader>
+        <CCardBody className="px-4">
+          {isLoadingShiprocketSettings ? (
+            <div
+              role="status"
+              className="d-flex align-items-center justify-content-center gap-2 text-sm text-body-secondary"
+              style={{ minHeight: "112px" }}
+            >
+              <CSpinner size="sm" aria-hidden="true" />
+              Loading Shiprocket settings...
+            </div>
+          ) : (
+            <>
+              <CRow className="g-3">
+                <CCol md={6}>
+                  <CFormLabel htmlFor="shiprocket-email">
+                    Shiprocket account email
+                  </CFormLabel>
+                  <CFormInput
+                    id="shiprocket-email"
+                    type="email"
+                    autoComplete="username"
+                    value={shiprocketCredentials.email}
+                    placeholder={
+                      shiprocketStatus.hasEmail
+                        ? "Saved; leave blank to keep current email"
+                        : "Enter your Shiprocket email"
+                    }
+                    onChange={(event) =>
+                      setShiprocketCredentials((current) => ({
+                        ...current,
+                        email: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="shiprocket-password">
+                    Shiprocket account password
+                  </CFormLabel>
+                  <CFormInput
+                    id="shiprocket-password"
+                    type="password"
+                    autoComplete="new-password"
+                    value={shiprocketCredentials.password}
+                    placeholder={
+                      shiprocketStatus.hasPassword
+                        ? "Saved; leave blank to keep current password"
+                        : "Enter your Shiprocket password"
+                    }
+                    onChange={(event) =>
+                      setShiprocketCredentials((current) => ({
+                        ...current,
+                        password: event.target.value,
+                      }))
+                    }
+                  />
+                </CCol>
+                <CCol md={6}>
+                  <CFormLabel htmlFor="shiprocket-enabled">
+                    Use Shiprocket for vendor shipping
+                  </CFormLabel>
+                  <CFormSelect
+                    id="shiprocket-enabled"
+                    value={String(shiprocketCredentials.enabled)}
+                    onChange={(event) =>
+                      setShiprocketCredentials((current) => ({
+                        ...current,
+                        enabled: event.target.value === "true",
+                      }))
+                    }
+                  >
+                    <option value="false">Disabled</option>
+                    <option value="true">Enabled</option>
+                  </CFormSelect>
+                </CCol>
+              </CRow>
+
+              {(shiprocketSettingsError || shiprocketSettingsMessage) && (
+                <p
+                  role={shiprocketSettingsError ? "alert" : "status"}
+                  className={`mt-3 mb-0 small ${
+                    shiprocketSettingsError ? "text-danger" : "text-success"
+                  }`}
+                >
+                  {shiprocketSettingsError || shiprocketSettingsMessage}
+                </p>
+              )}
+
+              <div className="d-flex justify-content-end mt-3">
+                <CButton
+                  color="primary"
+                  onClick={saveShiprocketSettings}
+                  disabled={isSavingShiprocketSettings}
+                >
+                  {isSavingShiprocketSettings
+                    ? "Saving..."
+                    : "Save Shiprocket settings"}
                 </CButton>
               </div>
             </>

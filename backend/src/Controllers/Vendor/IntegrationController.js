@@ -52,9 +52,22 @@ export const updateVendorIntegrations = async (req, res) => {
         return res.status(400).json({ success: false, message: "Invalid Shiprocket configuration" });
       }
       if (typeof shiprocket.email === "string" && shiprocket.email.trim()) {
-        vendor.integrations.shiprocket.emailEncrypted = encryptCredential(shiprocket.email.trim());
+        const email = shiprocket.email.trim().toLowerCase();
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return res.status(400).json({
+            success: false,
+            message: "Enter a valid Shiprocket account email",
+          });
+        }
+        vendor.integrations.shiprocket.emailEncrypted = encryptCredential(email);
       }
       if (typeof shiprocket.password === "string" && shiprocket.password.trim()) {
+        if (shiprocket.password.length > 256) {
+          return res.status(400).json({
+            success: false,
+            message: "Shiprocket password is too long",
+          });
+        }
         vendor.integrations.shiprocket.passwordEncrypted = encryptCredential(shiprocket.password.trim());
       }
       if (shiprocket.enabled !== undefined) {
