@@ -1,4 +1,13 @@
 import nodemailer from "nodemailer";
+import dns from "dns";
+
+dns.lookup("smtp.gmail.com", { family: 4 }, (err, address) => {
+  if (err) {
+    console.error("IPv4 DNS Error:", err);
+  } else {
+    console.log("Gmail IPv4:", address);
+  }
+});
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
