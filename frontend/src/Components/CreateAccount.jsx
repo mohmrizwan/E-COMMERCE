@@ -68,7 +68,7 @@ const CreateAccount = () => {
 
         <h2>Create your account</h2>
 
-        <p>Join VendorAflame and start shopping or selling today.</p>
+        <p>Join VendorAflame and start shopping today.</p>
       </div>
 
       {/* Success Snackbar */}

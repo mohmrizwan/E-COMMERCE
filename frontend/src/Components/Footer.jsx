@@ -20,8 +20,7 @@ const Footer = () => {
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
                   Vendora is the marketplace where thousands of trusted vendors
-                  meet millions of shoppers. Discover more, pay less, sell
-                  smarter.
+                  meet millions of shoppers. Discover more and shop smarter.
                 </p>
               </div>
 
@@ -47,7 +46,7 @@ const Footer = () => {
           </div>
 
           {/* Footer Links */}
-          <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 lg:max-w-3xl">
+          <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 lg:max-w-3xl">
 
             {/* Shop */}
             <div className="footer-links">
@@ -64,21 +63,6 @@ const Footer = () => {
               </div>
             </div>
 
-            {/* Sell */}
-            <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Sell
-              </h3>
-
-              <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">Start Selling</Link>
-                <Link className="footer-link" to="/">Seller Dashboard</Link>
-                <Link className="footer-link" to="/">Food & Pricing</Link>
-                <Link className="footer-link" to="/">Seller Academy</Link>
-                <Link className="footer-link" to="/">Fulfillment</Link>
-              </div>
-            </div>
-
             {/* Support */}
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
@@ -91,21 +75,6 @@ const Footer = () => {
                 <Link className="footer-link" to="/">Returns & Refunds</Link>
                 <Link className="footer-link" to="/">Shipping Info</Link>
                 <Link className="footer-link" to="/contact">Contact Us</Link>
-              </div>
-            </div>
-
-            {/* Company */}
-            <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Company
-              </h3>
-
-              <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">About Marqo</Link>
-                <Link className="footer-link" to="/">Careers</Link>
-                <Link className="footer-link" to="/">Press</Link>
-                <Link className="footer-link" to="/">Sustainability</Link>
-                <Link className="footer-link" to="/">Investors</Link>
               </div>
             </div>
 

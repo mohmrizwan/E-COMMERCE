@@ -65,12 +65,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}
@@ -139,12 +133,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}
@@ -213,12 +201,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}
@@ -287,12 +269,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}
@@ -361,12 +337,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}
@@ -435,12 +405,6 @@ export default function App() {
                   <i className="fa-solid fa-arrow-right"></i>
                 </Link>
 
-                <Link
-                  to="/login"
-                  className="flex items-center gap-2 rounded-xl border border-gray-300 px-4 py-3 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff]"
-                >
-                  <span>Become a seller</span>
-                </Link>
               </div>
 
               {/* Features */}

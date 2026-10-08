@@ -32,13 +32,6 @@ const Header = () => {
 
           <div className="hidden items-center gap-5 text-xs sm:flex">
             <Link
-              to="/login"
-              className="text-gray-500 transition-colors duration-500 hover:text-[#6c3bff]"
-            >
-              Sell on Marqo
-            </Link>
-
-            <Link
               to="/track-order"
               className="text-gray-500 transition-colors duration-500 hover:text-[#6c3bff]"
             >
@@ -80,14 +73,6 @@ const Header = () => {
           </div>
 
           <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2">
-            <Link
-              to="/login"
-              className="hidden items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 text-sm font-semibold text-[#171717] transition-all duration-300 hover:border-[#6c3bff] hover:text-[#6c3bff] sm:flex lg:px-4 lg:py-2.5"
-            >
-              <i className="fa-solid fa-shop text-sm"></i>
-              <span>Sell</span>
-            </Link>
-
             <Link
               to="/account"
               className="flex h-9 w-9 items-center justify-center rounded-xl text-gray-700 transition-all duration-300 hover:bg-gray-100 hover:text-[#6c3bff] sm:h-10 sm:w-10"

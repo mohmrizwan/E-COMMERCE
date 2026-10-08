@@ -1,11 +1,11 @@
 import dns from "dns/promises";
 import nodemailer from "nodemailer";
-
 const sendOtp = async (email, otp) => {
   try {
     const { address } = await dns.lookup("smtp.gmail.com", {
       family: 4,
     });
+    
 
     console.log("Gmail IPv4:", address);
 

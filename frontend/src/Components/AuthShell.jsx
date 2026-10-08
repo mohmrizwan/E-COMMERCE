@@ -37,7 +37,7 @@ const AuthShell = ({ children }) => (
     <section className="auth-panel">
       <div className="auth-mobile-brand"><Brand /></div>
       <div className="auth-card">{children}</div>
-      <p className="auth-footer">2026 VendorAflame <span aria-hidden="true">·</span> Shop confidently. Sell boldly.</p>
+      <p className="auth-footer">2026 VendorAflame <span aria-hidden="true">·</span> Shop confidently.</p>
     </section>
   </main>
 );
