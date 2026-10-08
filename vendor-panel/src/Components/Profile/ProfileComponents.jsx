@@ -28,7 +28,9 @@ const emptyPickupAddress = {
 };
 
 const VendorProfile = () => {
-  // Vendor profile data
+  // =========================
+  // Vendor Profile
+  // =========================
   const [formData, setFormData] = useState({
     businessName: "",
     ownerName: "",
@@ -47,14 +49,45 @@ const VendorProfile = () => {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const [pickupAddress, setPickupAddress] = useState(emptyPickupAddress);
+  // =========================
+  // Pickup Address
+  // =========================
+  const [pickupAddress, setPickupAddress] =
+    useState(emptyPickupAddress);
+
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
 
-  const [isLoadingPickupAddress, setIsLoadingPickupAddress] = useState(true);
-  const [isSavingPickupAddress, setIsSavingPickupAddress] = useState(false);
+  const [isLoadingPickupAddress, setIsLoadingPickupAddress] =
+    useState(true);
 
+  const [isSavingPickupAddress, setIsSavingPickupAddress] =
+    useState(false);
+
+  // =========================
+  // Shiprocket Integration
+  // =========================
+  const [shiprocketConfig, setShiprocketConfig] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [shiprocketStatus, setShiprocketStatus] = useState(false);
+
+  const [isLoadingShiprocket, setIsLoadingShiprocket] =
+    useState(true);
+
+  const [isSavingShiprocket, setIsSavingShiprocket] =
+    useState(false);
+
+  const [shiprocketMessage, setShiprocketMessage] = useState("");
+  const [shiprocketError, setShiprocketError] = useState("");
+
+  // =========================
+  // Profile Edit Mode
+  // =========================
   const [editMode, setEditMode] = useState(false);
+
   const shiprocketAddress = [
     pickupAddress.address,
     pickupAddress.city,
@@ -64,41 +97,75 @@ const VendorProfile = () => {
     .filter(Boolean)
     .join(", ");
 
-  useEffect(() => {
-    let isActive = true;
+  // =========================
+  // Get Pickup Address
+  // =========================
+  const getPickupAddress = async () => {
+    try {
+      const vendorToken = localStorage.getItem("vendorToken");
 
-    axios
-      .get(`${API_URL}/vendor/profile/pickup-address`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+      const response = await axios.get(
+        `${API_URL}/vendor/profile/pickup-address`,
+        {
+          headers: {
+            Authorization: `Bearer ${vendorToken}`,
+          },
         },
-      })
-      .then((response) => {
-        if (isActive) {
-          setPickupAddress({
-            ...emptyPickupAddress,
-            ...response.data.pickupAddress,
-          });
-        }
-      }) 
-      .catch((error) => {
-        if (isActive) {
-          setPickupAddressError(
-            error.response?.data?.message ||
-              "Could not load the pickup address.",
-          );
-        }
-      })
-      .finally(() => {
-        if (isActive) setIsLoadingPickupAddress(false);
+      );
+
+      setPickupAddress({
+        ...emptyPickupAddress,
+        ...response.data.pickupAddress,
       });
 
-    return () => {
-      isActive = false;
-    };
-  }, []);
+      setPickupAddressError("");
+    } catch (error) {
+      setPickupAddressError(
+        error.response?.data?.message ||
+          "Could not load the pickup address.",
+      );
+    } finally {
+      setIsLoadingPickupAddress(false);
+    }
+  };
 
-  // Get vendor profile
+  // =========================
+  // Get Shiprocket Config
+  // =========================
+  const getShiprocketConfig = async () => {
+    try {
+      const vendorToken = localStorage.getItem("vendorToken");
+
+      const response = await axios.get(
+        `${API_URL}/vendor/integrations`,
+        {
+          headers: {
+            Authorization: `Bearer ${vendorToken}`,
+          },
+        },
+      );
+
+      const shiprocket =
+        response.data.integrations?.shiprocket;
+
+      setShiprocketStatus(
+        Boolean(shiprocket?.enabled),
+      );
+
+      setShiprocketError("");
+    } catch (error) {
+      setShiprocketError(
+        error.response?.data?.message ||
+          "Could not load Shiprocket configuration.",
+      );
+    } finally {
+      setIsLoadingShiprocket(false);
+    }
+  };
+
+  // =========================
+  // Get Vendor Profile
+  // =========================
   const getProfileData = async () => {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
@@ -111,7 +178,9 @@ const VendorProfile = () => {
           },
         },
       );
-      const vendorProfile = response.data.vendorProfile;
+
+      const vendorProfile =
+        response.data.vendorProfile;
 
       setFormData({
         businessName: vendorProfile.businessName || "",
@@ -120,12 +189,15 @@ const VendorProfile = () => {
         phone: vendorProfile.phone || "",
         address: vendorProfile.address || "",
         description: vendorProfile.description || "",
-        accountHolderName: vendorProfile.accountHolderName || "",
+        accountHolderName:
+          vendorProfile.accountHolderName || "",
         bankName: vendorProfile.bankName || "",
-        accountNumber: vendorProfile.accountNumber || "",
+        accountNumber:
+          vendorProfile.accountNumber || "",
         ifscCode: vendorProfile.ifscCode || "",
         upiId: vendorProfile.upiId || "",
-        payoutMethod: vendorProfile.payoutMethod || "bank",
+        payoutMethod:
+          vendorProfile.payoutMethod || "bank",
       });
 
       setErrorMessage("");
@@ -139,12 +211,18 @@ const VendorProfile = () => {
     }
   };
 
-  // Get profile data when page loads
+  // =========================
+  // Page Load
+  // =========================
   useEffect(() => {
+    getPickupAddress();
+    getShiprocketConfig();
     getProfileData();
   }, []);
 
-  // Profile input change
+  // =========================
+  // Profile Input Change
+  // =========================
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -152,7 +230,9 @@ const VendorProfile = () => {
     });
   };
 
-  // Profile save
+  // =========================
+  // Profile Save
+  // =========================
   const handleSave = () => {
     const requiredFields = [
       ["businessName", "Shop Name"],
@@ -160,67 +240,197 @@ const VendorProfile = () => {
       ["email", "Email"],
       ["phone", "Phone"],
     ];
+
     const emptyFields = requiredFields
-      .filter(([field]) => !String(formData[field] || "").trim())
+      .filter(
+        ([field]) =>
+          !String(formData[field] || "").trim(),
+      )
       .map(([, label]) => label);
 
     if (emptyFields.length) {
-      setErrorMessage(`Please fill in: ${emptyFields.join(", ")}.`);
+      setErrorMessage(
+        `Please fill in: ${emptyFields.join(", ")}.`,
+      );
       return;
     }
 
     setErrorMessage("");
+    setMessage("Profile changes saved.");
     setEditMode(false);
   };
 
+  // =========================
+  // Save Pickup Address
+  // =========================
   const savePickupAddress = async () => {
     setPickupAddressError("");
     setPickupAddressMessage("");
 
-    const normalizedPickupAddress = Object.fromEntries(
-      Object.entries(pickupAddress).map(([field, value]) => [
-        field,
-        String(value || "").trim(),
-      ]),
-    );
+    const normalizedPickupAddress =
+      Object.fromEntries(
+        Object.entries(pickupAddress).map(
+          ([field, value]) => [
+            field,
+            String(value || "").trim(),
+          ],
+        ),
+      );
 
-    if (Object.values(normalizedPickupAddress).some((value) => !value)) {
+    if (
+      Object.values(normalizedPickupAddress).some(
+        (value) => !value,
+      )
+    ) {
       setPickupAddressError(
         "Complete all pickup address fields before saving.",
       );
       return;
     }
 
-    if (!/^\d{6}$/.test(normalizedPickupAddress.pincode)) {
-      setPickupAddressError("Pickup pincode must be exactly six digits.");
+    if (
+      !/^\d{6}$/.test(
+        normalizedPickupAddress.pincode,
+      )
+    ) {
+      setPickupAddressError(
+        "Pickup pincode must be exactly six digits.",
+      );
       return;
     }
 
     setIsSavingPickupAddress(true);
+
     try {
       const response = await axios.put(
         `${API_URL}/vendor/profile/pickup-address`,
         normalizedPickupAddress,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
+            Authorization: `Bearer ${localStorage.getItem(
+              "vendorToken",
+            )}`,
           },
         },
       );
-      setPickupAddress(response.data.pickupAddress);
-      setPickupAddressMessage(response.data.message);
+
+      setPickupAddress(
+        response.data.pickupAddress,
+      );
+
+      setPickupAddressMessage(
+        response.data.message ||
+          "Pickup address saved successfully.",
+      );
     } catch (error) {
       setPickupAddressError(
-        error.response?.data?.message || "Could not save the pickup address.",
+        error.response?.data?.message ||
+          "Could not save the pickup address.",
       );
     } finally {
       setIsSavingPickupAddress(false);
     }
   };
 
+  // =========================
+  // Shiprocket Input Change
+  // =========================
+  const handleShiprocketChange = (e) => {
+    setShiprocketConfig({
+      ...shiprocketConfig,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // =========================
+  // Save Shiprocket Config
+  // =========================
+  const saveShiprocketConfig = async () => {
+    setShiprocketError("");
+    setShiprocketMessage("");
+
+    const email =
+      shiprocketConfig.email.trim().toLowerCase();
+
+    const password =
+      shiprocketConfig.password.trim();
+
+    if (!email || !password) {
+      setShiprocketError(
+        "Enter Shiprocket email and password.",
+      );
+      return;
+    }
+
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+    ) {
+      setShiprocketError(
+        "Enter a valid Shiprocket email.",
+      );
+      return;
+    }
+
+    if (password.length > 256) {
+      setShiprocketError(
+        "Shiprocket password is too long.",
+      );
+      return;
+    }
+
+    setIsSavingShiprocket(true);
+
+    try {
+      const response = await axios.put(
+        `${API_URL}/vendor/integrations`,
+        {
+          shiprocket: {
+            email,
+            password,
+            enabled: true,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem(
+              "vendorToken",
+            )}`,
+          },
+        },
+      );
+
+      setShiprocketStatus(
+        Boolean(
+          response.data.integrations?.shiprocket
+            ?.enabled,
+        ),
+      );
+
+      setShiprocketConfig({
+        email: "",
+        password: "",
+      });
+
+      setShiprocketMessage(
+        response.data.message ||
+          "Shiprocket integration connected successfully.",
+      );
+    } catch (error) {
+      setShiprocketError(
+        error.response?.data?.message ||
+          "Could not save Shiprocket configuration.",
+      );
+    } finally {
+      setIsSavingShiprocket(false);
+    }
+  };
+
   return (
     <CContainer fluid className="py-3">
-      {/* Success Snackbar */}
+
+      {/* =========================
+          Success Snackbar
+      ========================= */}
       <Snackbar
         open={Boolean(message)}
         autoHideDuration={3000}
@@ -240,7 +450,9 @@ const VendorProfile = () => {
         </Alert>
       </Snackbar>
 
-      {/* Error Snackbar */}
+      {/* =========================
+          Error Snackbar
+      ========================= */}
       <Snackbar
         open={Boolean(errorMessage)}
         autoHideDuration={3000}
@@ -260,7 +472,9 @@ const VendorProfile = () => {
         </Alert>
       </Snackbar>
 
-      {/* Header */}
+      {/* =========================
+          Header
+      ========================= */}
       <CRow className="align-items-end mb-4">
         <CCol>
           <p className="text-uppercase text-primary fw-semibold small mb-1">
@@ -272,8 +486,8 @@ const VendorProfile = () => {
           </h3>
 
           <p className="text-body-secondary mb-0">
-            Keep your store identity and payout information up to
-            date.
+            Keep your store identity and payout
+            information up to date.
           </p>
         </CCol>
 
@@ -289,14 +503,124 @@ const VendorProfile = () => {
         </CCol>
       </CRow>
 
+      {/* =========================
+          Shiprocket Integration
+      ========================= */}
       <CCard className="mb-4 border-0 shadow-sm">
         <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <h5 className="mb-1">Shiprocket pickup / warehouse address</h5>
+          <div className="d-flex justify-content-between align-items-start gap-3">
+            <div>
+              <h5 className="mb-1">
+                Shiprocket Integration
+              </h5>
+
+              <p className="text-body-secondary small mb-0">
+                Connect your own Shiprocket account for
+                shipping and courier management.
+              </p>
+            </div>
+
+            {isLoadingShiprocket ? (
+              <CSpinner size="sm" />
+            ) : (
+              <span
+                className={`badge ${
+                  shiprocketStatus
+                    ? "bg-success-subtle text-success"
+                    : "bg-danger-subtle text-danger"
+                }`}
+              >
+                {shiprocketStatus
+                  ? "Connected"
+                  : "Not Connected"}
+              </span>
+            )}
+          </div>
+        </CCardHeader>
+
+        <CCardBody className="px-4">
+          <CRow className="g-3">
+            <CCol md={6}>
+              <CFormLabel>
+                Shiprocket Email
+              </CFormLabel>
+
+              <CFormInput
+                type="email"
+                name="email"
+                placeholder="Enter Shiprocket account email"
+                value={shiprocketConfig.email}
+                onChange={handleShiprocketChange}
+              />
+            </CCol>
+
+            <CCol md={6}>
+              <CFormLabel>
+                Shiprocket Password
+              </CFormLabel>
+
+              <CFormInput
+                type="password"
+                name="password"
+                placeholder="Enter Shiprocket password"
+                value={shiprocketConfig.password}
+                onChange={handleShiprocketChange}
+              />
+            </CCol>
+          </CRow>
+
+          {shiprocketError && (
+            <p className="text-danger small mt-3 mb-0">
+              {shiprocketError}
+            </p>
+          )}
+
+          {shiprocketMessage && (
+            <p className="text-success small mt-3 mb-0">
+              {shiprocketMessage}
+            </p>
+          )}
+
+          <div className="d-flex justify-content-end mt-3">
+            <CButton
+              color="primary"
+              onClick={saveShiprocketConfig}
+              disabled={
+                isSavingShiprocket ||
+                isLoadingShiprocket
+              }
+            >
+              {isSavingShiprocket ? (
+                <>
+                  <CSpinner
+                    size="sm"
+                    className="me-2"
+                  />
+                  Connecting...
+                </>
+              ) : (
+                "Connect Shiprocket"
+              )}
+            </CButton>
+          </div>
+        </CCardBody>
+      </CCard>
+
+      {/* =========================
+          Shiprocket Pickup Address
+      ========================= */}
+      <CCard className="mb-4 border-0 shadow-sm">
+        <CCardHeader className="bg-white border-0 px-4 pt-4">
+          <h5 className="mb-1">
+            Shiprocket pickup / warehouse address
+          </h5>
+
           <p className="text-body-secondary small mb-0">
-            The location name must exactly match a pickup location registered
-            in your Shiprocket account.
+            The location name must exactly match a pickup
+            location registered in your Shiprocket account.
           </p>
         </CCardHeader>
+
         <CCardBody className="px-4">
           {isLoadingPickupAddress ? (
             <div
@@ -304,96 +628,165 @@ const VendorProfile = () => {
               className="d-flex align-items-center justify-content-center gap-2 text-sm text-body-secondary"
               style={{ minHeight: "112px" }}
             >
-              <CSpinner size="sm" aria-hidden="true" />
+              <CSpinner
+                size="sm"
+                aria-hidden="true"
+              />
               Loading pickup address...
             </div>
           ) : (
             <>
               <CRow className="g-3">
+
                 <CCol md={6}>
-                  <CFormLabel>Registered Shiprocket pickup location name</CFormLabel>
+                  <CFormLabel>
+                    Registered Shiprocket pickup
+                    location name
+                  </CFormLabel>
+
                   <CFormInput
                     required
-                    value={pickupAddress.shiprocketLocationName}
+                    value={
+                      pickupAddress.shiprocketLocationName
+                    }
                     onChange={(event) =>
-                      setPickupAddress((current) => ({
-                        ...current,
-                        shiprocketLocationName: event.target.value,
-                      }))
+                      setPickupAddress(
+                        (current) => ({
+                          ...current,
+                          shiprocketLocationName:
+                            event.target.value,
+                        }),
+                      )
                     }
                   />
                 </CCol>
+
                 <CCol md={6}>
-                  <CFormLabel>Pickup address</CFormLabel>
+                  <CFormLabel>
+                    Pickup address
+                  </CFormLabel>
+
                   <CFormInput
                     required
-                    value={pickupAddress.address}
+                    value={
+                      pickupAddress.address
+                    }
                     onChange={(event) =>
-                      setPickupAddress((current) => ({
-                        ...current,
-                        address: event.target.value,
-                      }))
+                      setPickupAddress(
+                        (current) => ({
+                          ...current,
+                          address:
+                            event.target.value,
+                        }),
+                      )
                     }
                   />
                 </CCol>
+
                 <CCol md={4}>
-                  <CFormLabel>City</CFormLabel>
+                  <CFormLabel>
+                    City
+                  </CFormLabel>
+
                   <CFormInput
                     required
-                    value={pickupAddress.city}
+                    value={
+                      pickupAddress.city
+                    }
                     onChange={(event) =>
-                      setPickupAddress((current) => ({
-                        ...current,
-                        city: event.target.value,
-                      }))
+                      setPickupAddress(
+                        (current) => ({
+                          ...current,
+                          city:
+                            event.target.value,
+                        }),
+                      )
                     }
                   />
                 </CCol>
+
                 <CCol md={4}>
-                  <CFormLabel>State</CFormLabel>
+                  <CFormLabel>
+                    State
+                  </CFormLabel>
+
                   <CFormInput
                     required
-                    value={pickupAddress.state}
+                    value={
+                      pickupAddress.state
+                    }
                     onChange={(event) =>
-                      setPickupAddress((current) => ({
-                        ...current,
-                        state: event.target.value,
-                      }))
+                      setPickupAddress(
+                        (current) => ({
+                          ...current,
+                          state:
+                            event.target.value,
+                        }),
+                      )
                     }
                   />
                 </CCol>
+
                 <CCol md={4}>
-                  <CFormLabel>Pickup pincode</CFormLabel>
+                  <CFormLabel>
+                    Pickup pincode
+                  </CFormLabel>
+
                   <CFormInput
                     required
                     inputMode="numeric"
                     maxLength={6}
                     pattern="[0-9]{6}"
-                    value={pickupAddress.pincode}
+                    value={
+                      pickupAddress.pincode
+                    }
                     onChange={(event) =>
-                      setPickupAddress((current) => ({
-                        ...current,
-                        pincode: event.target.value.replace(/\D/g, "").slice(0, 6),
-                      }))
+                      setPickupAddress(
+                        (current) => ({
+                          ...current,
+                          pincode:
+                            event.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 6),
+                        }),
+                      )
                     }
                   />
                 </CCol>
+
               </CRow>
-              {(pickupAddressError || pickupAddressMessage) && (
+
+              {(pickupAddressError ||
+                pickupAddressMessage) && (
                 <p
-                  role={pickupAddressError ? "alert" : "status"}
-                  className={`mt-3 mb-0 small ${pickupAddressError ? "text-danger" : "text-success"}`}
+                  role={
+                    pickupAddressError
+                      ? "alert"
+                      : "status"
+                  }
+                  className={`mt-3 mb-0 small ${
+                    pickupAddressError
+                      ? "text-danger"
+                      : "text-success"
+                  }`}
                 >
-                  {pickupAddressError || pickupAddressMessage}
+                  {pickupAddressError ||
+                    pickupAddressMessage}
                 </p>
               )}
+
               <div className="d-flex justify-content-end mt-3">
                 <CButton
                   color="primary"
                   onClick={savePickupAddress}
-                  disabled={isLoadingPickupAddress || isSavingPickupAddress}
+                  disabled={
+                    isLoadingPickupAddress ||
+                    isSavingPickupAddress
+                  }
                 >
-                  {isSavingPickupAddress ? "Saving..." : "Save pickup address"}
+                  {isSavingPickupAddress
+                    ? "Saving..."
+                    : "Save pickup address"}
                 </CButton>
               </div>
             </>
@@ -401,14 +794,19 @@ const VendorProfile = () => {
         </CCardBody>
       </CCard>
 
-      {/* Profile */}
+      {/* =========================
+          Profile
+      ========================= */}
       <CRow className="g-4">
+
         {/* Left Profile Card */}
         <CCol xl={4}>
           <CCard className="h-100 border-0 shadow-sm">
+
             {/* Profile Header */}
             <div className="bg-primary text-white p-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
+
                 <div>
                   <div className="small text-white-50 mb-1">
                     Vendor Account
@@ -427,11 +825,13 @@ const VendorProfile = () => {
                 <span className="badge rounded-pill bg-white text-primary px-3 py-2">
                   Active
                 </span>
+
               </div>
             </div>
 
             {/* Profile Details */}
             <CCardBody className="p-4">
+
               <div className="mb-4">
                 <div className="small text-body-secondary mb-1">
                   Email Address
@@ -485,27 +885,31 @@ const VendorProfile = () => {
                   </span>
                 </div>
               </div>
+
             </CCardBody>
           </CCard>
         </CCol>
 
         {/* Right Side */}
         <CCol xl={8}>
+
           {/* Business Information */}
           <CCard className="border-0 shadow-sm mb-4">
+
             <CCardHeader className="bg-white border-0 px-4 pt-4">
               <h5 className="mb-1">
                 Business information
               </h5>
 
               <p className="text-body-secondary small mb-0">
-                Details customers and the marketplace use
-                to identify your store.
+                Details customers and the marketplace
+                use to identify your store.
               </p>
             </CCardHeader>
 
             <CCardBody className="px-4">
               <CRow>
+
                 <CCol md={6}>
                   <div className="mb-3">
                     <CFormLabel>
@@ -515,7 +919,9 @@ const VendorProfile = () => {
                     <CFormInput
                       required
                       name="businessName"
-                      value={formData.businessName}
+                      value={
+                        formData.businessName
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -531,7 +937,9 @@ const VendorProfile = () => {
                     <CFormInput
                       required
                       name="ownerName"
-                      value={formData.ownerName}
+                      value={
+                        formData.ownerName
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -548,7 +956,9 @@ const VendorProfile = () => {
                       required
                       type="email"
                       name="email"
-                      value={formData.email}
+                      value={
+                        formData.email
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -564,7 +974,9 @@ const VendorProfile = () => {
                     <CFormInput
                       required
                       name="phone"
-                      value={formData.phone}
+                      value={
+                        formData.phone
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -578,7 +990,9 @@ const VendorProfile = () => {
                     </CFormLabel>
 
                     <CFormInput
-                      value={shiprocketAddress}
+                      value={
+                        shiprocketAddress
+                      }
                       readOnly
                     />
                   </div>
@@ -593,39 +1007,46 @@ const VendorProfile = () => {
                     <CFormTextarea
                       rows={3}
                       name="description"
-                      value={formData.description}
+                      value={
+                        formData.description
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
                   </div>
                 </CCol>
+
               </CRow>
             </CCardBody>
           </CCard>
 
           {/* Payment & Bank Details */}
           <CCard className="border-0 shadow-sm">
+
             <CCardHeader className="bg-white border-0 px-4 pt-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
+
                 <div>
                   <h5 className="mb-1">
                     Payment & Bank Details
                   </h5>
 
                   <p className="text-body-secondary small mb-0">
-                    Where your marketplace earnings will
-                    be deposited.
+                    Where your marketplace earnings
+                    will be deposited.
                   </p>
                 </div>
 
                 <span className="badge bg-success-subtle text-success">
                   Payout ready
                 </span>
+
               </div>
             </CCardHeader>
 
             <CCardBody className="px-4">
               <CRow>
+
                 <CCol md={6}>
                   <div className="mb-3">
                     <CFormLabel>
@@ -651,7 +1072,9 @@ const VendorProfile = () => {
 
                     <CFormInput
                       name="bankName"
-                      value={formData.bankName}
+                      value={
+                        formData.bankName
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -685,7 +1108,9 @@ const VendorProfile = () => {
 
                     <CFormInput
                       name="ifscCode"
-                      value={formData.ifscCode}
+                      value={
+                        formData.ifscCode
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -700,7 +1125,9 @@ const VendorProfile = () => {
 
                     <CFormInput
                       name="upiId"
-                      value={formData.upiId}
+                      value={
+                        formData.upiId
+                      }
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -731,10 +1158,12 @@ const VendorProfile = () => {
                     </CFormSelect>
                   </div>
                 </CCol>
+
               </CRow>
 
               {editMode && (
                 <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2">
+
                   <CButton
                     color="secondary"
                     variant="outline"
@@ -751,10 +1180,12 @@ const VendorProfile = () => {
                   >
                     Save Changes
                   </CButton>
+
                 </div>
               )}
             </CCardBody>
           </CCard>
+
         </CCol>
       </CRow>
     </CContainer>
@@ -762,4 +1193,3 @@ const VendorProfile = () => {
 };
 
 export default VendorProfile;
-
