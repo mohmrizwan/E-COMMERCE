@@ -50,6 +50,20 @@ export const getShiprocketToken = async (vendorId) => {
   }
 };
 
+export const getShiprocketPickupLocations = async (vendorId) => {
+  const token = await getShiprocketToken(vendorId);
+  const response = await axios.get(
+    "https://apiv2.shiprocket.in/v1/external/settings/company/pickup",
+    { headers: { Authorization: `Bearer ${token}` } },
+  );
+  const payload = response.data?.data ?? response.data;
+  const locations = Array.isArray(payload)
+    ? payload
+    : payload?.shipping_address ?? payload?.pickup_locations ?? [];
+
+  return Array.isArray(locations) ? locations : [];
+};
+
 export const createShiprocketOrder = async (orderData, vendorId) => {
   try {
     const token = await getShiprocketToken(vendorId);

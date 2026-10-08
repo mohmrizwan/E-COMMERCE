@@ -1,4 +1,5 @@
 import VendorModel from "../../models/vendor/AuthModel.js";
+import { getShiprocketPickupLocations } from "../../Services/ShipRocket.js";
 import sendOtp from "../../utils/SendOtp.js";
 import bcrypt from "bcrypt";
 import generateToken from "../../utils/generateToken.js";
@@ -344,10 +345,27 @@ export const resetPassword = async (req, res) => {
 };
 
 export const getVendorPickupAddress = async (req, res) => {
-  return res.status(200).json({
-    success: true,
-    pickupAddress: req.vendor.pickupAddress || {},
-  });
+  try {
+    const locations = await getShiprocketPickupLocations(req.vendor._id);
+    const pickupLocations = locations.map((location) => ({
+      shiprocketLocationName: String(location.pickup_location || location.name || "").trim(),
+      address: String(location.address || location.address_1 || "").trim(),
+      city: String(location.city || "").trim(),
+      state: String(location.state || "").trim(),
+      pincode: String(location.pin_code || location.pincode || "").trim(),
+    })).filter((location) => location.shiprocketLocationName);
+
+    return res.status(200).json({
+      success: true,
+      pickupAddress: req.vendor.pickupAddress || {},
+      pickupLocations,
+    });
+  } catch (error) {
+    return res.status(502).json({
+      success: false,
+      message: error.response?.data?.message || error.message || "Could not fetch Shiprocket pickup locations",
+    });
+  }
 };
 
 export const updateVendorPickupAddress = async (req, res) => {
@@ -364,11 +382,7 @@ export const updateVendorPickupAddress = async (req, res) => {
   };
 
   if (
-    !pickupAddress.shiprocketLocationName ||
-    !pickupAddress.address ||
-    !pickupAddress.city ||
-    !pickupAddress.state ||
-    !pickupAddress.pincode
+    !pickupAddress.shiprocketLocationName
   ) {
     return res.status(400).json({
       success: false,
@@ -377,10 +391,35 @@ export const updateVendorPickupAddress = async (req, res) => {
     });
   }
 
-  if (!/^\d{6}$/.test(pickupAddress.pincode)) {
+  try {
+    const locations = await getShiprocketPickupLocations(req.vendor._id);
+    const registeredLocation = locations.find((location) =>
+      String(location.pickup_location || location.name || "").trim() === pickupAddress.shiprocketLocationName,
+    );
+    if (!registeredLocation) {
+      return res.status(400).json({
+        success: false,
+        message: "Select a pickup location registered in your Shiprocket account",
+      });
+    }
+    pickupAddress.address = String(registeredLocation.address || registeredLocation.address_1 || "").trim();
+    pickupAddress.city = String(registeredLocation.city || "").trim();
+    pickupAddress.state = String(registeredLocation.state || "").trim();
+    pickupAddress.pincode = String(registeredLocation.pin_code || registeredLocation.pincode || "").trim();
+  } catch (error) {
+    return res.status(502).json({
+      success: false,
+      message: error.response?.data?.message || error.message || "Could not verify Shiprocket pickup location",
+    });
+  }
+
+  if (
+    !pickupAddress.address || !pickupAddress.city ||
+    !pickupAddress.state || !/^\d{6}$/.test(pickupAddress.pincode)
+  ) {
     return res.status(400).json({
       success: false,
-      message: "Vendor pickup pincode must be exactly six digits",
+      message: "The selected Shiprocket pickup location has an incomplete address",
     });
   }
 
@@ -399,6 +438,7 @@ export const updateVendorPickupAddress = async (req, res) => {
       message: "Could not save the vendor pickup address",
     });
   }
+
 };
 
 export const getVendorProfile = async (req, res) => {

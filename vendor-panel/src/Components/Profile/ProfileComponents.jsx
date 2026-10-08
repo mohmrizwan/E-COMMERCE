@@ -54,6 +54,7 @@ const VendorProfile = () => {
   // =========================
   const [pickupAddress, setPickupAddress] =
     useState(emptyPickupAddress);
+  const [pickupLocations, setPickupLocations] = useState([]);
 
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
@@ -63,25 +64,6 @@ const VendorProfile = () => {
 
   const [isSavingPickupAddress, setIsSavingPickupAddress] =
     useState(false);
-
-  // =========================
-  // Shiprocket Integration
-  // =========================
-  const [shiprocketConfig, setShiprocketConfig] = useState({
-    email: "",
-    password: "",
-  });
-
-  const [shiprocketStatus, setShiprocketStatus] = useState(false);
-
-  const [isLoadingShiprocket, setIsLoadingShiprocket] =
-    useState(true);
-
-  const [isSavingShiprocket, setIsSavingShiprocket] =
-    useState(false);
-
-  const [shiprocketMessage, setShiprocketMessage] = useState("");
-  const [shiprocketError, setShiprocketError] = useState("");
 
   // =========================
   // Profile Edit Mode
@@ -117,6 +99,7 @@ const VendorProfile = () => {
         ...emptyPickupAddress,
         ...response.data.pickupAddress,
       });
+      setPickupLocations(response.data.pickupLocations || []);
 
       setPickupAddressError("");
     } catch (error) {
@@ -126,40 +109,6 @@ const VendorProfile = () => {
       );
     } finally {
       setIsLoadingPickupAddress(false);
-    }
-  };
-
-  // =========================
-  // Get Shiprocket Config
-  // =========================
-  const getShiprocketConfig = async () => {
-    try {
-      const vendorToken = localStorage.getItem("vendorToken");
-
-      const response = await axios.get(
-        `${API_URL}/vendor/integrations`,
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
-        },
-      );
-
-      const shiprocket =
-        response.data.integrations?.shiprocket;
-
-      setShiprocketStatus(
-        Boolean(shiprocket?.enabled),
-      );
-
-      setShiprocketError("");
-    } catch (error) {
-      setShiprocketError(
-        error.response?.data?.message ||
-          "Could not load Shiprocket configuration.",
-      );
-    } finally {
-      setIsLoadingShiprocket(false);
     }
   };
 
@@ -216,7 +165,6 @@ const VendorProfile = () => {
   // =========================
   useEffect(() => {
     getPickupAddress();
-    getShiprocketConfig();
     getProfileData();
   }, []);
 
@@ -267,34 +215,12 @@ const VendorProfile = () => {
     setPickupAddressError("");
     setPickupAddressMessage("");
 
-    const normalizedPickupAddress =
-      Object.fromEntries(
-        Object.entries(pickupAddress).map(
-          ([field, value]) => [
-            field,
-            String(value || "").trim(),
-          ],
-        ),
-      );
-
-    if (
-      Object.values(normalizedPickupAddress).some(
-        (value) => !value,
-      )
-    ) {
+    const selectedPickupAddress = pickupLocations.find(
+      (location) => location.shiprocketLocationName === pickupAddress.shiprocketLocationName,
+    );
+    if (!selectedPickupAddress) {
       setPickupAddressError(
-        "Complete all pickup address fields before saving.",
-      );
-      return;
-    }
-
-    if (
-      !/^\d{6}$/.test(
-        normalizedPickupAddress.pincode,
-      )
-    ) {
-      setPickupAddressError(
-        "Pickup pincode must be exactly six digits.",
+        "Select a registered Shiprocket pickup location before saving.",
       );
       return;
     }
@@ -304,7 +230,7 @@ const VendorProfile = () => {
     try {
       const response = await axios.put(
         `${API_URL}/vendor/profile/pickup-address`,
-        normalizedPickupAddress,
+        { shiprocketLocationName: selectedPickupAddress.shiprocketLocationName },
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem(
@@ -329,99 +255,6 @@ const VendorProfile = () => {
       );
     } finally {
       setIsSavingPickupAddress(false);
-    }
-  };
-
-  // =========================
-  // Shiprocket Input Change
-  // =========================
-  const handleShiprocketChange = (e) => {
-    setShiprocketConfig({
-      ...shiprocketConfig,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  // =========================
-  // Save Shiprocket Config
-  // =========================
-  const saveShiprocketConfig = async () => {
-    setShiprocketError("");
-    setShiprocketMessage("");
-
-    const email =
-      shiprocketConfig.email.trim().toLowerCase();
-
-    const password =
-      shiprocketConfig.password.trim();
-
-    if (!email || !password) {
-      setShiprocketError(
-        "Enter Shiprocket email and password.",
-      );
-      return;
-    }
-
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-    ) {
-      setShiprocketError(
-        "Enter a valid Shiprocket email.",
-      );
-      return;
-    }
-
-    if (password.length > 256) {
-      setShiprocketError(
-        "Shiprocket password is too long.",
-      );
-      return;
-    }
-
-    setIsSavingShiprocket(true);
-
-    try {
-      const response = await axios.put(
-        `${API_URL}/vendor/integrations`,
-        {
-          shiprocket: {
-            email,
-            password,
-            enabled: true,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem(
-              "vendorToken",
-            )}`,
-          },
-        },
-      );
-
-      setShiprocketStatus(
-        Boolean(
-          response.data.integrations?.shiprocket
-            ?.enabled,
-        ),
-      );
-
-      setShiprocketConfig({
-        email: "",
-        password: "",
-      });
-
-      setShiprocketMessage(
-        response.data.message ||
-          "Shiprocket integration connected successfully.",
-      );
-    } catch (error) {
-      setShiprocketError(
-        error.response?.data?.message ||
-          "Could not save Shiprocket configuration.",
-      );
-    } finally {
-      setIsSavingShiprocket(false);
     }
   };
 
@@ -504,109 +337,6 @@ const VendorProfile = () => {
       </CRow>
 
       {/* =========================
-          Shiprocket Integration
-      ========================= */}
-      <CCard className="mb-4 border-0 shadow-sm">
-        <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <div className="d-flex justify-content-between align-items-start gap-3">
-            <div>
-              <h5 className="mb-1">
-                Shiprocket Integration
-              </h5>
-
-              <p className="text-body-secondary small mb-0">
-                Connect your own Shiprocket account for
-                shipping and courier management.
-              </p>
-            </div>
-
-            {isLoadingShiprocket ? (
-              <CSpinner size="sm" />
-            ) : (
-              <span
-                className={`badge ${
-                  shiprocketStatus
-                    ? "bg-success-subtle text-success"
-                    : "bg-danger-subtle text-danger"
-                }`}
-              >
-                {shiprocketStatus
-                  ? "Connected"
-                  : "Not Connected"}
-              </span>
-            )}
-          </div>
-        </CCardHeader>
-
-        <CCardBody className="px-4">
-          <CRow className="g-3">
-            <CCol md={6}>
-              <CFormLabel>
-                Shiprocket Email
-              </CFormLabel>
-
-              <CFormInput
-                type="email"
-                name="email"
-                placeholder="Enter Shiprocket account email"
-                value={shiprocketConfig.email}
-                onChange={handleShiprocketChange}
-              />
-            </CCol>
-
-            <CCol md={6}>
-              <CFormLabel>
-                Shiprocket Password
-              </CFormLabel>
-
-              <CFormInput
-                type="password"
-                name="password"
-                placeholder="Enter Shiprocket password"
-                value={shiprocketConfig.password}
-                onChange={handleShiprocketChange}
-              />
-            </CCol>
-          </CRow>
-
-          {shiprocketError && (
-            <p className="text-danger small mt-3 mb-0">
-              {shiprocketError}
-            </p>
-          )}
-
-          {shiprocketMessage && (
-            <p className="text-success small mt-3 mb-0">
-              {shiprocketMessage}
-            </p>
-          )}
-
-          <div className="d-flex justify-content-end mt-3">
-            <CButton
-              color="primary"
-              onClick={saveShiprocketConfig}
-              disabled={
-                isSavingShiprocket ||
-                isLoadingShiprocket
-              }
-            >
-              {isSavingShiprocket ? (
-                <>
-                  <CSpinner
-                    size="sm"
-                    className="me-2"
-                  />
-                  Connecting...
-                </>
-              ) : (
-                "Connect Shiprocket"
-              )}
-            </CButton>
-          </div>
-        </CCardBody>
-      </CCard>
-
-      {/* =========================
           Shiprocket Pickup Address
       ========================= */}
       <CCard className="mb-4 border-0 shadow-sm">
@@ -616,8 +346,7 @@ const VendorProfile = () => {
           </h5>
 
           <p className="text-body-secondary small mb-0">
-            The location name must exactly match a pickup
-            location registered in your Shiprocket account.
+            Choose a pickup location registered in your Shiprocket account.
           </p>
         </CCardHeader>
 
@@ -636,128 +365,39 @@ const VendorProfile = () => {
             </div>
           ) : (
             <>
-              <CRow className="g-3">
+              {pickupLocations.length === 0 ? (
+                <Alert severity="info">No Shiprocket pickup address found. Please add a pickup address in your Shiprocket account.</Alert>
+              ) : (
+                <>
+                  <CRow className="g-3">
+                    <CCol xs={12}>
+                      <CFormLabel>Pickup Location Name</CFormLabel>
+                      <CFormSelect
+                        value={pickupAddress.shiprocketLocationName || ""}
+                        onChange={(event) => {
+                          const selected = pickupLocations.find((location) => location.shiprocketLocationName === event.target.value);
+                          setPickupAddress(selected || emptyPickupAddress);
+                        }}
+                      >
+                        <option value="">Select a pickup location</option>
+                        {pickupLocations.map((location) => (
+                          <option key={location.shiprocketLocationName} value={location.shiprocketLocationName}>
+                            {location.shiprocketLocationName}
+                          </option>
+                        ))}
+                      </CFormSelect>
+                    </CCol>
+                    {[["Address", "address"], ["City", "city"], ["State", "state"], ["Pincode", "pincode"]].map(([label, field]) => (
+                      <CCol md={field === "address" ? 12 : 4} key={field}>
+                        <CFormLabel>{label}</CFormLabel>
+                        <CFormInput value={pickupAddress[field] || ""} readOnly />
+                      </CCol>
+                    ))}
+                  </CRow>
+                </>
+              )}
 
-                <CCol md={6}>
-                  <CFormLabel>
-                    Registered Shiprocket pickup
-                    location name
-                  </CFormLabel>
-
-                  <CFormInput
-                    required
-                    value={
-                      pickupAddress.shiprocketLocationName
-                    }
-                    onChange={(event) =>
-                      setPickupAddress(
-                        (current) => ({
-                          ...current,
-                          shiprocketLocationName:
-                            event.target.value,
-                        }),
-                      )
-                    }
-                  />
-                </CCol>
-
-                <CCol md={6}>
-                  <CFormLabel>
-                    Pickup address
-                  </CFormLabel>
-
-                  <CFormInput
-                    required
-                    value={
-                      pickupAddress.address
-                    }
-                    onChange={(event) =>
-                      setPickupAddress(
-                        (current) => ({
-                          ...current,
-                          address:
-                            event.target.value,
-                        }),
-                      )
-                    }
-                  />
-                </CCol>
-
-                <CCol md={4}>
-                  <CFormLabel>
-                    City
-                  </CFormLabel>
-
-                  <CFormInput
-                    required
-                    value={
-                      pickupAddress.city
-                    }
-                    onChange={(event) =>
-                      setPickupAddress(
-                        (current) => ({
-                          ...current,
-                          city:
-                            event.target.value,
-                        }),
-                      )
-                    }
-                  />
-                </CCol>
-
-                <CCol md={4}>
-                  <CFormLabel>
-                    State
-                  </CFormLabel>
-
-                  <CFormInput
-                    required
-                    value={
-                      pickupAddress.state
-                    }
-                    onChange={(event) =>
-                      setPickupAddress(
-                        (current) => ({
-                          ...current,
-                          state:
-                            event.target.value,
-                        }),
-                      )
-                    }
-                  />
-                </CCol>
-
-                <CCol md={4}>
-                  <CFormLabel>
-                    Pickup pincode
-                  </CFormLabel>
-
-                  <CFormInput
-                    required
-                    inputMode="numeric"
-                    maxLength={6}
-                    pattern="[0-9]{6}"
-                    value={
-                      pickupAddress.pincode
-                    }
-                    onChange={(event) =>
-                      setPickupAddress(
-                        (current) => ({
-                          ...current,
-                          pincode:
-                            event.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 6),
-                        }),
-                      )
-                    }
-                  />
-                </CCol>
-
-              </CRow>
-
-              {(pickupAddressError ||
-                pickupAddressMessage) && (
+              {(pickupAddressError || pickupAddressMessage) && (
                 <p
                   role={
                     pickupAddressError
@@ -781,7 +421,9 @@ const VendorProfile = () => {
                   onClick={savePickupAddress}
                   disabled={
                     isLoadingPickupAddress ||
-                    isSavingPickupAddress
+                    isSavingPickupAddress ||
+                    pickupLocations.length === 0 ||
+                    !pickupAddress.shiprocketLocationName
                   }
                 >
                   {isSavingPickupAddress
