@@ -80,7 +80,7 @@ const VendorProfile = () => {
             ...response.data.pickupAddress,
           });
         }
-      })
+      }) 
       .catch((error) => {
         if (isActive) {
           setPickupAddressError(

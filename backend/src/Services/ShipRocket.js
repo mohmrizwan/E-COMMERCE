@@ -98,6 +98,19 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, v
       throw new Error("Vendor Shiprocket pickup location name is missing");
     }
 
+    const customerNameParts = String(
+      orderData.shippingAddress?.name || "",
+    )
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    const billingCustomerName = customerNameParts.shift();
+    const billingLastName = customerNameParts.join(" ") || "NA";
+
+    if (!billingCustomerName) {
+      throw new Error("Customer shipping name is missing");
+    }
+
     const token = await getShiprocketToken(vendorId);
 
     let subTotal = 0;
@@ -121,8 +134,8 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, v
 
       pickup_location: pickupLocationName,
 
-      billing_customer_name: orderData.shippingAddress.name,
-      billing_last_name: "",
+      billing_customer_name: billingCustomerName,
+      billing_last_name: billingLastName,
 
       billing_address: orderData.shippingAddress.address,
       billing_address_2: "",
