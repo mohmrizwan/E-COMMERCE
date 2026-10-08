@@ -4,6 +4,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../Components/Auth/AuthLayout";
 import axios from "axios";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const VendorResetVerify = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,7 +18,7 @@ const VendorResetVerify = () => {
     setErrorMessage("");
 
     try {
-      await axios.post("https://ecommerceba-6dtt.onrender.com/vendor/verify-reset-otp", {
+      await axios.post(`${API_URL}/vendor/verify-reset-otp`, {
         vendorId,
         otp: values.otp,
       });

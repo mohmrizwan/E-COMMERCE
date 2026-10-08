@@ -6,6 +6,8 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const CreateAccount = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
@@ -30,7 +32,7 @@ const CreateAccount = () => {
       console.log("Form Data:", data);
 
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/user/create",
+        `${API_URL}/user/create`,
         data
       );
 

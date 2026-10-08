@@ -1,37 +1,38 @@
+import dns from "dns/promises";
 import nodemailer from "nodemailer";
-import dns from "dns";
-
-dns.lookup("smtp.gmail.com", { family: 4 }, (err, address) => {
-  if (err) {
-    console.error("IPv4 DNS Error:", err);
-  } else {
-    console.log("Gmail IPv4:", address);
-  }
-});
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-
-  family: 4,
-
-  auth: {
-    user: process.env.EMAIL_USER?.trim(),
-    pass: process.env.EMAIL_PASS?.replace(/\s/g, ""),
-  },
-
-  connectionTimeout: 30000,
-  greetingTimeout: 30000,
-  socketTimeout: 30000,
-});
 
 const sendOtp = async (email, otp) => {
   try {
+    const { address } = await dns.lookup("smtp.gmail.com", {
+      family: 4,
+    });
+
+    console.log("Gmail IPv4:", address);
+
+    const transporter = nodemailer.createTransport({
+      host: address,
+      port: 465,
+      secure: true,
+
+      tls: {
+        servername: "smtp.gmail.com",
+      },
+
+      auth: {
+        user: process.env.EMAIL_USER?.trim(),
+        pass: process.env.EMAIL_PASS?.replace(/\s/g, ""),
+      },
+
+      connectionTimeout: 30000,
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+    });
+
     const mailOptions = {
       from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
       to: email,
       subject: "Email Verification OTP",
+
       html: `
         <div style="
           max-width: 500px;

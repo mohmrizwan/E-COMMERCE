@@ -6,6 +6,8 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const VendorVerifyOtp = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -26,7 +28,7 @@ const VendorVerifyOtp = () => {
   const onSubmit = async (data) => {
     try {
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/vendor/verify",
+        `${API_URL}/vendor/verify`,
         {
           vendorId,
           otp: data.otp,
@@ -53,7 +55,7 @@ const VendorVerifyOtp = () => {
     setIsResending(true);
     try {
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/vendor/resend",
+        `${API_URL}/vendor/resend`,
         {
           vendorId,
         }

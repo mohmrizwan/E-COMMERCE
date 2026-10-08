@@ -7,6 +7,8 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
+const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const VendorSignup = () => {
   const navigate = useNavigate();
 
@@ -38,7 +40,7 @@ const VendorSignup = () => {
   const onSubmit = async (values) => {
     try {
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/vendor/register",
+        `${API_URL}/vendor/register`,
         values,
       );
 

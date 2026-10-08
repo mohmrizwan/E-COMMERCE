@@ -5,6 +5,9 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+
+const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
+
 const VerifyOtp = () => {
   const [timeLeft, setTimeLeft] = useState(60);
   const [message, setMessage] = useState("");
@@ -95,7 +98,7 @@ const VerifyOtp = () => {
       const otpCode = data.otp.join("");
 
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/user/verifyOtp",
+        `${API_URL}/user/verifyOtp`,
         {
           userId,
           otp: otpCode,
@@ -130,7 +133,7 @@ const VerifyOtp = () => {
 
     try {
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/user/resendOtp",
+        `${API_URL}/user/resendOtp`,
         {
           userId,
         },
