@@ -355,9 +355,41 @@ export const getVendorPickupAddress = async (req, res) => {
       pincode: String(location.pin_code || location.pincode || "").trim(),
     })).filter((location) => location.shiprocketLocationName);
 
+    const savedPickupAddress = req.vendor.pickupAddress?.toObject?.() ||
+      req.vendor.pickupAddress || {};
+    const selectedLocation = pickupLocations.find(
+      (location) => location.shiprocketLocationName === savedPickupAddress.shiprocketLocationName,
+    );
+    const currentShiprocketLocation = selectedLocation || pickupLocations[0];
+    const pickupAddress = currentShiprocketLocation
+      ? { ...savedPickupAddress, ...currentShiprocketLocation }
+      : {
+          ...savedPickupAddress,
+          shiprocketLocationName: "",
+          address: "",
+          city: "",
+          state: "",
+          pincode: "",
+        };
+
+    const pickupFields = [
+      "shiprocketLocationName",
+      "address",
+      "city",
+      "state",
+      "pincode",
+    ];
+    const pickupAddressChanged = pickupFields.some(
+      (field) => String(savedPickupAddress[field] || "") !== String(pickupAddress[field] || ""),
+    );
+    if (pickupAddressChanged) {
+      req.vendor.pickupAddress = pickupAddress;
+      await req.vendor.save();
+    }
+
     return res.status(200).json({
       success: true,
-      pickupAddress: req.vendor.pickupAddress || {},
+      pickupAddress,
       pickupLocations,
     });
   } catch (error) {

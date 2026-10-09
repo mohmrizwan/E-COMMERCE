@@ -6,6 +6,7 @@ import {
   getRouteLinkedAccount,
   getRouteProductConfig,
 } from "../../Services/RazorpayRoute.js";
+import { authenticateShiprocketCredentials } from "../../Services/ShipRocket.js";
 
 const routeBusinessTypes = new Set([
   "educational_institutes",
@@ -76,6 +77,7 @@ export const getVendorIntegrations = async (req, res) => {
 };
 
 export const updateVendorIntegrations = async (req, res) => {
+  let failureStage = "load vendor integration";
   try {
     const shiprocket = req.body?.shiprocket;
     if (req.body?.razorpay !== undefined) {
@@ -96,49 +98,98 @@ export const updateVendorIntegrations = async (req, res) => {
       if (!shiprocket || typeof shiprocket !== "object" || Array.isArray(shiprocket)) {
         return res.status(400).json({ success: false, message: "Invalid Shiprocket configuration" });
       }
-      if (typeof shiprocket.email === "string" && shiprocket.email.trim()) {
+
+      const hasEmail = typeof shiprocket.email === "string" && shiprocket.email.trim();
+      const hasPassword = typeof shiprocket.password === "string" && shiprocket.password.trim();
+      if (hasEmail || hasPassword) {
+        if (!hasEmail || !hasPassword) {
+          return res.status(400).json({
+            success: false,
+            message: "Enter both the Shiprocket API user email and password",
+          });
+        }
+
         const email = shiprocket.email.trim().toLowerCase();
+        const password = shiprocket.password.trim();
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
           return res.status(400).json({
             success: false,
-            message: "Enter a valid Shiprocket account email",
+            message: "Enter a valid Shiprocket API user email",
           });
         }
-        vendor.integrations.shiprocket.emailEncrypted = encryptCredential(email);
-      }
-      if (typeof shiprocket.password === "string" && shiprocket.password.trim()) {
         if (shiprocket.password.length > 256) {
           return res.status(400).json({
             success: false,
             message: "Shiprocket password is too long",
           });
         }
-        vendor.integrations.shiprocket.passwordEncrypted = encryptCredential(shiprocket.password.trim());
-      }
-      if (shiprocket.enabled !== undefined) {
+
+        failureStage = "authenticate Shiprocket credentials";
+        try {
+          await authenticateShiprocketCredentials({ email, password });
+        } catch (error) {
+          const invalidCredentials = [400, 401, 403, 422].includes(error.response?.status);
+          const statusCode = invalidCredentials ? 400 : error.response ? 502 : 503;
+          return res.status(statusCode).json({
+            success: false,
+            message: invalidCredentials
+              ? "Shiprocket authentication failed. Check the API user email, password, and account API access."
+              : "Could not reach Shiprocket to validate credentials. Please try again later.",
+          });
+        }
+
+        failureStage = "encrypt Shiprocket credentials";
+        vendor.integrations.shiprocket.emailEncrypted = encryptCredential(email);
+        vendor.integrations.shiprocket.passwordEncrypted = encryptCredential(password);
+        vendor.integrations.shiprocket.enabled = true;
+      } else if (shiprocket.enabled !== undefined) {
         if (typeof shiprocket.enabled !== "boolean") {
           return res.status(400).json({ success: false, message: "Shiprocket enabled must be a boolean" });
         }
-        if (
-          shiprocket.enabled &&
-          !(vendor.integrations.shiprocket.emailEncrypted && vendor.integrations.shiprocket.passwordEncrypted)
-        ) {
-          return res.status(400).json({ success: false, message: "Save Shiprocket credentials before enabling the integration" });
+        if (shiprocket.enabled) {
+          return res.status(400).json({
+            success: false,
+            message: "Connect Shiprocket with an API user email and password before enabling it",
+          });
         }
-        vendor.integrations.shiprocket.enabled = shiprocket.enabled;
+        vendor.integrations.shiprocket.enabled = false;
       }
     }
 
+    failureStage = "save vendor integration to MongoDB";
     await vendor.save();
+    if (shiprocket !== undefined) {
+      console.info("Vendor Shiprocket integration saved", {
+        vendorId: String(vendor._id),
+        enabled: Boolean(vendor.integrations?.shiprocket?.enabled),
+        hasEncryptedEmail: Boolean(vendor.integrations?.shiprocket?.emailEncrypted),
+        hasEncryptedPassword: Boolean(vendor.integrations?.shiprocket?.passwordEncrypted),
+      });
+    }
     return res.status(200).json({
       success: true,
       message: "Vendor integrations saved",
       integrations: configurationStatus(vendor),
     });
   } catch (error) {
+    const encryptionConfigurationError = String(error.message || "").includes(
+      "INTEGRATION_ENCRYPTION_KEY",
+    );
+    console.error("Vendor integration update failed", {
+      vendorId: String(req.vendor?._id || ""),
+      stage: failureStage,
+      errorName: error.name || "Error",
+      errorCode: typeof error.code === "string" || typeof error.code === "number"
+        ? error.code
+        : undefined,
+      encryptionKeyConfigured: Boolean(process.env.INTEGRATION_ENCRYPTION_KEY),
+    });
+
     return res.status(500).json({
       success: false,
-      message: "Could not save vendor integrations",
+      message: encryptionConfigurationError
+        ? "Shiprocket credentials cannot be saved because backend encryption is not configured. Contact support."
+        : "Could not save vendor integrations",
     });
   }
 };

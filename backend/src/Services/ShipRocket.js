@@ -31,15 +31,17 @@ const normalizeShiprocketOrderResponse = (payload) => {
   };
 };
 
-export const getShiprocketToken = async (vendorId) => {
+export const authenticateShiprocketCredentials = async (credentials) => {
   try {
-    const credentials = await getVendorShippingConfig(vendorId);
     const response = await axios.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
       credentials,
     );
-
-    return response.data.token;
+    const token = response.data?.token;
+    if (!token) {
+      throw new Error("Shiprocket did not return an authentication token");
+    }
+    return token;
   } catch (error) {
     console.log(
       "Shiprocket Login Error:",
@@ -48,6 +50,11 @@ export const getShiprocketToken = async (vendorId) => {
 
     throw error;
   }
+};
+
+export const getShiprocketToken = async (vendorId) => {
+  const credentials = await getVendorShippingConfig(vendorId);
+  return authenticateShiprocketCredentials(credentials);
 };
 
 export const getShiprocketPickupLocations = async (vendorId) => {
