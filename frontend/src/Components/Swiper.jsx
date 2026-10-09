@@ -58,7 +58,7 @@ export default function App() {
               {/* Buttons */}
               <div className="my-6 flex flex-wrap gap-3 sm:my-7 sm:gap-5">
                 <Link
-                  to="/start"
+                  to="/products"
                   className="rounded-2xl bg-[#6C3BFF] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:px-6"
                 >
                   Start Shopping&nbsp;&nbsp;
