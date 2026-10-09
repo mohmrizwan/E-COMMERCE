@@ -24,7 +24,7 @@ const Sesssion = () => {
 
             <div className="mt-5">
               <Link
-                to="/start"
+                to="/products?category=electronics"
                 className="inline-flex items-center rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-[#6C3BFF] transition-all duration-300 hover:translate-x-1 sm:px-6"
               >
                 Shop Electronics
@@ -50,7 +50,7 @@ const Sesssion = () => {
 
             <div className="mt-5">
               <Link
-                to="/start"
+                to="products?category=home-living"
                 className="inline-flex items-center rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-[#00B8A9] transition-all duration-300 hover:translate-x-1 sm:px-6"
               >
                 Shop Home
