@@ -1,26 +1,21 @@
-import dns from "dns/promises";
 import nodemailer from "nodemailer";
 const sendOtp = async (email, otp) => {
   try {
-    const { address } = await dns.lookup("smtp.gmail.com", {
-      family: 4,
-    });
-    
+    const user = process.env.EMAIL_USER?.trim();
+    const pass = process.env.EMAIL_PASS?.replace(/\s/g, "");
 
-    console.log("Gmail IPv4:", address);
+    if (!user || !pass) {
+      console.error("Send OTP Error: EMAIL_USER or EMAIL_PASS is not configured");
+      return false;
+    }
 
     const transporter = nodemailer.createTransport({
-      host: address,
+      host: "smtp.gmail.com",
       port: 465,
       secure: true,
-
-      tls: {
-        servername: "smtp.gmail.com",
-      },
-
       auth: {
-        user: process.env.EMAIL_USER?.trim(),
-        pass: process.env.EMAIL_PASS?.replace(/\s/g, ""),
+        user,
+        pass,
       },
 
       connectionTimeout: 30000,
@@ -29,7 +24,7 @@ const sendOtp = async (email, otp) => {
     });
 
     const mailOptions = {
-      from: `"E-Commerce" <${process.env.EMAIL_USER}>`,
+      from: `"E-Commerce" <${user}>`,
       to: email,
       subject: "Email Verification OTP",
 
@@ -75,7 +70,15 @@ const sendOtp = async (email, otp) => {
 
     return true;
   } catch (error) {
-    console.error("Send OTP Error:", error);
+    // SMTP connection failures happen before authentication; never log auth data.
+    console.error("Send OTP Error:", {
+      code: error.code,
+      command: error.command,
+      responseCode: error.responseCode,
+      message: error.code === "ETIMEDOUT"
+        ? "SMTP connection timed out. Check whether the hosting provider allows outbound SMTP on port 465."
+        : error.message,
+    });
 
     return false;
   }
