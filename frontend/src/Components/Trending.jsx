@@ -8,6 +8,7 @@ import { useCart } from "../Components/CartContext";
 import FavoriteButton from "./FavoriteButton";
 
 // https://ecommerceba-6dtt.onrender.com/products/allProducts
+
 const Product = () => {
   const [products, setProducts] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");

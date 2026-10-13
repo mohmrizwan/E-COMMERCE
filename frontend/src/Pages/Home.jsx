@@ -7,8 +7,8 @@ import Features from "../Components/Features";
 import Product from "../Components/Product";
 import Sesssion from "../Components/Sesssion";
 import Trending from "../Components/Trending";
-import Vendors from "../Components/Vendors";
-import Subscribe from "../Components/Subscribe";
+// import Vendors from "../Components/Vendors";
+// import Subscribe from "../Components/Subscribe";
 import { Link } from "react-router-dom";
 
 const Home = () => {
@@ -63,8 +63,8 @@ const Home = () => {
         </div>
       </div>
       <Trending />
-      <Vendors />
-      <Subscribe />
+      {/* <Vendors /> */}
+      {/* <Subscribe /> */}
       <Footer />
     </>
   );

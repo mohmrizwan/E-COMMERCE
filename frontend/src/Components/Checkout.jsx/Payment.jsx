@@ -135,6 +135,13 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
       },
     };
 
+    console.info("[checkout:razorpay-launch]", {
+      orderId: data.id,
+      orderAmountPaise: data.amount,
+      orderAmountRupees: Number(data.amount) / 100,
+      summaryFinalTotal: orderData.total,
+    });
+
     const razorpay = new window.Razorpay(option);
     razorpay.on("payment.failed", (response) => {
       setPaymentState("failed");

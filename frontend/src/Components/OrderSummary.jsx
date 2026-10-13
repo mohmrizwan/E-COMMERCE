@@ -68,6 +68,11 @@ const OrderSummary = ({ orderData }) => {
                   </h3>
                   <p className="mt-1 font-[inter] text-xs text-[#6B7280]">
                     Qty: {quantity} · ₹{unitPrice.toLocaleString("en-IN")} each
+                    {Number(item.originalPrice) > unitPrice && (
+                      <span className="ml-2 line-through">
+                        ₹{Number(item.originalPrice).toLocaleString("en-IN")}
+                      </span>
+                    )}
                   </p>
                 </div>
 
@@ -100,17 +105,11 @@ const OrderSummary = ({ orderData }) => {
             </span>
 
             <span className="font-[inter] text-sm font-medium text-[#111827]">
-              {shipping === 0 ? "Free" : `₹${shipping.toLocaleString("en-IN")}`}
+              {shipping === 0 ? "0" : `₹${shipping.toLocaleString("en-IN")}`}
             </span>
           </div>
 
-          <div className="flex justify-between">
-            <span className="font-[inter] text-sm text-[#6B7280]">Discount</span>
-
-            <span className="font-[inter] text-sm font-medium text-green-600">
-              -₹{discount.toLocaleString("en-IN")}
-            </span>
-          </div>
+         
         </div>
 
         {/* Total */}

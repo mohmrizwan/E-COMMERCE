@@ -136,7 +136,6 @@ export const verifyOtp = async (req, res) => {
     user.isVerified = true;
     user.otp = null;
     user.otpExpiresAt = null;
-
     await user.save();
 
     const token = generateToken(user);

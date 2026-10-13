@@ -37,7 +37,13 @@ export const CartProvider = ({ children }) => {
           productId: product._id,
           name: product.name,
           price: Number(product.price) || 0,
-          originalPrice: Number(product.originalPrice || product.price) || 0,
+          originalPrice:
+            Number(
+              product.originalPrice ??
+                product.oldPrice ??
+                product.pricing ??
+                product.price,
+            ) || 0,
           image: product.image || product.images?.[0] || "",
           vendorName: product.vendorName || "Vendor",
           quantity: 1,

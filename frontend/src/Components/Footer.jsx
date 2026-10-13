@@ -4,10 +4,8 @@ import { Link } from "react-router-dom";
 const Footer = () => {
   return (
     <footer className="footer-wrapper border-t-2 border-gray-200 bg-[#FFFFFF]">
-      {/* Main Footer */}
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-0">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-16">
-
           {/* Left Section */}
           <div className="w-full lg:max-w-sm">
             <div className="footer-logo">
@@ -19,8 +17,8 @@ const Footer = () => {
 
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
-                  Vendora is the marketplace where thousands of trusted vendors
-                  meet millions of shoppers. Discover more and shop smarter.
+                  Discover quality products and enjoy a smarter shopping
+                  experience with VendoraFlame.
                 </p>
               </div>
 
@@ -39,7 +37,7 @@ const Footer = () => {
                 </p>
 
                 <p className="rounded-2xl border border-[#EEDCE0] px-3 py-2 text-xs font-semibold text-[#6B7280]">
-                  Paypal
+                  PayPal
                 </p>
               </div>
             </div>
@@ -47,7 +45,6 @@ const Footer = () => {
 
           {/* Footer Links */}
           <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 lg:max-w-3xl">
-
             {/* Shop */}
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
@@ -55,11 +52,21 @@ const Footer = () => {
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">New Arrivals</Link>
-                <Link className="footer-link" to="/">Best Sellers</Link>
-                <Link className="footer-link" to="/">Deals & Offers</Link>
-                <Link className="footer-link" to="/">Gift Cards</Link>
-                <Link className="footer-link" to="/">Brands</Link>
+                <Link className="footer-link" to="/">
+                  New Arrivals
+                </Link>
+                <Link className="footer-link" to="/">
+                  Best Sellers
+                </Link>
+                <Link className="footer-link" to="/">
+                  Deals & Offers
+                </Link>
+                <Link className="footer-link" to="/">
+                  Gift Cards
+                </Link>
+                <Link className="footer-link" to="/">
+                  Brands
+                </Link>
               </div>
             </div>
 
@@ -70,14 +77,20 @@ const Footer = () => {
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">Help Center</Link>
-                <Link className="footer-link" to="/orders">My Orders & Tracking</Link>
-                <Link className="footer-link" to="/">Returns & Refunds</Link>
-                <Link className="footer-link" to="/">Shipping Info</Link>
-                <Link className="footer-link" to="/contact">Contact Us</Link>
+                <Link className="footer-link" to="/">
+                  Help Center
+                </Link>
+                <Link className="footer-link" to="/orders">
+                  My Orders & Tracking
+                </Link>
+                <Link className="footer-link" to="/">
+                  Shipping Info
+                </Link>
+                <Link className="footer-link" to="/contact">
+                  Contact Us
+                </Link>
               </div>
             </div>
-
           </div>
         </div>
 
@@ -85,7 +98,7 @@ const Footer = () => {
         <div className="mt-12 border-t border-gray-200 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="font-[Inter] text-xs text-[#9CA3AF]">
-              © 2026 VendorAflame. All rights reserved.
+              © 2026 VendoraFlame. All rights reserved.
             </p>
 
             <div className="flex gap-5">
@@ -107,7 +120,6 @@ const Footer = () => {
         </div>
       </div>
 
-      {/* Tailwind reusable class */}
       <style>
         {`
           .footer-link {

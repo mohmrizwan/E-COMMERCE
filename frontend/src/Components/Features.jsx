@@ -8,28 +8,28 @@ const Features = () => {
 
           <div className="features flex items-center gap-3">
             <div className="w-fit shrink-0 rounded-2xl bg-[#E0F6F4] p-3">
-              <i className="fa-solid fa-truck text-[#00B8A9]"></i>
+              <i className="fa-solid fa-truck-fast text-[#00B8A9]"></i>
             </div>
             <div>
               <h6 className="font-[inter] text-sm font-semibold">
-                Fast, free delivery
+                Reliable Delivery
               </h6>
               <p className="text-xs text-[#6B7280]">
-                On all orders over $50
+                Your orders, delivered with care
               </p>
             </div>
           </div>
 
           <div className="features flex items-center gap-3">
             <div className="w-fit shrink-0 rounded-2xl bg-[#E0F6F4] p-3">
-              <i className="fa-solid fa-reply text-[#00B8A9]"></i>
+              <i className="fa-solid fa-medal text-[#00B8A9]"></i>
             </div>
             <div>
               <h6 className="font-[inter] text-sm font-semibold">
-                30 Days return
+                Quality Assured
               </h6>
               <p className="text-xs text-[#6B7280]">
-                Hassle-free refunds
+                Quality you can trust
               </p>
             </div>
           </div>
@@ -43,21 +43,21 @@ const Features = () => {
                 Secure Payment
               </h6>
               <p className="text-xs text-[#6B7280]">
-                256-bit encryption
+                Safe and secure checkout
               </p>
             </div>
           </div>
 
           <div className="features flex items-center gap-3">
             <div className="w-fit shrink-0 rounded-2xl bg-[#E0F6F4] p-3">
-              <i className="fa-regular fa-headphones text-[#00B8A9]"></i>
+              <i className="fa-solid fa-headset text-[#00B8A9]"></i>
             </div>
             <div>
               <h6 className="font-[inter] text-sm font-semibold">
-                24/7 Support
+                Customer Support
               </h6>
               <p className="text-xs text-[#6B7280]">
-                Real humans, anytime
+                We're here to help
               </p>
             </div>
           </div>

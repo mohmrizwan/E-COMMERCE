@@ -14,7 +14,7 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 5);
-    }
+    };
 
     window.addEventListener("scroll", handleScroll);
 
@@ -27,7 +27,7 @@ const Header = () => {
       >
         <div className="mx-auto flex items-center justify-between gap-4 px-10 py-2 sm:px-6 lg:px-5">
           <p className="font-[inter] text-[11px] text-gray-500 sm:text-xs">
-            Free shipping on orders over $50 · 30-day returns
+            Quality products · Trusted service
           </p>
 
           <div className="hidden items-center gap-5 text-xs sm:flex">
@@ -108,8 +108,6 @@ const Header = () => {
             </Link>
           </div>
         </div>
-
-      
       </header>
     </>
   );

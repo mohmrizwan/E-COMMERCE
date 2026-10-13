@@ -57,7 +57,20 @@ export const order = async (req, res) => {
         });
       }
 
-      const unitPricePaise = Math.round(Number(product.pricing) * 100);
+      const discountPercent = Number(product.discount) || 0;
+      const unitPrice = discountPercent > 0
+        ? Math.round(Number(product.pricing) * (1 - discountPercent / 100))
+        : Number(product.pricing);
+      const unitPricePaise = Math.round(unitPrice * 100);
+      console.info("[checkout:price]", {
+        productId: String(product._id),
+        productName: product.name,
+        cartPrice: item.price ?? null,
+        databasePricing: product.pricing,
+        discountPercent,
+        chargedUnitPrice: unitPricePaise / 100,
+        quantity,
+      });
       subtotalPaise += unitPricePaise * quantity;
       const vendorId = String(product.vendorId || "");
       if (!vendorId) {
@@ -76,6 +89,7 @@ export const order = async (req, res) => {
         image: product.image,
         quantity,
         price: unitPricePaise / 100,
+        originalPrice: Number(product.pricing),
       });
     }
 
@@ -137,6 +151,12 @@ export const order = async (req, res) => {
       : null;
     const amountPaise = subtotalPaise + shippingPaise;
     const finalTotal = amountPaise / 100;
+    console.info("[checkout:totals]", {
+      subtotal: subtotalPaise / 100,
+      shipping: shippingPaise / 100,
+      finalTotal,
+      vendorShippingQuotes,
+    });
     const option = {
       amount: amountPaise,
       currency: "INR",
@@ -144,6 +164,12 @@ export const order = async (req, res) => {
     };
 
     const razorpayOrder = await razorpayInstance.orders.create(option);
+    console.info("[checkout:razorpay-order]", {
+      orderId: razorpayOrder.id,
+      requestedAmountPaise: amountPaise,
+      returnedAmountPaise: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+    });
     await Payment.create({
       razorpay_order_id: razorpayOrder.id,
       userId,

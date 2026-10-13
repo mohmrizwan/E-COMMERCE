@@ -1,8 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
+import { useCart } from "../Components/CartContext";
 
 const ProductCard = ({ product }) => {
+  const { addToCart } = useCart();
   const discount = Number(product.discount) || 0;
 
   return (
@@ -23,7 +25,15 @@ const ProductCard = ({ product }) => {
         </div>
         <div className="mt-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2"><span className="text-base font-bold">₹{Number(product.price || 0).toLocaleString("en-IN")}</span>{product.oldPrice != null && <span className="text-xs text-[#6b7280] line-through">₹{Number(product.oldPrice).toLocaleString("en-IN")}</span>}</div>
-          <Link to="/cart" aria-label={`Add ${product.name} to cart`} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#6c3bff] text-white transition hover:bg-[#5427d6]"><i className="fa-solid fa-bag-shopping text-sm" /></Link>
+          <button
+            type="button"
+            onClick={() => addToCart(product)}
+            disabled={!product.inStock}
+            aria-label={`Add ${product.name} to cart`}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#6c3bff] text-white transition hover:bg-[#5427d6] disabled:cursor-not-allowed disabled:bg-gray-400"
+          >
+            <i className="fa-solid fa-bag-shopping text-sm" />
+          </button>
         </div>
         <p className={`mt-3 text-xs ${product.inStock ? "text-green-600" : "text-red-500"}`}>{product.inStock ? "In stock" : "Out of stock"}</p>
       </div>

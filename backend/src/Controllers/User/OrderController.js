@@ -58,7 +58,7 @@ export const createOrder = async (req, res) => {
       items: orderItems,
       subtotalAmount: payment.subtotalAmount,
       shippingAmount: payment.shippingAmount,
-      totalAmount: payment.subtotalAmount,
+      totalAmount: payment.finalTotal,
       finalTotal: payment.finalTotal,
       shippingCourierCompanyId: payment.shippingCourierCompanyId,
       shippingCourierName: payment.shippingCourierName,

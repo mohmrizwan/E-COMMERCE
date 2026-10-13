@@ -20,12 +20,21 @@ const Checkout = () => {
     setCheckoutError("");
 
     try {
+      console.info("[checkout:cart]", cart.map((item) => ({
+        productId: item.productId,
+        name: item.name,
+        cartPrice: item.price,
+        originalPrice: item.originalPrice,
+        quantity: item.quantity,
+      })));
       const response = await axios.post(
         `${API_URL}/payment/get-payment`,
         {
           items: cart.map((item) => ({
             productId: item.productId,
             quantity: Number(item.quantity || 1),
+            // Diagnostic only; the backend always prices from MongoDB.
+            price: Number(item.price),
           })),
           shippingAddress: address,
         },
@@ -37,13 +46,23 @@ const Checkout = () => {
       );
 
       const checkout = response.data.checkout;
+      console.info("[checkout:server-response]", {
+        subtotal: checkout.subtotalAmount,
+        shipping: checkout.shippingAmount,
+        finalTotal: checkout.finalTotal,
+        razorpayAmount: response.data.data?.amount,
+        razorpayAmountRupees: Number(response.data.data?.amount) / 100,
+      });
+      if (Number(response.data.data?.amount) !== Math.round(checkout.finalTotal * 100)) {
+        throw new Error("Checkout total does not match the Razorpay order amount. Please retry.");
+      }
       const items = checkout.items.map((item) => {
         const cartItem = cart.find(
           (current) => String(current.productId) === String(item.productId),
         );
         return {
           ...item,
-          originalPrice: item.price,
+          originalPrice: item.originalPrice ?? cartItem?.originalPrice ?? item.price,
           image: item.image || cartItem?.image || "",
         };
       });
