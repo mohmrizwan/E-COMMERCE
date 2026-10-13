@@ -40,7 +40,7 @@ export const CreateAccount = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate 6 digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
     // OTP expiry - 10 minutes
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -180,7 +180,7 @@ export const resendOtp = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -349,7 +349,7 @@ export const GoogleLogin = async (req, res) => {
 // forgot password
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
 
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
@@ -357,26 +357,22 @@ export const forgotPassword = async (req, res) => {
 
     const userFind = await UserModel.findOne({ email });
 
-    if (!userFind) {
-      return res.status(404).json({ message: "Enter Valid Email Address" });
+    if (userFind) {
+      const otp = crypto.randomInt(100000, 1000000).toString();
+      userFind.otp = otp;
+      userFind.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      await userFind.save();
+
+      const emailSent = await sendOtp(email, otp);
+      if (!emailSent) {
+        userFind.otp = null;
+        userFind.otpExpiresAt = null;
+        await userFind.save();
+      }
     }
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    userFind.otp = otp;
-    userFind.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-    await userFind.save();
-
-    const emailSent = await sendOtp(email, otp);
-
-    if (!emailSent) {
-      return res
-        .status(500)
-        .json({ success: false, message: "Failed to send OTP" });
-    }
-    return res.status(200).json({
+    return res.status(202).json({
       success: true,
-      message: "OTP sent to your email",
-      userId: userFind._id,
+      message: "If the account exists, a verification code has been sent.",
     });
   } catch (error) {
     return res.status(500).json({
@@ -388,19 +384,16 @@ export const forgotPassword = async (req, res) => {
 // verfiyForgotPassword
 export const verifyForgotPasswordOtp = async (req, res) => {
   try {
-    const { userId, otp } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const { otp } = req.body;
 
-    if (!userId || !otp) {
+    if (!email || !otp) {
       return res.status(400).json({ message: "Enter all fields" });
     }
 
-    const userFind = await UserModel.findById(userId);
+    const userFind = await UserModel.findOne({ email });
 
-    if (!userFind) {
-      return res.status(404).json({ message: "Invalid Userid" });
-    }
-
-    if (userFind.otp !== otp) {
+    if (!userFind || userFind.otp !== otp) {
       return res.status(400).json({ success: false, message: "Invalid OTP" });
     }
 
@@ -412,7 +405,6 @@ export const verifyForgotPasswordOtp = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "OTP verified successfully",
-      userId: userFind._id,
     });
   } catch (error) {
     return res.status(500).json({
@@ -424,28 +416,39 @@ export const verifyForgotPasswordOtp = async (req, res) => {
 // reset password
 export const resetPassword = async (req, res) => {
   try {
-    const { userId, password, confirmPassword } = req.body;
-    if (!userId || !password || !confirmPassword) {
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const { otp, password, confirmPassword } = req.body;
+    if (!email || !otp || !password || !confirmPassword) {
       return res
         .status(400)
         .json({ success: false, message: "All fields are required" });
+    }
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 8 characters",
+      });
     }
     if (password !== confirmPassword) {
       return res
         .status(400)
         .json({ success: false, message: "Passwords do not match" });
     }
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
-    }
     const hashedPassword = await bcrypt.hash(password, 10);
-    user.password = hashedPassword;
-    user.otp = null;
-    user.otpExpiresAt = null;
-    await user.save();
+    const user = await UserModel.findOneAndUpdate(
+      { email, otp, otpExpiresAt: { $gt: new Date() } },
+      {
+        $set: { password: hashedPassword, otp: null, otpExpiresAt: null },
+        $inc: { tokenVersion: 1 },
+      },
+      { new: true, runValidators: true },
+    );
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Verification code is invalid or expired. Request a new code.",
+      });
+    }
     return res
       .status(200)
       .json({ success: true, message: "Password reset successfully" });

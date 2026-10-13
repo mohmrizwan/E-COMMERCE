@@ -31,6 +31,13 @@ const AuthMiddleware = async (req, res, next) => {
       });
     }
 
+    if ((decoded.tokenVersion ?? 0) !== (user.tokenVersion ?? 0)) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please sign in again.",
+      });
+    }
+
     // Check verification
     if (!user.isVerified) {
       return res.status(403).json({

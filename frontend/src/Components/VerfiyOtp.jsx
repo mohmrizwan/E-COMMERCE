@@ -114,7 +114,7 @@ const VerifyOtp = () => {
       localStorage.setItem("userToken", token);
       setMessage(response.data.message);
       setErrorMessage("");
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     } catch (error) {
       console.log("OTP Verification Error:", error);
 

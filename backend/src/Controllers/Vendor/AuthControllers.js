@@ -2,6 +2,7 @@ import VendorModel from "../../models/vendor/AuthModel.js";
 import { getShiprocketPickupLocations } from "../../Services/ShipRocket.js";
 import sendOtp from "../../utils/SendOtp.js";
 import bcrypt from "bcrypt";
+import crypto from "crypto";
 import generateToken from "../../utils/generateToken.js";
 
 export const registerVendor = async (req, res) => {
@@ -56,7 +57,7 @@ export const registerVendor = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Generate 6-digit OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
     // OTP expires in 10 minutes
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
@@ -184,7 +185,7 @@ export const resendOtp = async (req, res) => {
       });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
     const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -266,27 +267,24 @@ export const LoginAccount = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
-    const { email } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
     const vendor = await VendorModel.findOne({ email });
 
-    if (!vendor) {
-      return res.status(404).json({ message: "Email not found" });
+    if (vendor) {
+      vendor.otp = crypto.randomInt(100000, 1000000).toString();
+      vendor.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
+      await vendor.save();
+
+      const emailSent = await sendOtp(vendor.email, vendor.otp);
+      if (!emailSent) {
+        vendor.otp = null;
+        vendor.otpExpiresAt = null;
+        await vendor.save();
+      }
     }
-
-    vendor.otp = Math.floor(100000 + Math.random() * 900000).toString();
-    vendor.otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-    await vendor.save();
-
-    const emailSent = await sendOtp(vendor.email, vendor.otp);
-
-    if (!emailSent) {
-      return res.status(500).json({ message: "Failed to send OTP" });
-    }
-
-    return res.status(200).json({
+    return res.status(202).json({
       success: true,
-      message: "OTP sent to your email",
-      vendorId: vendor._id,
+      message: "If the account exists, a verification code has been sent.",
     });
   } catch (error) {
     return res.status(500).json({ message: "Server error" });
@@ -295,8 +293,9 @@ export const forgotPassword = async (req, res) => {
 
 export const verifyResetOtp = async (req, res) => {
   try {
-    const { vendorId, otp } = req.body;
-    const vendor = await VendorModel.findById(vendorId);
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const { otp } = req.body;
+    const vendor = email ? await VendorModel.findOne({ email }) : null;
 
     if (!vendor || vendor.otp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
@@ -314,26 +313,37 @@ export const verifyResetOtp = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const { vendorId, password, confirmPassword } = req.body;
+    const email = String(req.body.email || "").trim().toLowerCase();
+    const { otp, password, confirmPassword } = req.body;
 
-    if (!vendorId || !password || !confirmPassword) {
+    if (!email || !otp || !password || !confirmPassword) {
       return res.status(400).json({ message: "All fields are required" });
+    }
+    if (password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
     if (password !== confirmPassword) {
       return res.status(400).json({ message: "Passwords do not match" });
     }
 
-    const vendor = await VendorModel.findById(vendorId);
-
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const vendor = await VendorModel.findOneAndUpdate(
+      { email, otp, otpExpiresAt: { $gt: new Date() } },
+      {
+        $set: { password: hashedPassword, otp: null, otpExpiresAt: null },
+        $inc: { tokenVersion: 1 },
+      },
+      { new: true, runValidators: true },
+    );
     if (!vendor) {
-      return res.status(404).json({ message: "Vendor not found" });
+      return res.status(400).json({
+        success: false,
+        message: "Verification code is invalid or expired. Request a new code.",
+      });
     }
-
-    vendor.password = await bcrypt.hash(password, 10);
-    vendor.otp = null;
-    vendor.otpExpiresAt = null;
-    await vendor.save();
 
     return res.status(200).json({
       success: true,

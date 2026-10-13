@@ -10,7 +10,6 @@ const VendorResetVerify = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
-  const vendorId = location.state?.vendorId;
   const email = location.state?.email;
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
 
@@ -19,10 +18,10 @@ const VendorResetVerify = () => {
 
     try {
       await axios.post(`${API_URL}/vendor/verify-reset-otp`, {
-        vendorId,
+        email,
         otp: values.otp,
       });
-      navigate("/vendor/new-password", { state: { vendorId } });
+      navigate("/vendor/new-password", { state: { email, otp: values.otp } });
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Invalid verification code");
     }

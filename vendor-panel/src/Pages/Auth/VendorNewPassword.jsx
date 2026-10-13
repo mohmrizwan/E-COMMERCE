@@ -9,7 +9,8 @@ const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrend
 const VendorNewPassword = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const vendorId = location.state?.vendorId;
+  const email = location.state?.email;
+  const otp = location.state?.otp;
   const [errorMessage, setErrorMessage] = useState("");
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
   const password = watch("password");
@@ -19,7 +20,8 @@ const VendorNewPassword = () => {
 
     try {
       await axios.post(`${API_URL}/vendor/reset-password`, {
-        vendorId,
+        email,
+        otp,
         password: values.password,
         confirmPassword: values.confirmPassword,
       });

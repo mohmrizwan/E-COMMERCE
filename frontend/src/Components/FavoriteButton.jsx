@@ -1,6 +1,6 @@
 import useFavorites from "./useFavorites";
 
-const FavoriteButton = ({ product, className = "" }) => {
+const FavoriteButton = ({ product, className = "", onRemove }) => {
   const { isFavorite, isLoading, pendingIds, toggleFavorite } = useFavorites();
   const productId = String(product?._id || "");
   const saved = isFavorite(productId);
@@ -16,7 +16,11 @@ const FavoriteButton = ({ product, className = "" }) => {
       onClick={(event) => {
         event.preventDefault();
         event.stopPropagation();
-        void toggleFavorite(product);
+        if (onRemove) {
+          void onRemove(productId);
+        } else {
+          void toggleFavorite(product);
+        }
       }}
       className={`absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#6b7280] shadow-sm transition hover:text-red-500 disabled:cursor-wait disabled:opacity-60 sm:right-3 sm:top-3 sm:h-9 sm:w-9 ${className}`}
     >

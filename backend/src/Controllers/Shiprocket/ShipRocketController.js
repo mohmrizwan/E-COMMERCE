@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 import shipOrder from "../../models/Shiprocket/ShipOrder.js";
 import {
-  createShiprocketOrder,
   getShiprocketToken,
   getShiprocketTracking,
 } from "../../Services/ShipRocket.js";
@@ -23,22 +22,13 @@ export const testShiprocket = async (req, res) => {
   }
 };
 
-export const testCreateShiprocketOrder = async (req, res) => {
-  try {
-    const shiprocketOrder = await createShiprocketOrder(req.body, req.vendor._id);
-
-    return res.status(200).json({
-      success: true,
-      shiprocketOrder,
-    });
-  } catch (error) {
-    return res.status(error.response ? 502 : 500).json({
-      success: false,
-      message: "Could not create Shiprocket order",
-      error: error.response?.data || error.message,
-    });
-  }
-};
+// Shipment creation must go through the order-backed vendor workflow. This
+// legacy test endpoint accepted arbitrary Shiprocket payloads from the client.
+export const testCreateShiprocketOrder = async (_req, res) =>
+  res.status(410).json({
+    success: false,
+    message: "This test endpoint is disabled. Create shipments from an owned order.",
+  });
 
 export const getCustomerShipmentTracking = async (req, res) => {
   try {

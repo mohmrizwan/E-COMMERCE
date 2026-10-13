@@ -4,6 +4,11 @@ import productModel from "../../models/vendor/ProductModel.js";
 import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
 import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
+import { confirmRazorpayPayment } from "../../utils/RazorpayPaymentVerification.js";
+import {
+  assertCartStockAvailable,
+  normalizeCartItems,
+} from "../../utils/CartValidation.js";
 
 const razorpayInstance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -18,6 +23,13 @@ export const order = async (req, res) => {
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ message: "No items found" });
+    }
+
+    let normalizedItems;
+    try {
+      normalizedItems = normalizeCartItems(items);
+    } catch {
+      return res.status(400).json({ message: "Cart items or quantities are invalid" });
     }
 
     if (
@@ -40,18 +52,16 @@ export const order = async (req, res) => {
     const vendorSubtotalsPaise = new Map();
     let subtotalPaise = 0;
 
-    for (const item of items) {
-      const quantity = Number(item.quantity);
-      if (!Number.isInteger(quantity) || quantity <= 0) {
-        return res.status(400).json({ message: "Invalid item quantity" });
-      }
-
+    for (const item of normalizedItems) {
+      const quantity = item.quantity;
       const product = await productModel.findById(item.productId);
       if (!product || product.status !== "active") {
         return res.status(400).json({ message: "A cart product is unavailable" });
       }
 
-      if (product.stockQuantity < quantity) {
+      try {
+        assertCartStockAvailable(product.name, quantity, product.stockQuantity);
+      } catch {
         return res.status(400).json({
           message: `${product.name} does not have enough stock`,
         });
@@ -170,6 +180,13 @@ export const order = async (req, res) => {
       returnedAmountPaise: razorpayOrder.amount,
       currency: razorpayOrder.currency,
     });
+    if (
+      !razorpayOrder?.id ||
+      razorpayOrder.amount !== amountPaise ||
+      razorpayOrder.currency !== "INR"
+    ) {
+      return res.status(502).json({ message: "Payment provider returned an invalid order" });
+    }
     await Payment.create({
       razorpay_order_id: razorpayOrder.id,
       userId,
@@ -215,14 +232,32 @@ export const verify = async (req, res) => {
     const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
       req.body;
 
+    if (
+      typeof razorpay_order_id !== "string" ||
+      !razorpay_order_id ||
+      typeof razorpay_payment_id !== "string" ||
+      !razorpay_payment_id ||
+      typeof razorpay_signature !== "string" ||
+      !/^[a-f\d]{64}$/i.test(razorpay_signature) ||
+      !process.env.RAZORPAY_SECRET
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment verification failed",
+      });
+    }
+
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
 
     const expectedSign = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET)
       .update(sign)
-      .digest("hex");
+      .digest();
+    const providedSign = Buffer.from(razorpay_signature, "hex");
 
-    const isAuthenticated = expectedSign === razorpay_signature;
+    const isAuthenticated =
+      providedSign.length === expectedSign.length &&
+      crypto.timingSafeEqual(expectedSign, providedSign);
 
     if (!isAuthenticated) {
       return res.status(400).json({
@@ -243,11 +278,70 @@ export const verify = async (req, res) => {
       });
     }
 
-    if (payment.paymentStatus !== "Paid") {
-      payment.razorpay_payment_id = razorpay_payment_id;
-      payment.razorpay_signature = razorpay_signature;
-      payment.paymentStatus = "Paid";
-      await payment.save();
+    if (payment.paymentStatus === "Paid") {
+      if (payment.razorpay_payment_id !== razorpay_payment_id) {
+        return res.status(409).json({
+          success: false,
+          message: "A different payment is already recorded for this order",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: "Payment verified successfully",
+      });
+    }
+
+    if (
+      payment.paymentStatus !== "Pending" ||
+      !Number.isSafeInteger(payment.amountPaise) ||
+      payment.amountPaise <= 0
+    ) {
+      return res.status(409).json({
+        success: false,
+        message: "Payment is not eligible for verification",
+      });
+    }
+
+    await confirmRazorpayPayment({
+      paymentId: razorpay_payment_id,
+      orderId: payment.razorpay_order_id,
+      amountPaise: payment.amountPaise,
+      currency: "INR",
+      fetchPayment: (id) => razorpayInstance.payments.fetch(id),
+      capturePayment: (id, amount, currency) =>
+        razorpayInstance.payments.capture(id, amount, currency),
+    });
+
+    const update = await Payment.updateOne(
+      {
+        _id: payment._id,
+        paymentStatus: "Pending",
+        $or: [
+          { razorpay_payment_id: { $exists: false } },
+          { razorpay_payment_id: null },
+          { razorpay_payment_id: razorpay_payment_id },
+        ],
+      },
+      {
+        $set: {
+          razorpay_payment_id,
+          razorpay_signature,
+          paymentStatus: "Paid",
+        },
+      },
+    );
+
+    if (update.modifiedCount !== 1) {
+      const latest = await Payment.findById(payment._id);
+      if (
+        latest?.paymentStatus !== "Paid" ||
+        latest.razorpay_payment_id !== razorpay_payment_id
+      ) {
+        return res.status(409).json({
+          success: false,
+          message: "Payment verification is already being processed",
+        });
+      }
     }
 
     return res.status(200).json({
@@ -255,11 +349,11 @@ export const verify = async (req, res) => {
       message: "Payment verified successfully",
     });
   } catch (error) {
-    console.log(error);
+    console.error("Razorpay verification rejected", error.code || error.name);
 
-    return res.status(500).json({
+    return res.status(error.status || 500).json({
       success: false,
-      message: "Internal server error",
+      message: "Payment could not be verified",
     });
   }
 };

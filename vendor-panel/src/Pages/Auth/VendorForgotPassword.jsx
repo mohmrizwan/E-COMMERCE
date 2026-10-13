@@ -20,7 +20,7 @@ const VendorForgotPassword = () => {
     try {
       const response = await axios.post(`${API_URL}/vendor/forgot-password`, values);
       navigate("/vendor/reset-verify", {
-        state: { vendorId: response.data.vendorId, email: values.email },
+        state: { email: values.email.trim().toLowerCase() },
       });
     } catch (error) {
       setErrorMessage(error.response?.data?.message || "Something went wrong");

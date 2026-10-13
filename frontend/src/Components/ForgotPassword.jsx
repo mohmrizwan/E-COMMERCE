@@ -10,7 +10,6 @@ const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrend
 const ForgotPassword = () => {
   const [step, setStep] = useState("email");
   const [email, setEmail] = useState("");
-  const [userId, setUserId] = useState("");
   const [otp, setOtp] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -29,7 +28,6 @@ const ForgotPassword = () => {
         `${API_URL}/user/forgotPassword`,
         { email },
       );
-      setUserId(response.data.userId);
       setMessage(response.data.message);
       setStep("otp");
     } catch (error) {
@@ -53,7 +51,7 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post(
         `${API_URL}/user/verifyForgotOtp`,
-        { userId, otp },
+        { email: email.trim().toLowerCase(), otp },
       );
       setMessage(response.data.message);
       setStep("password");
@@ -83,7 +81,7 @@ const ForgotPassword = () => {
     try {
       const response = await axios.post(
         `${API_URL}/user/resetPassword`,
-        { userId, password, confirmPassword },
+        { email: email.trim().toLowerCase(), otp, password, confirmPassword },
       );
       setMessage(response.data.message);
       setStep("success");

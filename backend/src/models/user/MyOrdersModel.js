@@ -139,6 +139,9 @@ const OrderSchema = new mongoose.Schema(
   { timestamps: true },
 );
 
+// A payment's Razorpay order ID can produce at most one marketplace order.
+OrderSchema.index({ razorpayOrderId: 1 }, { unique: true });
+
 const order = mongoose.model("myOrders", OrderSchema);
 
 export default order;

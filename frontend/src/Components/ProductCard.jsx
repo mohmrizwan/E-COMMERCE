@@ -1,9 +1,8 @@
 import React from "react";
-import { Link } from "react-router-dom";
 import FavoriteButton from "./FavoriteButton";
 import { useCart } from "../Components/CartContext";
 
-const ProductCard = ({ product }) => {
+const ProductCard = ({ product, onRemoveFavorite }) => {
   const { addToCart } = useCart();
   const discount = Number(product.discount) || 0;
 
@@ -15,7 +14,11 @@ const ProductCard = ({ product }) => {
           <span className="w-fit rounded-full bg-[#6c3bff] px-3 py-1 text-[11px] font-semibold text-white">{product.status}</span>
           {discount > 0 && <span className="w-fit rounded-full bg-[#ffb020] px-3 py-1 text-[11px] font-semibold text-black">{discount}% OFF</span>}
         </div>
-        <FavoriteButton product={product} className="right-3 top-3" />
+        <FavoriteButton
+          product={product}
+          className="right-3 top-3"
+          onRemove={onRemoveFavorite}
+        />
       </div>
       <div className="p-4">
         <p className="text-xs text-[#6b7280]">{product.store || "Store"}</p>

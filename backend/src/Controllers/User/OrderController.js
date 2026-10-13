@@ -1,6 +1,8 @@
+import mongoose from "mongoose";
 import order from "../../models/user/MyOrdersModel.js";
 import Payment from "../../models/user/Payment.js";
 import productModel from "../../models/vendor/ProductModel.js";
+import { createMarketplaceOrder } from "../../Services/MarketplaceOrderCreation.js";
 
 // Create Order
 export const createOrder = async (req, res) => {
@@ -8,89 +10,28 @@ export const createOrder = async (req, res) => {
     const userId = req.user.id || req.user.userId || req.user._id;
     const { razorpay_order_id } = req.body;
 
-    if (!razorpay_order_id) {
+    if (typeof razorpay_order_id !== "string" || !razorpay_order_id) {
       return res.status(400).json({ message: "Razorpay order ID is required" });
     }
 
-    const payment = await Payment.findOne({
-      razorpay_order_id,
+    const result = await createMarketplaceOrder({
+      mongoose,
+      Order: order,
+      Payment,
+      Product: productModel,
       userId,
-      paymentStatus: "Paid",
+      razorpayOrderId: razorpay_order_id,
     });
 
-    if (!payment) {
-      return res.status(400).json({ message: "A verified payment is required" });
-    }
-
-    if (payment.orderId) {
-      const existingOrder = await order.findById(payment.orderId);
-      if (existingOrder) {
-        return res.status(200).json({
-          message: "Order already created for this payment",
-          order: existingOrder,
-        });
-      }
-    }
-
-    const orderItems = [];
-    const productsToUpdate = [];
-
-    for (const item of payment.items) {
-      const product = await productModel.findById(item.productId);
-
-      if (!product || product.stockQuantity < item.quantity) {
-        return res.status(400).json({
-          message: `${item.name || "A product"} is no longer available in the requested quantity`,
-        });
-      }
-
-      orderItems.push({
-        productId: product._id,
-        vendorId: item.vendorId,
-        quantity: item.quantity,
-        price: item.price,
-      });
-      productsToUpdate.push({ product, quantity: item.quantity });
-    }
-
-    const newOrder = await order.create({
-      userId,
-      items: orderItems,
-      subtotalAmount: payment.subtotalAmount,
-      shippingAmount: payment.shippingAmount,
-      totalAmount: payment.finalTotal,
-      finalTotal: payment.finalTotal,
-      shippingCourierCompanyId: payment.shippingCourierCompanyId,
-      shippingCourierName: payment.shippingCourierName,
-      shippingPickupPostcode: payment.shippingPickupPostcode,
-      shippingWeight: payment.shippingWeight,
-      estimatedDelivery: payment.estimatedDelivery,
-      vendorShippingQuotes: payment.vendorShippingQuotes,
-      razorpayOrderId: payment.razorpay_order_id,
-      status: "Pending",
-      paymentMethod: "Razorpay",
-      paymentStatus: "Paid",
-      shippingAddress: payment.shippingAddress,
-    });
-
-    for (const { product, quantity } of productsToUpdate) {
-      product.stockQuantity -= quantity;
-      await product.save();
-    }
-
-    payment.orderId = newOrder._id;
-    await payment.save();
-
-    return res.status(201).json({
-      message: "Order created successfully",
-      order: newOrder,
+    return res.status(result.wasExisting ? 200 : 201).json({
+      message: result.wasExisting ? "Order already created for this payment" : "Order created successfully",
+      order: result.order,
     });
   } catch (error) {
-    console.log("Create Order Error:", error);
+    console.error("Create Order Error:", error.code || error.name);
 
-    return res.status(500).json({
-      message: "Something went wrong",
-      error: error.message,
+    return res.status(error.status || 500).json({
+      message: error.message || "Something went wrong",
     });
   }
 };

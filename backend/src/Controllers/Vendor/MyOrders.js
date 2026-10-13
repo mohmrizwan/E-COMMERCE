@@ -68,14 +68,45 @@ const refreshMarketplaceOrderStatus = async (order) => {
     "Shipped",
     "Delivered",
   ];
-  const vendorStages = vendorIds.map((vendorId) =>
-    statusStages[getVendorOrderStatus(shipmentByVendorId.get(vendorId))],
+  const vendorStages = vendorIds.map(
+    (vendorId) =>
+      statusStages[getVendorOrderStatus(shipmentByVendorId.get(vendorId))],
   );
 
-  order.status = stageStatuses[
-    vendorStages.length ? Math.min(...vendorStages) : 0
-  ];
+  order.status =
+    stageStatuses[vendorStages.length ? Math.min(...vendorStages) : 0];
   await order.save();
+};
+
+const serializeOrderForVendor = (order, vendorId) => {
+  const orderData = order.toObject ? order.toObject() : { ...order };
+  const vendorIdString = vendorId.toString();
+  const items = (orderData.items || []).filter(
+    (item) => item.vendorId?.toString() === vendorIdString,
+  );
+  const quote = (orderData.vendorShippingQuotes || []).find(
+    (entry) => entry.vendorId?.toString() === vendorIdString,
+  );
+  const subtotalAmount = items.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 0),
+    0,
+  );
+  const shippingAmount = Number(quote?.shippingAmount || 0);
+
+  return {
+    ...orderData,
+    items,
+    totalAmount: subtotalAmount,
+    subtotalAmount,
+    shippingAmount,
+    finalTotal: subtotalAmount + shippingAmount,
+    shippingCourierCompanyId: quote?.courierCompanyId || "",
+    shippingCourierName: quote?.courierName || "",
+    shippingPickupPostcode: quote?.pickupPostcode || "",
+    shippingWeight: quote?.weight || 0,
+    estimatedDelivery: quote?.estimatedDelivery || "",
+    vendorShippingQuotes: quote ? [quote] : [],
+  };
 };
 
 export const getMyOrders = async (req, res) => {
@@ -87,19 +118,20 @@ export const getMyOrders = async (req, res) => {
         "items.vendorId": vendorId,
       })
       .populate("items.productId")
-      .populate("userId")
+      .populate("userId", "name email")
       .sort({ createdAt: -1 });
+
     const shipments = await shipOrder.find({
       vendorId,
       orderId: { $in: orders.map((order) => order._id) },
     });
     const shipmentByOrderId = new Map(
-      shipments.map((shipment) => [shipment.orderId.toString(), shipment])
+      shipments.map((shipment) => [shipment.orderId.toString(), shipment]),
     );
     const ordersWithShipments = orders.map((order) => {
       const shipment = shipmentByOrderId.get(order._id.toString()) || null;
       return {
-        ...order.toObject(),
+        ...serializeOrderForVendor(order, vendorId),
         vendorStatus: getVendorOrderStatus(shipment),
         shipment,
       };
@@ -130,7 +162,7 @@ export const acceptOrder = async (req, res) => {
     const existingOrder = await orderModel
       .findById(orderId)
       .populate("items.productId")
-      .populate("userId");
+      .populate("userId", "name email phone");
 
     if (!existingOrder) {
       return res.status(404).json({
@@ -139,7 +171,7 @@ export const acceptOrder = async (req, res) => {
     }
 
     const vendorItems = existingOrder.items.filter(
-      (item) => item.vendorId.toString() === vendorId.toString()
+      (item) => item.vendorId.toString() === vendorId.toString(),
     );
 
     if (vendorItems.length === 0) {
@@ -167,10 +199,10 @@ export const acceptOrder = async (req, res) => {
     const pickupAddress = req.vendor.pickupAddress;
     const pickupPostcode = String(pickupAddress?.pincode || "").trim();
     const pickupLocationName = String(
-      pickupAddress?.shiprocketLocationName || ""
+      pickupAddress?.shiprocketLocationName || "",
     ).trim();
     const deliveryPostcode = String(
-      existingOrder.shippingAddress?.pincode || ""
+      existingOrder.shippingAddress?.pincode || "",
     ).trim();
 
     if (
@@ -182,24 +214,26 @@ export const acceptOrder = async (req, res) => {
     ) {
       return res.status(400).json({
         success: false,
-        message: "Save a complete vendor pickup address with a valid six-digit pincode and registered Shiprocket pickup location before accepting this order",
+        message:
+          "Save a complete vendor pickup address with a valid six-digit pincode and registered Shiprocket pickup location before accepting this order",
       });
     }
 
     if (!/^\d{6}$/.test(deliveryPostcode)) {
       return res.status(400).json({
         success: false,
-        message: "The customer's shipping address must have a valid six-digit pincode",
+        message:
+          "The customer's shipping address must have a valid six-digit pincode",
       });
     }
 
     const vendorShippingQuote = (existingOrder.vendorShippingQuotes || []).find(
-      (quote) => quote.vendorId.toString() === vendorId.toString()
+      (quote) => quote.vendorId.toString() === vendorId.toString(),
     );
     const courierCompanyId = String(
       vendorShippingQuote?.courierCompanyId ||
         existingOrder.shippingCourierCompanyId ||
-        ""
+        "",
     ).trim();
 
     if (!/^\d+$/.test(courierCompanyId)) {
@@ -209,12 +243,18 @@ export const acceptOrder = async (req, res) => {
     }
 
     shiprocketStep = "create Shiprocket shipment";
-    const shiprocketOrder = await createShiprocketOrderFromOrder({
-      ...existingOrder.toObject(),
-      items: vendorItems,
-    }, pickupAddress, vendorId);
+    const shiprocketOrder = await createShiprocketOrderFromOrder(
+      {
+        ...existingOrder.toObject(),
+        items: vendorItems,
+      },
+      pickupAddress,
+      vendorId,
+    );
     const shiprocketOrderId = String(shiprocketOrder?.order_id || "").trim();
-    const shiprocketShipmentId = String(shiprocketOrder?.shipment_id || "").trim();
+    const shiprocketShipmentId = String(
+      shiprocketOrder?.shipment_id || "",
+    ).trim();
 
     if (!shiprocketOrderId || !shiprocketShipmentId) {
       shiprocketStep = "validate Shiprocket create-order response";
@@ -253,11 +293,9 @@ export const acceptOrder = async (req, res) => {
       vendorId,
       shiprocketOrderId,
       shiprocketShipmentId,
-      awbCode: shiprocketOrder.awb_code
-        ? String(shiprocketOrder.awb_code)
-        : "",
+      awbCode: shiprocketOrder.awb_code ? String(shiprocketOrder.awb_code) : "",
       courierCompanyId: String(
-        shiprocketOrder.courier_company_id || courierCompanyId
+        shiprocketOrder.courier_company_id || courierCompanyId,
       ),
       courierName:
         shiprocketOrder.courier_name || vendorShippingQuote?.courierName || "",
@@ -287,7 +325,7 @@ export const acceptOrder = async (req, res) => {
     const assignedCourierCompanyId = String(
       assignmentData.courier_company_id ||
         shiprocketOrder.courier_company_id ||
-        courierCompanyId
+        courierCompanyId,
     );
 
     if (!awbCode || assignedCourierCompanyId !== courierCompanyId) {
@@ -313,7 +351,7 @@ export const acceptOrder = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Order accepted and Shiprocket shipment created",
-      order: existingOrder,
+      order: serializeOrderForVendor(existingOrder, vendorId),
       shipment: newShipOrder,
     });
   } catch (error) {
@@ -324,9 +362,10 @@ export const acceptOrder = async (req, res) => {
 
     return res.status(error.response ? 502 : 500).json({
       success: false,
-      message: error.response?.status === 403
-        ? `Shiprocket denied permission during ${shiprocketStep}. Check the Shiprocket account/API access used by this backend.`
-        : "Failed to accept order",
+      message:
+        error.response?.status === 403
+          ? `Shiprocket denied permission during ${shiprocketStep}. Check the Shiprocket account/API access used by this backend.`
+          : "Failed to accept order",
       error: error.response?.data || error.message,
     });
   }
@@ -350,13 +389,16 @@ export const getAvailableCouriers = async (req, res) => {
     }
 
     const pickupPostcode = String(
-      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || ""
+      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || "",
     ).trim();
-    const deliveryPostcode = String(order.shippingAddress?.pincode || "").trim();
+    const deliveryPostcode = String(
+      order.shippingAddress?.pincode || "",
+    ).trim();
 
     if (!/^\d{6}$/.test(pickupPostcode)) {
       return res.status(400).json({
-        message: "Vendor pickup pincode is missing or invalid; save a valid pickup address in your profile",
+        message:
+          "Vendor pickup pincode is missing or invalid; save a valid pickup address in your profile",
       });
     }
 
@@ -381,24 +423,24 @@ export const getAvailableCouriers = async (req, res) => {
       shiprocketResponse.available_courier_companies ||
       [];
     const vendorQuote = (order.vendorShippingQuotes || []).find(
-      (quote) => quote.vendorId.toString() === vendorId.toString()
+      (quote) => quote.vendorId.toString() === vendorId.toString(),
     );
     const preferredCourierCompanyId = String(
       shipment.courierCompanyId ||
         vendorQuote?.courierCompanyId ||
         process.env.SHIPROCKET_COURIER_ID ||
-        ""
+        "",
     );
     const preferredCourier = couriers.find(
       (courier) =>
-        String(courier.courier_company_id) === preferredCourierCompanyId
+        String(courier.courier_company_id) === preferredCourierCompanyId,
     );
     const couriersToReturn = preferredCourier
       ? [preferredCourier]
       : [...couriers].sort(
           (left, right) =>
             Number(left.rate ?? left.freight_charge ?? Infinity) -
-            Number(right.rate ?? right.freight_charge ?? Infinity)
+            Number(right.rate ?? right.freight_charge ?? Infinity),
         );
 
     return res.status(200).json({
@@ -419,7 +461,7 @@ export const getAvailableCouriers = async (req, res) => {
   } catch (error) {
     console.log(
       "Get Available Couriers Error:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
 
     return res.status(error.response ? 502 : 500).json({
@@ -452,12 +494,15 @@ export const assignCourier = async (req, res) => {
     }
 
     const pickupPostcode = String(
-      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || ""
+      shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || "",
     ).trim();
-    const deliveryPostcode = String(order.shippingAddress?.pincode || "").trim();
+    const deliveryPostcode = String(
+      order.shippingAddress?.pincode || "",
+    ).trim();
     if (!/^\d{6}$/.test(pickupPostcode) || !/^\d{6}$/.test(deliveryPostcode)) {
       return res.status(400).json({
-        message: "Vendor pickup and customer delivery addresses must both have valid six-digit pincodes",
+        message:
+          "Vendor pickup and customer delivery addresses must both have valid six-digit pincodes",
       });
     }
 
@@ -475,30 +520,35 @@ export const assignCourier = async (req, res) => {
       shiprocketResponse.available_courier_companies ||
       [];
     const vendorQuote = (order.vendorShippingQuotes || []).find(
-      (quote) => quote.vendorId.toString() === req.vendor._id.toString()
+      (quote) => quote.vendorId.toString() === req.vendor._id.toString(),
     );
     const preferredCourierCompanyId = String(
       shipment.courierCompanyId ||
         vendorQuote?.courierCompanyId ||
         process.env.SHIPROCKET_COURIER_ID ||
-        ""
+        "",
     );
     const preferredIsAvailable = availableCouriers.some(
       (courier) =>
-        String(courier.courier_company_id) === preferredCourierCompanyId
+        String(courier.courier_company_id) === preferredCourierCompanyId,
     );
     const requestedCourierCompanyId = String(
       req.body?.courierCompanyId ||
-        (preferredIsAvailable ? preferredCourierCompanyId : "")
+        (preferredIsAvailable ? preferredCourierCompanyId : ""),
     );
     const requestedIsAvailable = availableCouriers.some(
       (courier) =>
-        String(courier.courier_company_id) === requestedCourierCompanyId
+        String(courier.courier_company_id) === requestedCourierCompanyId,
     );
 
-    if (!requestedIsAvailable || (preferredIsAvailable && requestedCourierCompanyId !== preferredCourierCompanyId)) {
+    if (
+      !requestedIsAvailable ||
+      (preferredIsAvailable &&
+        requestedCourierCompanyId !== preferredCourierCompanyId)
+    ) {
       return res.status(400).json({
-        message: "Select a courier available for this pickup and delivery route",
+        message:
+          "Select a courier available for this pickup and delivery route",
       });
     }
 
@@ -508,7 +558,10 @@ export const assignCourier = async (req, res) => {
       req.vendor._id,
     );
     const assignmentData =
-      assignment.response?.data || assignment.data || assignment.response || assignment;
+      assignment.response?.data ||
+      assignment.data ||
+      assignment.response ||
+      assignment;
 
     if (!assignmentData.awb_code) {
       return res.status(502).json({
@@ -519,7 +572,7 @@ export const assignCourier = async (req, res) => {
 
     shipment.awbCode = String(assignmentData.awb_code);
     shipment.courierCompanyId = String(
-      assignmentData.courier_company_id || requestedCourierCompanyId
+      assignmentData.courier_company_id || requestedCourierCompanyId,
     );
     shipment.courierName = assignmentData.courier_name || "";
     shipment.status = "AWB_ASSIGNED";
@@ -577,11 +630,13 @@ export const markOrderProcessing = async (req, res) => {
     }
 
     const hasVendorItems = order.items.some(
-      (item) => item.vendorId.toString() === req.vendor._id.toString()
+      (item) => item.vendorId.toString() === req.vendor._id.toString(),
     );
 
     if (!hasVendorItems) {
-      return res.status(403).json({ message: "You do not own items in this order" });
+      return res
+        .status(403)
+        .json({ message: "You do not own items in this order" });
     }
 
     const shipment = await shipOrder.findOne({
@@ -590,7 +645,8 @@ export const markOrderProcessing = async (req, res) => {
     });
     if (!shipment || !shipment.awbCode || shipment.status !== "AWB_ASSIGNED") {
       return res.status(400).json({
-        message: "Accept this vendor order and assign an AWB before processing it",
+        message:
+          "Accept this vendor order and assign an AWB before processing it",
       });
     }
 
@@ -601,7 +657,7 @@ export const markOrderProcessing = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Order marked as Processing",
-      order,
+      order: serializeOrderForVendor(order, req.vendor._id),
     });
   } catch (error) {
     console.log("Mark Order Processing Error:", error.message);
@@ -628,11 +684,13 @@ export const shipVendorOrder = async (req, res) => {
     }
 
     const hasVendorItems = order.items.some(
-      (item) => item.vendorId.toString() === req.vendor._id.toString()
+      (item) => item.vendorId.toString() === req.vendor._id.toString(),
     );
 
     if (!hasVendorItems) {
-      return res.status(403).json({ message: "You do not own items in this order" });
+      return res
+        .status(403)
+        .json({ message: "You do not own items in this order" });
     }
 
     const shipment = await shipOrder.findOne({
@@ -680,7 +738,7 @@ export const shipVendorOrder = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Order shipped and pickup requested",
-      order,
+      order: serializeOrderForVendor(order, req.vendor._id),
       shipment,
       shiprocket: pickupResponse,
     });
@@ -733,9 +791,13 @@ export const getVendorShipmentTracking = async (req, res) => {
       tracking: {
         ...trackingData,
         currentStatus:
-          latestTracking.current_status || trackingData.shipment_status || shipment.status,
+          latestTracking.current_status ||
+          trackingData.shipment_status ||
+          shipment.status,
         courierName:
-          latestTracking.courier_name || trackingData.courier_name || shipment.courierName,
+          latestTracking.courier_name ||
+          trackingData.courier_name ||
+          shipment.courierName,
         awbCode:
           latestTracking.awb_code || trackingData.awb_code || shipment.awbCode,
         history:
@@ -743,13 +805,16 @@ export const getVendorShipmentTracking = async (req, res) => {
           latestTracking.shipment_track_activities ||
           [],
         estimatedDelivery:
-          latestTracking.etd || trackingData.etd || trackingData.estimated_delivery_date || null,
+          latestTracking.etd ||
+          trackingData.etd ||
+          trackingData.estimated_delivery_date ||
+          null,
       },
     });
   } catch (error) {
     console.log(
       "Get Vendor Shipment Tracking Error:",
-      error.response?.data || error.message
+      error.response?.data || error.message,
     );
 
     return res.status(error.response ? 502 : 500).json({
@@ -758,4 +823,3 @@ export const getVendorShipmentTracking = async (req, res) => {
     });
   }
 };
-

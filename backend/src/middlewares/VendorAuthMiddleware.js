@@ -31,6 +31,13 @@ const VendorAuthMiddleware = async (req, res, next) => {
       });
     }
 
+    if ((decoded.tokenVersion ?? 0) !== (vendor.tokenVersion ?? 0)) {
+      return res.status(401).json({
+        success: false,
+        message: "Session expired. Please sign in again.",
+      });
+    }
+
     // Check verification
     if (!vendor.isVerified) {
       return res.status(403).json({

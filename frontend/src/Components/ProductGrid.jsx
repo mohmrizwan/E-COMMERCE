@@ -1,7 +1,7 @@
 import React from "react";
 import ProductCard from "./ProductCard";
 
-const ProductGrid = ({ products }) => {
+const ProductGrid = ({ products, onRemoveFavorite }) => {
   if (!products.length)
     return (
       <div className="rounded-[20px] border border-dashed border-[#cbd3e1] bg-white p-10 text-center">
@@ -14,7 +14,11 @@ const ProductGrid = ({ products }) => {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
       {products.map((product) => (
-        <ProductCard key={product._id || product.id} product={product} />
+        <ProductCard
+          key={product._id || product.id}
+          product={product}
+          onRemoveFavorite={onRemoveFavorite}
+        />
       ))}
     </div>
   );
