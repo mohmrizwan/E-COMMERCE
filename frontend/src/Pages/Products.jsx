@@ -7,9 +7,10 @@ import ProductFilter from "../Components/ProductFilter";
 import ProductGrid from "../Components/ProductGrid";
 import ProductSort from "../Components/ProductSort";
 import { getCategoryLabel } from "../data/products";
-import Loader from "../Components/Loader"
+import Loader from "../Components/Loader";
 
 const defaultFilters = {
+  search: "",
   category: "",
   minPrice: "",
   maxPrice: "",
@@ -18,6 +19,7 @@ const defaultFilters = {
 };
 
 const readFilters = (params) => ({
+  search: params.get("search") || "",
   category: params.get("category") || "",
   minPrice: params.get("min") || "",
   maxPrice: params.get("max") || "",
@@ -32,6 +34,7 @@ const readFilters = (params) => ({
 
 const writeFilters = (filters) => {
   const params = new URLSearchParams();
+  if (filters.search) params.set("search", filters.search);
   if (filters.category) params.set("category", filters.category);
   if (filters.minPrice) params.set("min", filters.minPrice);
   if (filters.maxPrice) params.set("max", filters.maxPrice);
@@ -80,6 +83,18 @@ const Products = () => {
 
   const visibleProducts = useMemo(() => {
     const filtered = products.filter((product) => {
+      const searchText = [
+        product.name,
+        product.brand,
+        product.store,
+        product.vendorName,
+        product.category,
+        product.description,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLocaleLowerCase();
+      const matchesSearch = searchText.includes(filters.search.trim().toLocaleLowerCase());
       const matchesCategory =
         !filters.category || product.category === filters.category;
       const matchesMin =
@@ -88,7 +103,7 @@ const Products = () => {
         !filters.maxPrice || Number(product.price) <= Number(filters.maxPrice);
       const matchesStock =
         filters.inStock === null || product.inStock === filters.inStock;
-      return matchesCategory && matchesMin && matchesMax && matchesStock;
+      return matchesSearch && matchesCategory && matchesMin && matchesMax && matchesStock;
     });
 
     return [...filtered].sort((a, b) => {
@@ -160,10 +175,33 @@ const Products = () => {
                 onChange={(value) => updateFilter("sort", value)}
               />
             </div>
+        
             {loading ? (
-              <p className="text-sm text-[#6b7280]">
-                <Loader />
-              </p>
+              <div className="grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3">
+                {Array.from({ length: 12 }, (_, index) => (
+                  <div
+                    key={index}
+                    aria-hidden="true"
+                    className="flex animate-pulse flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white"
+                  >
+                    {/* Product Image Skeleton */}
+                    <div className="h-36 w-full bg-[#E9E5FC] sm:h-48 md:h-56" />
+
+                    {/* Product Details Skeleton */}
+                    <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
+                      <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
+
+                      <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
+
+                      <div className="h-3 w-1/2 rounded bg-[#E9E5FC]" />
+
+                      <div className="mt-2 h-5 w-2/5 rounded bg-[#E9E5FC]" />
+
+                      <div className="mt-1 h-9 w-full rounded-lg bg-[#E9E5FC]" />
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : errorMessage ? (
               <p role="alert" className="text-sm text-red-600">
                 {errorMessage}
@@ -171,6 +209,7 @@ const Products = () => {
             ) : (
               <ProductGrid products={visibleProducts} />
             )}
+            
           </section>
         </div>
       </main>

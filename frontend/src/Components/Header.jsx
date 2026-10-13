@@ -1,10 +1,15 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState(
+    () => new URLSearchParams(location.search).get("search") || "",
+  );
   const { cart } = useCart();
   const cartItemCount = cart.reduce(
     (count, item) => count + Number(item.quantity || 1),
@@ -20,6 +25,31 @@ const Header = () => {
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setSearchTerm(new URLSearchParams(location.search).get("search") || "");
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
+    const currentQuery = new URLSearchParams(location.search).get("search") || "";
+    const nextQuery = searchTerm.trim();
+
+    if (currentQuery === nextQuery) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      const params = new URLSearchParams(
+        location.pathname === "/products" ? location.search : "",
+      );
+      if (nextQuery) params.set("search", nextQuery);
+      else params.delete("search");
+
+      const queryString = params.toString();
+      navigate(`/products${queryString ? `?${queryString}` : ""}`);
+    }, 350);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [location.pathname, location.search, navigate, searchTerm]);
+
   return (
     <>
       <div
@@ -67,6 +97,9 @@ const Header = () => {
 
             <input
               type="text"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              aria-label="Search products"
               placeholder="Search products, brands & more..."
               className="w-full bg-transparent text-sm text-gray-700 outline-none placeholder:text-gray-400"
             />
