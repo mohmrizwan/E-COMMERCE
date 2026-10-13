@@ -68,7 +68,7 @@ const Product = () => {
                 <div className="h-40 w-full bg-[#E9E5FC] sm:h-60 md:h-64 lg:h-72" />
 
                 {/* Product Details Skeleton */}
-                <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
+                <div className="flex flex-1 flex-col gap-3 p-2.5 sm:p-3 md:p-4">
                   <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
                   <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
                   <div className="h-3 w-1/2 rounded bg-[#E9E5FC]" />
