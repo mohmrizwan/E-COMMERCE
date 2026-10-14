@@ -205,6 +205,26 @@ const getSettlementVerificationStatus = (product) => {
   return settlementAccount?.verification_status || "pending";
 };
 
+const getSafeRouteOnboardingHint = (providerError = {}) => {
+  const description = String(providerError.description || providerError.reason || "").toLowerCase();
+  if (/email/.test(description) && /(already exists|already used|duplicate)/.test(description)) {
+    return "This email is already associated with a linked account on the platform Razorpay account. Ask platform support to check the existing account.";
+  }
+  if (/(marketplace|route)/.test(description) && /(not enabled|not available|not found|disabled)/.test(description)) {
+    return "Linked-account access may not be enabled for the platform Razorpay account. The platform owner must confirm Route/Marketplace access with Razorpay.";
+  }
+  if (/(required|missing|mandatory)/.test(description)) {
+    return "Razorpay reports a required linked-account field is missing. Recheck business name, business type, product category, website, registered address, PAN and vendor contact details.";
+  }
+  if (/(pan|gst|tax|kyc)/.test(description)) {
+    return "Razorpay rejected a legal or tax detail. Check the business PAN/GST and that they match the selected business type and legal records.";
+  }
+  if (/(invalid|not valid|format)/.test(description) && /(name|business|phone|email|address|website|url|category|subcategory)/.test(description)) {
+    return "Razorpay rejected the format of a linked-account business detail. Check the legal name, contact details, category, website and registered address.";
+  }
+  return "Razorpay rejected the linked-account details or platform account setup. Check Route/Marketplace access with platform support; the dashboard message does not identify a specific field.";
+};
+
 export const refreshVendorRazorpayStatus = async (req, res) => {
   try {
     const vendor = await VendorModel.findById(req.vendor._id);
@@ -525,6 +545,9 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     }
     const providerStatus = error.response?.status;
     const providerCode = error.response?.data?.error?.code;
+    const providerHint = providerStatus
+      ? getSafeRouteOnboardingHint(error.response?.data?.error)
+      : "";
     const allowedProviderCode = typeof providerCode === "string" && /^[A-Z0-9_]{1,64}$/.test(providerCode)
       ? providerCode
       : undefined;
@@ -533,6 +556,7 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
       stage: failureStage,
       providerStatus,
       providerCode: allowedProviderCode,
+      providerHint,
       errorName: error.name || "Error",
     });
     const statusCode = [400, 401, 403, 422].includes(providerStatus)
@@ -543,7 +567,7 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     return res.status(statusCode).json({
       success: false,
       message: providerStatus
-        ? `Razorpay rejected the ${failureStage} request${allowedProviderCode ? ` (${allowedProviderCode})` : ""}. Check the submitted details and try again; if this persists, contact platform support with this stage and code.`
+        ? `Razorpay rejected the ${failureStage} request${allowedProviderCode ? ` (${allowedProviderCode})` : ""}. ${providerHint}`
         : "Could not reach Razorpay to complete onboarding. Refresh provider status before retrying.",
     });
   }
