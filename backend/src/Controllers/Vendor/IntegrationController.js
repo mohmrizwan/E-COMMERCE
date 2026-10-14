@@ -398,8 +398,6 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     const payload = {
       type: "route",
       tnc_accepted: true,
-      // Razorpay accepts reference IDs up to 20 characters; Mongo ObjectIds are 24.
-      reference_id: crypto.createHash("sha256").update(String(req.vendor._id)).digest("hex").slice(0, 20),
       legal_business_name: legalBusinessName,
       customer_facing_business_name: req.vendor.businessName,
       business_type: businessType,
