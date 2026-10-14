@@ -13,6 +13,7 @@ import TransactionRoutes from "./Routes/Vendor/TransactionRoutes.js";
 import VendorIntegrationRoutes from "./Routes/Vendor/IntegrationRoutes.js";
 import Dashboard from "../src/Routes/Vendor/Dashboard.js";
 import StorefrontRoutes from "./Routes/Users/StorefrontRoutes.js";
+import RazorpayWebhookRoutes from "./Routes/Users/RazorpayWebhookRoutes.js";
 export default function createApp() {
   const app = express();
 
@@ -25,13 +26,18 @@ export default function createApp() {
     next();
   });
   app.use(cors());
-  app.use(express.json());
+  app.use(express.json({
+    verify(req, _res, buffer) {
+      if (req.path === "/webhooks/razorpay") req.rawBody = Buffer.from(buffer);
+    },
+  }));
 
   app.use("/user", AuthUser);
   app.use("/profile", profileRoutes);
   app.use("/products", Product);
   app.use("/storefront", StorefrontRoutes);
   app.use("/payment", Payment);
+  app.use("/webhooks/razorpay", RazorpayWebhookRoutes);
   app.use("/order", Order);
   // vendor
 

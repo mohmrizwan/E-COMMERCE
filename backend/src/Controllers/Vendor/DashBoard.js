@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import order from "../../models/user/MyOrdersModel.js";
 import Product from "../../models/vendor/ProductModel.js";
 import ShipOrder from "../../models/Shiprocket/ShipOrder.js";
+import Payment from "../../models/user/Payment.js";
 
 const months = [
   "January",
@@ -55,27 +56,38 @@ export const getVendorIncome = async (req, res) => {
         .json({ message: "You have permission for this action" });
     }
 
-    const findOrders = await order.find({
+    const findPayments = await Payment.find({
+      paymentStatus: "Paid",
       "items.vendorId": vendorId,
     });
 
     let totalIncome = 0;
+    let grossSales = 0;
     const monthlyIncome = {};
 
-    for (const orders of findOrders) {
-      const month = orders.createdAt.toLocaleString("en-US", {
-        month: "long",
-      });
+    for (const payment of findPayments) {
+      const vendorItems = payment.items.filter(
+        (item) => item.vendorId.toString() === vendorId.toString(),
+      );
+      grossSales += vendorItems.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
+      const allocation = payment.vendorAllocations?.find(
+        (item) => item.vendorId.toString() === vendorId.toString(),
+      );
+      if (
+        allocation?.transferStatus !== "processed" ||
+        allocation?.settlementStatus !== "settled"
+      ) continue;
 
-      for (const item of orders.items) {
-        if (item.vendorId.toString() === vendorId.toString()) {
-          const itemIncome = item.price * item.quantity;
-
-          totalIncome += itemIncome;
-
-          monthlyIncome[month] = (monthlyIncome[month] || 0) + itemIncome;
-        }
-      }
+      const settledIncome = Math.max(
+        0,
+        allocation.amountPaise - (allocation.amountReversedPaise || 0),
+      ) / 100;
+      const month = payment.date.toLocaleString("en-US", { month: "long" });
+      totalIncome += settledIncome;
+      monthlyIncome[month] = (monthlyIncome[month] || 0) + settledIncome;
     }
 
     const monthlyIncomeArray = Object.entries(monthlyIncome).map(
@@ -87,6 +99,7 @@ export const getVendorIncome = async (req, res) => {
 
     return res.status(200).json({
       totalIncome,
+      grossSales,
       monthlyIncome: monthlyIncomeArray,
     });
   } catch (error) {

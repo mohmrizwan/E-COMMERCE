@@ -22,12 +22,12 @@ const shipSchema = new mongoose.Schema(
 
     shiprocketOrderId: {
       type: String,
-      required: true,
+      default: "",
     },
 
     shiprocketShipmentId: {
       type: String,
-      required: true,
+      default: "",
     },
 
     awbCode: {
@@ -62,13 +62,18 @@ const shipSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      default: "NEW",
+      default: "CREATING",
     },
+
+    trackingStatus: { type: String, default: "" },
+    trackingUpdatedAt: { type: Date, default: null },
   },
   {
     timestamps: true,
   }
 );
+
+shipSchema.index({ orderId: 1, vendorId: 1 }, { unique: true });
 
 const shipOrder = mongoose.model("ShipOrder", shipSchema);
 

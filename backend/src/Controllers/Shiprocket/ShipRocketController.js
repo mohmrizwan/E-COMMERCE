@@ -4,6 +4,7 @@ import {
   getShiprocketToken,
   getShiprocketTracking,
 } from "../../Services/ShipRocket.js";
+import { updateTrackingSnapshot } from "../../Services/MarketplaceShippingStatus.js";
 
 export const testShiprocket = async (req, res) => {
   try {
@@ -56,6 +57,7 @@ export const getCustomerShipmentTracking = async (req, res) => {
       trackingResponse.tracking_data ||
       trackingResponse.data?.tracking_data ||
       trackingResponse;
+    await updateTrackingSnapshot(shipment, trackingData);
     const latestTracking = trackingData.shipment_track?.[0] || {};
 
     return res.status(200).json({

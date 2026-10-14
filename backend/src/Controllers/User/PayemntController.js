@@ -7,6 +7,10 @@ import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
 import { confirmRazorpayPayment } from "../../utils/RazorpayPaymentVerification.js";
 import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
 import {
+  buildRouteTransferAllocations,
+  RouteTransferConfigurationError,
+} from "../../Services/RouteTransferAllocation.js";
+import {
   assertCartStockAvailable,
   normalizeCartItems,
 } from "../../utils/CartValidation.js";
@@ -18,6 +22,12 @@ const razorpayInstance = new Razorpay({
 
 export const order = async (req, res) => {
   try {
+    if (process.env.RAZORPAY_ROUTE_ENABLED !== "true") {
+      return res.status(503).json({
+        message: "Marketplace checkout is unavailable until Razorpay Route is approved and enabled",
+      });
+    }
+
     const userId = req.user.id || req.user.userId || req.user._id;
     const { items, shippingAddress } = req.body;
     const deliveryPostcode = String(shippingAddress?.pincode || "").trim();
@@ -113,10 +123,13 @@ export const order = async (req, res) => {
 
     const subtotalAmount = subtotalPaise / 100;
     const vendorShippingQuotes = [];
+    const vendorConfigs = new Map();
     let shippingPaise = 0;
 
     for (const [vendorId, vendorSubtotalPaise] of vendorSubtotalsPaise) {
-      const vendor = await VendorModel.findById(vendorId).select("pickupAddress");
+      const vendor = await VendorModel.findById(vendorId).select(
+        "pickupAddress integrations.razorpay",
+      );
       const pickupAddress = vendor?.pickupAddress;
       const pickupPostcode = String(pickupAddress?.pincode || "").trim();
       const pickupLocationName = String(
@@ -128,6 +141,14 @@ export const order = async (req, res) => {
           message: "A vendor for this cart could not be found",
         });
       }
+
+      vendorConfigs.set(String(vendor._id), {
+        linkedAccountId: vendor.integrations?.razorpay?.linkedAccountId,
+        enabled: vendor.integrations?.razorpay?.enabled === true &&
+          vendor.integrations?.razorpay?.accountStatus === "created" &&
+          vendor.integrations?.razorpay?.productActivationStatus === "activated" &&
+          vendor.integrations?.razorpay?.settlementVerificationStatus === "verified",
+      });
 
       if (
         !pickupLocationName ||
@@ -169,6 +190,18 @@ export const order = async (req, res) => {
       : null;
     const amountPaise = subtotalPaise + shippingPaise;
     const finalTotal = amountPaise / 100;
+    let routeAllocations;
+    try {
+      routeAllocations = buildRouteTransferAllocations({
+        vendorSubtotalsPaise,
+        vendorShippingQuotes,
+        vendorConfigs,
+        orderAmountPaise: amountPaise,
+      });
+    } catch (error) {
+      if (!(error instanceof RouteTransferConfigurationError)) throw error;
+      return res.status(error.status).json({ message: error.message });
+    }
     console.info("[checkout:totals]", {
       subtotal: subtotalPaise / 100,
       shipping: shippingPaise / 100,
@@ -179,6 +212,12 @@ export const order = async (req, res) => {
       amount: amountPaise,
       currency: "INR",
       receipt: crypto.randomBytes(10).toString("hex"),
+      partial_payment: false,
+      transfers: routeAllocations.map(({ linkedAccountId, amountPaise: transferAmount }) => ({
+        account: linkedAccountId,
+        amount: transferAmount,
+        currency: "INR",
+      })),
     };
 
     const razorpayOrder = await razorpayInstance.orders.create(option);
@@ -195,6 +234,32 @@ export const order = async (req, res) => {
     ) {
       return res.status(502).json({ message: "Payment provider returned an invalid order" });
     }
+    const createdTransfers = Array.isArray(razorpayOrder.transfers)
+      ? razorpayOrder.transfers
+      : [];
+    if (createdTransfers.length !== routeAllocations.length) {
+      console.error("Razorpay Route order response omitted expected transfers", {
+        orderId: razorpayOrder.id,
+        expectedTransferCount: routeAllocations.length,
+        returnedTransferCount: createdTransfers.length,
+      });
+      return res.status(502).json({ message: "Payment provider returned an incomplete marketplace order" });
+    }
+    const persistedAllocations = routeAllocations.map((allocation) => {
+      const transfer = createdTransfers.find((candidate) =>
+        candidate.recipient === allocation.linkedAccountId &&
+        candidate.amount === allocation.amountPaise,
+      );
+      if (!transfer?.id) {
+        throw new Error("Razorpay Route response did not match the expected vendor allocations");
+      }
+      return {
+        ...allocation,
+        transferId: transfer.id,
+        transferStatus: transfer.status || "created",
+        settlementStatus: transfer.settlement_status || "pending",
+      };
+    });
     await Payment.create({
       razorpay_order_id: razorpayOrder.id,
       userId,
@@ -210,10 +275,15 @@ export const order = async (req, res) => {
       shippingWeight: primaryQuote?.weight || 0.5,
       estimatedDelivery: primaryQuote?.estimatedDelivery || "",
       vendorShippingQuotes,
+      vendorAllocations: persistedAllocations,
     });
 
     return res.status(201).json({
-      data: razorpayOrder,
+      data: {
+        id: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency,
+      },
       checkout: {
         items: checkoutItems,
         subtotalAmount,

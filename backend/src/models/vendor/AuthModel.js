@@ -4,6 +4,7 @@ const IntegrationSchema = new mongoose.Schema(
   {
     razorpay: {
       linkedAccountId: { type: String, trim: true, default: "" },
+      stakeholderId: { type: String, trim: true, default: "" },
       enabled: { type: Boolean, default: false },
       accountStatus: { type: String, trim: true, default: "" },
       productConfigId: { type: String, trim: true, default: "" },

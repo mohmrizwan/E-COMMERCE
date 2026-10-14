@@ -8,6 +8,10 @@ import {
   getAvailableShiprocketCouriers,
   getShiprocketTracking,
 } from "../../Services/ShipRocket.js";
+import {
+  refreshMarketplaceOrderStatus,
+  updateTrackingSnapshot,
+} from "../../Services/MarketplaceShippingStatus.js";
 
 const findVendorShipment = (shipOrderId, vendorId) => {
   const query = { vendorId };
@@ -40,42 +44,11 @@ const getVendorOrderStatus = (shipment) => {
       return "Shipped";
     case "DELIVERED":
       return "Delivered";
+    case "SHIPPED":
+      return "Shipped";
     default:
       return shipment.awbCode ? "Confirmed" : "Awaiting AWB";
   }
-};
-
-const refreshMarketplaceOrderStatus = async (order) => {
-  const vendorIds = [
-    ...new Set(order.items.map((item) => item.vendorId.toString())),
-  ];
-  const shipments = await shipOrder.find({ orderId: order._id });
-  const shipmentByVendorId = new Map(
-    shipments.map((shipment) => [shipment.vendorId.toString(), shipment]),
-  );
-  const statusStages = {
-    Pending: 0,
-    "Awaiting AWB": 0,
-    Confirmed: 1,
-    Processing: 2,
-    Shipped: 3,
-    Delivered: 4,
-  };
-  const stageStatuses = [
-    "Pending",
-    "Confirmed",
-    "Processing",
-    "Shipped",
-    "Delivered",
-  ];
-  const vendorStages = vendorIds.map(
-    (vendorId) =>
-      statusStages[getVendorOrderStatus(shipmentByVendorId.get(vendorId))],
-  );
-
-  order.status =
-    stageStatuses[vendorStages.length ? Math.min(...vendorStages) : 0];
-  await order.save();
 };
 
 const serializeOrderForVendor = (order, vendorId) => {
@@ -153,6 +126,7 @@ export const getMyOrders = async (req, res) => {
 
 export const acceptOrder = async (req, res) => {
   let shiprocketStep = "prepare shipment";
+  let shipmentReservation;
 
   try {
     const { orderId } = req.params;
@@ -191,8 +165,20 @@ export const acceptOrder = async (req, res) => {
       vendorId,
     });
     if (existingVendorShipment) {
-      return res.status(400).json({
-        message: "This vendor has already accepted the order",
+      if (existingVendorShipment.status === "CREATING" ||
+          existingVendorShipment.status === "CREATION_UNKNOWN") {
+        return res.status(409).json({
+          success: false,
+          message: "Shipment creation is already reserved or needs reconciliation. It will not be submitted again automatically.",
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        message: existingVendorShipment.awbCode
+          ? "This vendor shipment already exists"
+          : "Shiprocket order already exists; continue with courier and AWB assignment",
+        order: serializeOrderForVendor(existingOrder, vendorId),
+        shipment: existingVendorShipment,
       });
     }
 
@@ -242,6 +228,32 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
+    // Reserve the (order, vendor) shipment before the external create call.
+    // Shiprocket rejects a reused merchant order_id, so an ambiguous timeout
+    // must never cause an automatic second create request.
+    shipmentReservation = new shipOrder({
+      orderId: existingOrder._id,
+      userId: existingOrder.userId,
+      vendorId,
+      pickupLocationName,
+      pickupPostcode,
+      deliveryPostcode,
+      courierCompanyId,
+      courierName: vendorShippingQuote?.courierName || "",
+      status: "CREATING",
+    });
+    try {
+      await shipmentReservation.save();
+    } catch (error) {
+      if (error.code === 11000) {
+        return res.status(409).json({
+          success: false,
+          message: "A shipment for this vendor order has already been reserved",
+        });
+      }
+      throw error;
+    }
+
     shiprocketStep = "create Shiprocket shipment";
     const shiprocketOrder = await createShiprocketOrderFromOrder(
       {
@@ -278,6 +290,8 @@ export const acceptOrder = async (req, res) => {
         hasShipmentId: Boolean(shiprocketShipmentId),
         responseData: rawResponse,
       });
+      shipmentReservation.status = "CREATION_UNKNOWN";
+      await shipmentReservation.save();
       return res.status(502).json({
         success: false,
         message: errorDetails
@@ -287,23 +301,16 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
-    const newShipOrder = await shipOrder.create({
-      orderId: existingOrder._id,
-      userId: existingOrder.userId,
-      vendorId,
-      shiprocketOrderId,
-      shiprocketShipmentId,
-      awbCode: shiprocketOrder.awb_code ? String(shiprocketOrder.awb_code) : "",
-      courierCompanyId: String(
-        shiprocketOrder.courier_company_id || courierCompanyId,
-      ),
-      courierName:
-        shiprocketOrder.courier_name || vendorShippingQuote?.courierName || "",
-      pickupLocationName,
-      pickupPostcode,
-      deliveryPostcode,
-      status: shiprocketOrder.awb_code ? "AWB_ASSIGNED" : "NEW",
-    });
+    const newShipOrder = shipmentReservation;
+    newShipOrder.shiprocketOrderId = shiprocketOrderId;
+    newShipOrder.shiprocketShipmentId = shiprocketShipmentId;
+    newShipOrder.awbCode = shiprocketOrder.awb_code ? String(shiprocketOrder.awb_code) : "";
+    newShipOrder.courierCompanyId = String(
+      shiprocketOrder.courier_company_id || courierCompanyId,
+    );
+    newShipOrder.courierName = shiprocketOrder.courier_name || vendorShippingQuote?.courierName || "";
+    newShipOrder.status = shiprocketOrder.awb_code ? "AWB_ASSIGNED" : "NEW";
+    await newShipOrder.save();
 
     let assignmentData = shiprocketOrder;
 
@@ -355,6 +362,10 @@ export const acceptOrder = async (req, res) => {
       shipment: newShipOrder,
     });
   } catch (error) {
+    if (shipmentReservation && shipmentReservation.status === "CREATING") {
+      shipmentReservation.status = "CREATION_UNKNOWN";
+      await shipmentReservation.save().catch(() => {});
+    }
     console.log(
       `Accept Order Error during ${shiprocketStep}:`,
       error.response?.data || error.message,
@@ -783,6 +794,7 @@ export const getVendorShipmentTracking = async (req, res) => {
       trackingResponse.tracking_data ||
       trackingResponse.data?.tracking_data ||
       trackingResponse;
+    await updateTrackingSnapshot(shipment, trackingData);
     const latestTracking = trackingData.shipment_track?.[0] || {};
 
     return res.status(200).json({

@@ -15,19 +15,29 @@ export const getVendorTransactions = async (req, res) => {
       const vendorItems = payment.items.filter(
         (item) => String(item.vendorId) === String(vendorId)
       );
-
-      const amount = vendorItems.reduce(
-        (total, item) => total + item.price * item.quantity,
-        0
+      const allocation = payment.vendorAllocations?.find(
+        (item) => String(item.vendorId) === String(vendorId),
       );
+      const status = allocation?.settlementStatus === "settled" &&
+        allocation.transferStatus === "processed"
+        ? "Completed"
+        : allocation?.transferStatus === "failed"
+          ? "Failed"
+          : "Pending";
 
       return {
         transactionId: payment.razorpay_payment_id,
         orderId: payment.orderId,
         customer: payment.userId?.name || "Unknown",
         paymentMethod: "Online",
-        amount,
-        status: payment.paymentStatus,
+        amount: allocation ? allocation.amountPaise / 100 : vendorItems.reduce(
+          (total, item) => total + item.price * item.quantity,
+          0,
+        ),
+        paymentStatus: payment.paymentStatus,
+        transferStatus: allocation?.transferStatus || "not_configured",
+        settlementStatus: allocation?.settlementStatus || "unknown",
+        status,
         date: payment.date,
       };
     });

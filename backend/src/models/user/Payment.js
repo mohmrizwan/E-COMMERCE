@@ -75,6 +75,22 @@ const paymentSchema = new Schema({
       weight: Number,
     },
   ],
+  vendorAllocations: [
+    {
+      vendorId: { type: mongoose.Schema.Types.ObjectId, ref: "Vendor", required: true },
+      linkedAccountId: { type: String, required: true },
+      amountPaise: { type: Number, required: true },
+      transferId: { type: String, default: "" },
+      transferStatus: {
+        type: String,
+        enum: ["created", "pending", "processed", "failed", "reversed", "partially_reversed"],
+        default: "created",
+      },
+      settlementStatus: { type: String, enum: ["pending", "on_hold", "settled", "unknown"], default: "pending" },
+      amountReversedPaise: { type: Number, default: 0 },
+      updatedAt: { type: Date, default: Date.now },
+    },
+  ],
   paymentStatus: {
     type: String,
     enum: ["Pending", "Paid", "Failed"],
