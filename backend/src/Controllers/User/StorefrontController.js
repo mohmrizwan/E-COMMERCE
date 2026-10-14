@@ -1,0 +1,59 @@
+import VendorModel from "../../models/vendor/AuthModel.js";
+import Product from "../../models/vendor/ProductModel.js";
+import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
+
+const resolveStorefront = async (req) => {
+  const hostname = normalizeStorefrontHost(req.headers.origin || req.headers.host);
+  if (!hostname) return null;
+
+  return VendorModel.findOne({ storefrontDomains: hostname, isVerified: true })
+    .select("businessName")
+    .lean();
+};
+
+export const getStorefront = async (req, res) => {
+  try {
+    const vendor = await resolveStorefront(req);
+    if (!vendor) {
+      return res.status(404).json({ success: false, message: "Storefront not found" });
+    }
+
+    return res.status(200).json({
+      success: true,
+      storefront: { vendorId: vendor._id, businessName: vendor.businessName },
+    });
+  } catch {
+    return res.status(500).json({ success: false, message: "Could not load storefront" });
+  }
+};
+
+export const getStorefrontProducts = async (req, res) => {
+  try {
+    const vendor = await resolveStorefront(req);
+    if (!vendor) {
+      return res.status(404).json({ success: false, message: "Storefront not found" });
+    }
+
+    const products = await Product.find({ vendorId: vendor._id, status: "active" })
+      .populate("vendorId", "businessName")
+      .lean();
+    return res.status(200).json({
+      success: true,
+      products: products.map((product) => {
+        const discount = Number(product.discount) || 0;
+        return {
+          ...product,
+          discount,
+          price: discount > 0
+            ? Math.round(product.pricing * (1 - discount / 100))
+            : product.pricing,
+          oldPrice: discount > 0 ? product.pricing : null,
+          store: vendor.businessName,
+          inStock: product.stockQuantity > 0,
+        };
+      }),
+    });
+  } catch {
+    return res.status(500).json({ success: false, message: "Could not load storefront products" });
+  }
+};

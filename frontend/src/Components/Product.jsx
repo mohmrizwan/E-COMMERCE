@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useCart } from "../Components/CartContext";
 import FavoriteButton from "./FavoriteButton";
+import { getProductsForCurrentStorefront } from "../utils/productsApi";
 
 const Product = () => {
   const [products, setProducts] = useState([]);
@@ -14,9 +14,7 @@ const Product = () => {
 
   const getProducts = async () => {
     try {
-      const response = await axios.get(
-        "https://ecommerceba-6dtt.onrender.com/products/allProducts",
-      );
+      const response = await getProductsForCurrentStorefront();
 
       setProducts(
         Array.isArray(response.data.products)

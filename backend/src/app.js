@@ -12,6 +12,7 @@ import shiprocketRoutes from "../../backend/src/Routes/Shiprocket/ShipRocketRout
 import TransactionRoutes from "./Routes/Vendor/TransactionRoutes.js";
 import VendorIntegrationRoutes from "./Routes/Vendor/IntegrationRoutes.js";
 import Dashboard from "../src/Routes/Vendor/Dashboard.js";
+import StorefrontRoutes from "./Routes/Users/StorefrontRoutes.js";
 export default function createApp() {
   const app = express();
 
@@ -29,6 +30,7 @@ export default function createApp() {
   app.use("/user", AuthUser);
   app.use("/profile", profileRoutes);
   app.use("/products", Product);
+  app.use("/storefront", StorefrontRoutes);
   app.use("/payment", Payment);
   app.use("/order", Order);
   // vendor

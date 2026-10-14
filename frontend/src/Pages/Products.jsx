@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import ProductFilter from "../Components/ProductFilter";
@@ -8,6 +7,7 @@ import ProductGrid from "../Components/ProductGrid";
 import ProductSort from "../Components/ProductSort";
 import { getCategoryLabel } from "../data/products";
 import Loader from "../Components/Loader";
+import { getProductsForCurrentStorefront } from "../utils/productsApi";
 
 const defaultFilters = {
   search: "",
@@ -59,9 +59,7 @@ const Products = () => {
     setLoading(true);
     const getProducts = async () => {
       try {
-        const response = await axios.get(
-          "https://ecommerceba-6dtt.onrender.com/products/allProducts",
-        );
+        const response = await getProductsForCurrentStorefront();
         setProducts(
           Array.isArray(response.data.products) ? response.data.products : [],
         );

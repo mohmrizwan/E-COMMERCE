@@ -43,10 +43,10 @@ export const authenticateShiprocketCredentials = async (credentials) => {
     }
     return token;
   } catch (error) {
-    console.log(
-      "Shiprocket Login Error:",
-      error.response?.data || error.message
-    );
+    console.error("Shiprocket authentication failed", {
+      status: error.response?.status,
+      code: error.code,
+    });
 
     throw error;
   }
@@ -88,10 +88,10 @@ export const createShiprocketOrder = async (orderData, vendorId) => {
 
     return response.data;
   } catch (error) {
-    console.log(
-      "Shiprocket Create Order Error:",
-      error.response?.data || error.message
-    );
+    console.error("Shiprocket order creation failed", {
+      status: error.response?.status,
+      code: error.code,
+    });
 
     throw error;
   }
@@ -195,26 +195,15 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, v
       }
     );
 
-    console.log("Shiprocket create-order raw response", {
-      httpStatus: response.status,
-      responseData: response.data,
-    });
-
     const normalizedResponse = normalizeShiprocketOrderResponse(response.data);
-    console.log("Shiprocket create-order normalized IDs", {
-      order_id: normalizedResponse.order_id,
-      shipment_id: normalizedResponse.shipment_id,
-    });
 
     return {
       ...normalizedResponse,
-      rawResponse: response.data,
     };
   } catch (error) {
-    console.log("Shiprocket create-order HTTP error", {
-      httpStatus: error.response?.status,
-      responseData: error.response?.data,
-      message: error.message,
+    console.error("Shiprocket order creation failed", {
+      status: error.response?.status,
+      code: error.code,
     });
 
     throw error;
@@ -347,11 +336,6 @@ export const assignShiprocketCourier = async (shipmentId, courierCompanyId, vend
     courier_id: courierCompanyId,
   };
 
-  console.log("Shiprocket assign-AWB request", {
-    endpoint,
-    payload,
-  });
-
   try {
     const response = await axios.post(endpoint, payload, {
       headers: {
@@ -362,16 +346,9 @@ export const assignShiprocketCourier = async (shipmentId, courierCompanyId, vend
 
     return response.data;
   } catch (error) {
-    console.log("Shiprocket assign-AWB HTTP error", {
-      endpoint,
-      payload,
-      httpStatus: error.response?.status,
-      responseBody: error.response?.data,
-      message: error.message,
-      details:
-        error.response?.data?.errors ||
-        error.response?.data?.details ||
-        error.response?.data?.error,
+    console.error("Shiprocket AWB assignment failed", {
+      status: error.response?.status,
+      code: error.code,
     });
 
     throw error;

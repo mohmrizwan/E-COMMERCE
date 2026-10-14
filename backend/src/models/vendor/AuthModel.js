@@ -28,6 +28,13 @@ const AuthSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // Assigned by a trusted platform operator after DNS ownership is verified.
+    // Never accept this field from vendor profile updates.
+    storefrontDomains: {
+      type: [{ type: String, lowercase: true, trim: true }],
+      default: [],
+    },
+
     ownerName: {
       type: String,
       required: true,
@@ -90,6 +97,8 @@ const AuthSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+AuthSchema.index({ storefrontDomains: 1 }, { unique: true, sparse: true });
 
 const AuthVendor = mongoose.model("Vendor", AuthSchema);
 

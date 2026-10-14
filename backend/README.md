@@ -194,6 +194,14 @@ Shiprocket calls resolve credentials from the order's or shipment's vendor ID. L
 
 For Razorpay Route, a vendor record stores the platform-provisioned linked-account ID, not vendor API credentials. The vendor settings endpoint deliberately rejects client-supplied linked-account IDs; mapping a vendor to a payout destination must be done by a trusted platform onboarding flow.
 
+### Shared storefront domains
+
+The public `GET /storefront` and `GET /storefront/products` endpoints resolve the browser `Origin` (or `Host` for same-origin calls) against `Vendor.storefrontDomains`. The domain list is platform-managed and must only be populated after domain ownership and DNS have been verified; do not add it to vendor self-service profile updates. A domain that does not match a verified vendor returns 404. The products endpoint only returns active products for that host's vendor. For Vercel, add each custom domain or `*.vendoraflame.com` to the same project. Vercel requires Vercel nameservers to issue wildcard certificates. Use the DNS values Vercel displays for the project; verified domains receive managed TLS. Configure the shared API origin in the frontend separately; the browser origin selects the storefront while all requests continue to use the one Render backend.
+
+### Payment settlement status
+
+The current checkout creates a platform Razorpay order and verifies it with the platform key. Although vendor Route linked-account onboarding exists, checkout does not create Route transfers, process payment webhooks, or perform Route reversals on refunds. Therefore this code does **not** currently settle proceeds to vendors and must not be described or deployed as a verified marketplace settlement flow. Razorpay Route onboarding, linked-account/product approval, settlement-account verification, and platform API access are prerequisites; a vendor entering their own standard Razorpay keys would not implement a marketplace split. Do not claim live settlement verification until transfer, webhook/retry, refund/reversal, and reconciliation paths are implemented and tested in an approved Razorpay account.
+
 ## Main Dependencies
 
 - `express` - HTTP server framework.

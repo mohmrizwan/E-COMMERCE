@@ -5,6 +5,7 @@ import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
 import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
 import { confirmRazorpayPayment } from "../../utils/RazorpayPaymentVerification.js";
+import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
 import {
   assertCartStockAvailable,
   normalizeCartItems,
@@ -49,6 +50,10 @@ export const order = async (req, res) => {
     };
 
     const checkoutItems = [];
+    const storefrontHost = normalizeStorefrontHost(req.headers.origin || req.headers.host);
+    const storefrontVendor = storefrontHost
+      ? await VendorModel.findOne({ storefrontDomains: storefrontHost, isVerified: true }).select("_id")
+      : null;
     const vendorSubtotalsPaise = new Map();
     let subtotalPaise = 0;
 
@@ -57,6 +62,9 @@ export const order = async (req, res) => {
       const product = await productModel.findById(item.productId);
       if (!product || product.status !== "active") {
         return res.status(400).json({ message: "A cart product is unavailable" });
+      }
+      if (storefrontVendor && String(product.vendorId) !== String(storefrontVendor._id)) {
+        return res.status(400).json({ message: "This storefront can only check out its own products" });
       }
 
       try {
@@ -218,10 +226,13 @@ export const order = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log("Create Razorpay Order Error:", error.response?.data || error.message);
+    console.error("Create Razorpay Order Error", {
+      status: error.response?.status,
+      code: error.code,
+      name: error.name,
+    });
     return res.status(error.response ? 502 : 500).json({
-      message: error.message || "Could not calculate checkout total",
-      error: error.response?.data,
+      message: "Could not create a checkout payment",
     });
   }
 };
