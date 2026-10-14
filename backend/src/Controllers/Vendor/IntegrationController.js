@@ -256,6 +256,8 @@ export const refreshVendorRazorpayStatus = async (req, res) => {
 
 export const onboardVendorWithRazorpayRoute = async (req, res) => {
   const vendorId = req.vendor._id;
+  let failureStage = "validate onboarding details";
+  let onboardingReserved = false;
 
   try {
     const legalBusinessName = String(req.body?.legalBusinessName || "").trim();
@@ -266,6 +268,16 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     const beneficiaryName = String(req.body?.beneficiaryName || "").trim();
     const accountNumber = String(req.body?.accountNumber || "").trim();
     const ifscCode = String(req.body?.ifscCode || "").trim().toUpperCase();
+    const businessSubcategory = String(req.body?.businessSubcategory || "").trim();
+    const websiteUrl = String(req.body?.websiteUrl || "").trim();
+    const registeredAddress = {
+      street1: String(req.body?.registeredAddress?.street1 || "").trim(),
+      street2: String(req.body?.registeredAddress?.street2 || "").trim(),
+      city: String(req.body?.registeredAddress?.city || "").trim(),
+      state: String(req.body?.registeredAddress?.state || "").trim(),
+      postal_code: String(req.body?.registeredAddress?.postalCode || "").trim(),
+      country: "IN",
+    };
     const residentialAddress = {
       street: String(req.body?.residentialAddress?.street || "").trim(),
       city: String(req.body?.residentialAddress?.city || "").trim(),
@@ -293,6 +305,35 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
         success: false,
         message: "Select a valid business type",
       });
+    }
+
+    const routeEcommerceSubcategories = new Set([
+      "ecommerce_marketplace", "agriculture", "books", "electronics_and_furniture",
+      "fashion_and_lifestyle", "gifting", "grocery", "baby_products", "office_supplies",
+      "wholesale", "pet_products", "sports_products", "arts_and_collectibles",
+      "jewellery_and_watch_stores", "cosmetic_stores", "home_furnishing_stores",
+      "computer_software_stores", "women_clothing", "department_stores", "variety_stores",
+    ]);
+    if (!routeEcommerceSubcategories.has(businessSubcategory)) {
+      return res.status(400).json({ success: false, message: "Select a valid Razorpay e-commerce business category" });
+    }
+
+    if (
+      registeredAddress.street1.length < 3 || registeredAddress.street1.length > 100 ||
+      !registeredAddress.city || registeredAddress.city.length > 100 ||
+      registeredAddress.state.length < 2 || registeredAddress.state.length > 32 ||
+      !/^\d{6}$/.test(registeredAddress.postal_code)
+    ) {
+      return res.status(400).json({ success: false, message: "Enter the complete registered business address and six-digit PIN code" });
+    }
+
+    try {
+      const parsedWebsite = new URL(websiteUrl);
+      if (!["http:", "https:"].includes(parsedWebsite.protocol) || !parsedWebsite.hostname.includes(".")) {
+        throw new Error("Invalid website URL");
+      }
+    } catch {
+      return res.status(400).json({ success: false, message: "Enter a valid public business website or storefront URL starting with https://" });
     }
 
     if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(pan)) {
@@ -357,18 +398,27 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     const payload = {
       type: "route",
       tnc_accepted: true,
-      reference_id: vendor._id.toString(),
+      // Razorpay accepts reference IDs up to 20 characters; Mongo ObjectIds are 24.
+      reference_id: crypto.createHash("sha256").update(String(req.vendor._id)).digest("hex").slice(0, 20),
       legal_business_name: legalBusinessName,
-      customer_facing_business_name: vendor.businessName,
+      customer_facing_business_name: req.vendor.businessName,
       business_type: businessType,
-      email: vendor.email,
+      email: req.vendor.email,
       phone: phone.length === 10 ? `+91${phone}` : phone,
+      profile: {
+        category: "ecommerce",
+        subcategory: businessSubcategory,
+        business_model: `${businessType.replaceAll("_", " ")} seller on VendoraFlame marketplace`.slice(0, 255),
+        addresses: { registered: registeredAddress },
+        apps: { websites: [{ url: websiteUrl }] },
+      },
       legal_info: {
         pan,
         ...(gst ? { gst } : {}),
       },
     };
     const idempotencyKey = getOnboardingIdempotencyKey({ vendorId: String(vendorId), flow: "route-linked-account-v1" });
+    failureStage = "reserve vendor onboarding";
     const vendor = await VendorModel.findOneAndUpdate(
       {
         _id: vendorId,
@@ -386,9 +436,11 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
         message: "Razorpay onboarding is already linked or in progress",
       });
     }
+    onboardingReserved = true;
 
     const routeIntegration = vendor.integrations.razorpay;
     if (!routeIntegration.linkedAccountId) {
+      failureStage = "create Razorpay linked account";
       const routeAccount = await createRouteLinkedAccount(payload, idempotencyKey);
       if (!routeAccount?.id) throw new Error("Razorpay did not return a linked account ID");
       routeIntegration.linkedAccountId = routeAccount.id;
@@ -399,6 +451,7 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
     }
 
     if (!routeIntegration.stakeholderId) {
+      failureStage = "create Razorpay stakeholder";
       const stakeholder = await createRouteStakeholder(routeIntegration.linkedAccountId, {
         name: String(req.vendor.ownerName || "").trim(),
         email: req.vendor.email,
@@ -410,6 +463,9 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
       await vendor.save();
     }
 
+    failureStage = routeIntegration.productConfigId
+      ? "fetch Razorpay Route product configuration"
+      : "request Razorpay Route product configuration";
     let productConfig = routeIntegration.productConfigId
       ? await getRouteProductConfig(routeIntegration.linkedAccountId, routeIntegration.productConfigId)
       : await requestRouteProductConfig(routeIntegration.linkedAccountId);
@@ -420,6 +476,7 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
       await vendor.save();
     }
 
+    failureStage = "submit Razorpay settlement bank details";
     productConfig = await updateRouteProductConfig(
       routeIntegration.linkedAccountId,
       routeIntegration.productConfigId,
@@ -442,6 +499,7 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
       productConfig.active_configuration?.settlement_accounts?.[0] ||
       productConfig.requested_configuration?.settlement_accounts?.[0];
 
+    failureStage = "refresh Razorpay account status";
     const routeAccount = await getRouteLinkedAccount(routeIntegration.linkedAccountId);
     routeIntegration.accountStatus = routeAccount.status || routeIntegration.accountStatus;
     routeIntegration.productActivationStatus =
@@ -461,11 +519,24 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
       razorpay: razorpayStatus(routeIntegration),
     });
   } catch (error) {
-    await VendorModel.updateOne(
-      { _id: vendorId },
-      { $set: { "integrations.razorpay.onboardingInProgress": false } },
-    ).catch(() => {});
+    if (onboardingReserved) {
+      await VendorModel.updateOne(
+        { _id: vendorId },
+        { $set: { "integrations.razorpay.onboardingInProgress": false } },
+      ).catch(() => {});
+    }
     const providerStatus = error.response?.status;
+    const providerCode = error.response?.data?.error?.code;
+    const allowedProviderCode = typeof providerCode === "string" && /^[A-Z0-9_]{1,64}$/.test(providerCode)
+      ? providerCode
+      : undefined;
+    console.error("Razorpay vendor onboarding failed", {
+      vendorId: String(vendorId),
+      stage: failureStage,
+      providerStatus,
+      providerCode: allowedProviderCode,
+      errorName: error.name || "Error",
+    });
     const statusCode = [400, 401, 403, 422].includes(providerStatus)
       ? 400
       : providerStatus
@@ -473,9 +544,9 @@ export const onboardVendorWithRazorpayRoute = async (req, res) => {
         : 500;
     return res.status(statusCode).json({
       success: false,
-      message: error.response?.status === 400
-        ? "Razorpay needs corrected onboarding details. Review the submitted legal, stakeholder, and bank information."
-        : "Could not complete Razorpay Route onboarding. Refresh provider status before retrying.",
+      message: providerStatus
+        ? `Razorpay rejected the ${failureStage} request${allowedProviderCode ? ` (${allowedProviderCode})` : ""}. Check the submitted details and try again; if this persists, contact platform support with this stage and code.`
+        : "Could not reach Razorpay to complete onboarding. Refresh provider status before retrying.",
     });
   }
 };

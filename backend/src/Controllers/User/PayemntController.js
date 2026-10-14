@@ -22,9 +22,10 @@ const razorpayInstance = new Razorpay({
 
 export const order = async (req, res) => {
   try {
-    if (process.env.RAZORPAY_ROUTE_ENABLED !== "true") {
+    if (String(process.env.RAZORPAY_ROUTE_ENABLED || "").trim().toLowerCase() !== "true") {
       return res.status(503).json({
-        message: "Marketplace checkout is unavailable until Razorpay Route is approved and enabled",
+        code: "RAZORPAY_ROUTE_DISABLED",
+        message: "Marketplace checkout is disabled because RAZORPAY_ROUTE_ENABLED is not true in the backend deployment. Enable it only after Razorpay Route approval, vendor linked-account activation, webhook setup, and sandbox verification.",
       });
     }
 

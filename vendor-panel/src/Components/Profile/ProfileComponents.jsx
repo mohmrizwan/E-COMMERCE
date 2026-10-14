@@ -81,12 +81,15 @@ const VendorProfile = () => {
   const [razorpayDetails, setRazorpayDetails] = useState({
     legalBusinessName: "",
     businessType: "",
+    businessSubcategory: "",
+    websiteUrl: "",
     pan: "",
     stakeholderPan: "",
     gst: "",
     beneficiaryName: "",
     accountNumber: "",
     ifscCode: "",
+    registeredAddress: { street1: "", street2: "", city: "", state: "", postalCode: "" },
     residentialAddress: { street: "", city: "", state: "", postalCode: "" },
     tncAccepted: false,
   });
@@ -504,6 +507,14 @@ const VendorProfile = () => {
               <CRow className="g-3">
                 <CCol md={6}><CFormLabel>Legal business name</CFormLabel><CFormInput value={razorpayDetails.legalBusinessName} onChange={(event) => setRazorpayDetails((current) => ({ ...current, legalBusinessName: event.target.value }))} disabled={isSubmittingRazorpay} /></CCol>
                 <CCol md={6}><CFormLabel>Business type</CFormLabel><CFormSelect value={razorpayDetails.businessType} onChange={(event) => setRazorpayDetails((current) => ({ ...current, businessType: event.target.value }))} disabled={isSubmittingRazorpay}><option value="">Select business type</option>{["individual", "proprietorship", "partnership", "llp", "private_limited", "public_limited", "ngo", "trust", "society", "educational_institutes", "other"].map((type) => <option key={type} value={type}>{type.replaceAll("_", " ")}</option>)}</CFormSelect></CCol>
+                <CCol md={6}><CFormLabel>Business category</CFormLabel><CFormSelect value={razorpayDetails.businessSubcategory} onChange={(event) => setRazorpayDetails((current) => ({ ...current, businessSubcategory: event.target.value }))} disabled={isSubmittingRazorpay}><option value="">Select your product category</option>{[["ecommerce_marketplace", "Marketplace"], ["agriculture", "Agriculture"], ["books", "Books"], ["electronics_and_furniture", "Electronics and furniture"], ["fashion_and_lifestyle", "Fashion and lifestyle"], ["gifting", "Gifting"], ["grocery", "Grocery"], ["baby_products", "Baby products"], ["office_supplies", "Office supplies"], ["wholesale", "Wholesale"], ["pet_products", "Pet products"], ["sports_products", "Sports products"], ["arts_and_collectibles", "Arts and collectibles"], ["jewellery_and_watch_stores", "Jewellery and watches"], ["cosmetic_stores", "Cosmetics"], ["home_furnishing_stores", "Home furnishings"], ["computer_software_stores", "Computer software"], ["women_clothing", "Women's clothing"], ["department_stores", "Department store"], ["variety_stores", "Other retail / variety store"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</CFormSelect></CCol>
+                <CCol md={6}><CFormLabel>Business website / storefront URL</CFormLabel><CFormInput type="url" placeholder="https://your-store.example" value={razorpayDetails.websiteUrl} onChange={(event) => setRazorpayDetails((current) => ({ ...current, websiteUrl: event.target.value }))} disabled={isSubmittingRazorpay} /></CCol>
+                <CCol xs={12}><h6 className="mt-2 mb-0">Registered business address</h6><small className="text-body-secondary">Use the address shown on your business and bank records.</small></CCol>
+                <CCol md={6}><CFormLabel>Address line 1</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.street1} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, street1: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
+                <CCol md={6}><CFormLabel>Address line 2 (optional)</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.street2} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, street2: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
+                <CCol md={4}><CFormLabel>Business city</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.city} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, city: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
+                <CCol md={4}><CFormLabel>Business state</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.state} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, state: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
+                <CCol md={4}><CFormLabel>Business PIN code</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.postalCode} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, postalCode: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
                 <CCol md={6}><CFormLabel>PAN</CFormLabel><CFormInput value={razorpayDetails.pan} onChange={(event) => setRazorpayDetails((current) => ({ ...current, pan: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
                 <CCol md={6}><CFormLabel>Owner / stakeholder PAN</CFormLabel><CFormInput value={razorpayDetails.stakeholderPan} onChange={(event) => setRazorpayDetails((current) => ({ ...current, stakeholderPan: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
                 <CCol md={6}><CFormLabel>GSTIN (if applicable)</CFormLabel><CFormInput value={razorpayDetails.gst} onChange={(event) => setRazorpayDetails((current) => ({ ...current, gst: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
@@ -519,7 +530,7 @@ const VendorProfile = () => {
                 <input type="checkbox" checked={razorpayDetails.tncAccepted} onChange={(event) => setRazorpayDetails((current) => ({ ...current, tncAccepted: event.target.checked }))} disabled={isSubmittingRazorpay} />
                 <span>I accept the Razorpay Route terms and authorize submission of these details for linked-account onboarding.</span>
               </label>
-              <p className="small text-body-secondary mt-2 mb-0">Razorpay may require additional KYC or business documents and must activate the account and verify settlement details. This review is completed with Razorpay.</p>
+              <p className="small text-body-secondary mt-2 mb-0">Razorpay may require additional KYC or business documents and must activate the account and verify settlement details. Route access, KYC review and activation are completed by Razorpay; submitting this form does not itself activate settlements.</p>
             </>
           )}
           {razorpayError && <Alert severity="error" className="mt-3">{razorpayError}</Alert>}
