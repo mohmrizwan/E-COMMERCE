@@ -17,12 +17,12 @@ const Dashboard = () => {
       <div>
         <p className="text-lg  text-gray-400">Order&apos;s Overview </p>
       </div>
-      <div className="flex flex-col lg:flex-row gap-4">
-        <div className="w-full lg:w-[80%]">
+      <div className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,4fr)_minmax(220px,1fr)]">
+        <div className="min-w-0">
           <OrdersChart />
         </div>
 
-        <div className="w-full lg:w-[20%]">
+        <div className="min-w-0">
           <CategoryChart />
         </div>
       </div>
