@@ -12,6 +12,7 @@ import {
   refreshMarketplaceOrderStatus,
   updateTrackingSnapshot,
 } from "../../Services/MarketplaceShippingStatus.js";
+import { calculateShipmentParcel } from "../../Services/ShipmentParcel.js";
 
 const findVendorShipment = (shipOrderId, vendorId) => {
   const query = { vendorId };
@@ -216,6 +217,12 @@ export const acceptOrder = async (req, res) => {
     const vendorShippingQuote = (existingOrder.vendorShippingQuotes || []).find(
       (quote) => quote.vendorId.toString() === vendorId.toString(),
     );
+    let parcel;
+    try {
+      parcel = calculateShipmentParcel(vendorItems);
+    } catch (error) {
+      return res.status(400).json({ success: false, message: error.message });
+    }
     const courierCompanyId = String(
       vendorShippingQuote?.courierCompanyId ||
         existingOrder.shippingCourierCompanyId ||
@@ -240,6 +247,8 @@ export const acceptOrder = async (req, res) => {
       deliveryPostcode,
       courierCompanyId,
       courierName: vendorShippingQuote?.courierName || "",
+      ...parcel,
+      estimatedShippingCost: vendorShippingQuote?.estimatedShippingCost ?? vendorShippingQuote?.shippingAmount ?? null,
       status: "CREATING",
     });
     try {
@@ -309,6 +318,12 @@ export const acceptOrder = async (req, res) => {
       shiprocketOrder.courier_company_id || courierCompanyId,
     );
     newShipOrder.courierName = shiprocketOrder.courier_name || vendorShippingQuote?.courierName || "";
+    const actualShippingCost = Number(
+      shiprocketOrder.freight_charge ?? shiprocketOrder.shipping_charge ?? shiprocketOrder.shipping_cost,
+    );
+    if (Number.isFinite(actualShippingCost) && actualShippingCost >= 0) {
+      newShipOrder.actualShippingCost = actualShippingCost;
+    }
     newShipOrder.status = shiprocketOrder.awb_code ? "AWB_ASSIGNED" : "NEW";
     await newShipOrder.save();
 
@@ -351,6 +366,12 @@ export const acceptOrder = async (req, res) => {
       existingOrder.shippingCourierName ||
       "";
     newShipOrder.status = "AWB_ASSIGNED";
+    const assignedShippingCost = Number(
+      assignmentData.freight_charge ?? assignmentData.shipping_charge ?? assignmentData.shipping_cost,
+    );
+    if (Number.isFinite(assignedShippingCost) && assignedShippingCost >= 0) {
+      newShipOrder.actualShippingCost = assignedShippingCost;
+    }
     await newShipOrder.save();
 
     await refreshMarketplaceOrderStatus(existingOrder);
@@ -393,7 +414,7 @@ export const getAvailableCouriers = async (req, res) => {
       return res.status(404).json({ message: "Shipment not found" });
     }
 
-    const order = await orderModel.findById(shipment.orderId);
+    const order = await orderModel.findById(shipment.orderId).populate("items.productId");
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
@@ -419,12 +440,18 @@ export const getAvailableCouriers = async (req, res) => {
       });
     }
 
+    let parcel;
+    try {
+      parcel = calculateShipmentParcel(order.items.filter((item) => item.vendorId.toString() === vendorId.toString()));
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
     const shiprocketResponse = await getAvailableShiprocketCouriers({
       vendorId,
       shipmentId: shipment.shiprocketShipmentId,
       pickupPostcode,
       deliveryPostcode,
-      weight: 0.5,
+      ...parcel,
       cod: order.paymentMethod?.toLowerCase() === "cod" ? 1 : 0,
       declaredValue: order.totalAmount,
     });
@@ -499,7 +526,7 @@ export const assignCourier = async (req, res) => {
       });
     }
 
-    const order = await orderModel.findById(shipment.orderId);
+    const order = await orderModel.findById(shipment.orderId).populate("items.productId");
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
     }
@@ -517,12 +544,18 @@ export const assignCourier = async (req, res) => {
       });
     }
 
+    let parcel;
+    try {
+      parcel = calculateShipmentParcel(order.items.filter((item) => item.vendorId.toString() === req.vendor._id.toString()));
+    } catch (error) {
+      return res.status(400).json({ message: error.message });
+    }
     const shiprocketResponse = await getAvailableShiprocketCouriers({
       vendorId: req.vendor._id,
       shipmentId: shipment.shiprocketShipmentId,
       pickupPostcode,
       deliveryPostcode,
-      weight: 0.5,
+      ...parcel,
       cod: order.paymentMethod?.toLowerCase() === "cod" ? 1 : 0,
       declaredValue: order.totalAmount,
     });

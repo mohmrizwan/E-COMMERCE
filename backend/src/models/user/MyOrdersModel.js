@@ -72,7 +72,7 @@ const OrderSchema = new mongoose.Schema(
 
     shippingWeight: {
       type: Number,
-      default: 0.5,
+      default: 0,
     },
 
     estimatedDelivery: {
@@ -91,10 +91,14 @@ const OrderSchema = new mongoose.Schema(
         pickupPostcode: { type: String, required: true },
         deliveryPostcode: { type: String, required: true },
         shippingAmount: { type: Number, required: true },
+        estimatedShippingCost: Number,
         courierCompanyId: { type: String, required: true },
         courierName: String,
         estimatedDelivery: String,
         weight: Number,
+        length: Number,
+        breadth: Number,
+        height: Number,
       },
     ],
 

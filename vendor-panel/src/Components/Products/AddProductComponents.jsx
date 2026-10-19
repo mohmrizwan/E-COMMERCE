@@ -53,7 +53,7 @@ const AddProduct = () => {
       );
       setMessage(response.data.message);
       setErrorMessage("");
- 
+
       navigate("/products");
     } catch (error) {
       console.log(error.response?.data);
@@ -183,7 +183,6 @@ const AddProduct = () => {
                 </CRow>
               </CCardBody>
             </CCard>
-
             {/* Pricing */}
             <CCard className="border-0 shadow-sm">
               <CCardHeader className="bg-transparent border-0 px-4 pt-4">
@@ -216,7 +215,9 @@ const AddProduct = () => {
 
                   <CCol md={6}>
                     <div className="mb-3">
-                      <CFormLabel className="fw-semibold">Discount (%)</CFormLabel>
+                      <CFormLabel className="fw-semibold">
+                        Discount (%)
+                      </CFormLabel>
                       <CFormInput
                         type="number"
                         name="discount"
@@ -250,6 +251,99 @@ const AddProduct = () => {
                 </CRow>
               </CCardBody>
             </CCard>
+
+            <CCard className="border-0 shadow-sm">
+              <CCardHeader className="bg-transparent border-0 px-4 pt-4">
+                  <h5 className="fw-bold mb-1">Shipping Details</h5>
+
+                <small className="text-body-secondary">
+                  Enter packed product measurements for accurate shipping rates
+                </small>
+              </CCardHeader>
+
+              <CCardBody className="px-4 pb-4">
+                <CRow>
+
+
+                  {/* Weight */}
+                  <CCol md={6}>
+                    <div className="mb-3">
+                      <CFormLabel className="fw-semibold">
+                        Weight (kg)
+                      </CFormLabel>
+
+                      <CFormInput
+                        type="number"
+                        name="weight"
+                        placeholder="e.g. 0.5"
+                        className="py-2"
+                        min="0.01"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </CCol>
+
+                  {/* Length */}
+                  <CCol md={4}>
+                    <div className="mb-3">
+                      <CFormLabel className="fw-semibold">
+                        Length (cm)
+                      </CFormLabel>
+
+                      <CFormInput
+                        type="number"
+                        name="length"
+                        placeholder="Length"
+                        className="py-2"
+                        min="0.51"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </CCol>
+
+                  {/* Breadth */}
+                  <CCol md={4}>
+                    <div className="mb-3">
+                      <CFormLabel className="fw-semibold">
+                        Breadth (cm)
+                      </CFormLabel>
+
+                      <CFormInput
+                        type="number"
+                        name="breadth"
+                        placeholder="Breadth"
+                        className="py-2"
+                        min="0.51"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </CCol>
+
+                  {/* Height */}
+                  <CCol md={4}>
+                    <div className="mb-3">
+                      <CFormLabel className="fw-semibold">
+                        Height (cm)
+                      </CFormLabel>
+
+                      <CFormInput
+                        type="number"
+                        name="height"
+                        placeholder="Height"
+                        className="py-2"
+                        min="0.51"
+                        step="0.01"
+                        required
+                      />
+                    </div>
+                  </CCol>
+                </CRow>
+              </CCardBody>
+            </CCard>
+
           </CCol>
 
           {/* RIGHT */}

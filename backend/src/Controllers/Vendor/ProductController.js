@@ -1,6 +1,26 @@
 import productModel from "../../models/vendor/ProductModel.js";
 import Cloudinary from "../../Config/Cloudinary.js";
 
+const parseShippingDetails = (values) => {
+  const fields = ["weight", "length", "breadth", "height"];
+  const parsed = {};
+  for (const field of fields) {
+    const value = values[field];
+    if (value === undefined || value === "") {
+      return { error: `Enter a valid positive ${field} for shipping` };
+    }
+    const number = Number(value);
+    if (!Number.isFinite(number) || number <= 0) {
+      return { error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than zero` };
+    }
+    if (field !== "weight" && number <= 0.5) {
+      return { error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than 0.5 cm for Shiprocket` };
+    }
+    parsed[field] = number;
+  }
+  return { values: parsed };
+};
+
 export const createProduct = async (req, res) => {
   try {
     const userId = req.vendor._id;
@@ -13,6 +33,7 @@ export const createProduct = async (req, res) => {
       discount = 0,
       stockQuantity,
       status,
+      weight, length, breadth, height,
     } = req.body;
 
     if (
@@ -30,6 +51,9 @@ export const createProduct = async (req, res) => {
         message: "Enter all details of product",
       });
     }
+
+    const shippingDetails = parseShippingDetails({ weight, length, breadth, height });
+    if (shippingDetails.error) return res.status(400).json({ success: false, message: shippingDetails.error });
 
     const discountValue = Number(discount);
     if (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 99) {
@@ -72,6 +96,7 @@ export const createProduct = async (req, res) => {
       pricing,
       discount: discountValue,
       stockQuantity,
+      ...shippingDetails.values,
       status,
       image: result.secure_url,
     });
@@ -158,6 +183,7 @@ export const updateProduct = async (req, res) => {
       discount,
       stockQuantity,
       status,
+      weight, length, breadth, height,
     } = req.body;
 
     if (!vendorId) {
@@ -191,12 +217,16 @@ export const updateProduct = async (req, res) => {
       product.discount = discountValue;
     }
 
+    const shippingDetails = parseShippingDetails({ weight, length, breadth, height });
+    if (shippingDetails.error) return res.status(400).json({ success: false, message: shippingDetails.error });
+
     product.name = name;
     product.description = description;
     product.category = category;
     product.pricing = pricing;
     product.stockQuantity = stockQuantity;
     product.status = status;
+    Object.assign(product, shippingDetails.values);
 
     await product.save();
 

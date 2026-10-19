@@ -43,6 +43,13 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // Optional for legacy products; checkout and shipment creation require
+    // complete values before requesting a Shiprocket quote.
+    weight: { type: Number, min: 0.0001 },
+    length: { type: Number, min: 0.5001 },
+    breadth: { type: Number, min: 0.5001 },
+    height: { type: Number, min: 0.5001 },
+
     status: {
       type: String,
       enum: ["active", "inactive"],

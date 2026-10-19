@@ -60,6 +60,13 @@ const shipSchema = new mongoose.Schema(
       default: "",
     },
 
+    weight: { type: Number, default: 0 },
+    length: { type: Number, default: 0 },
+    breadth: { type: Number, default: 0 },
+    height: { type: Number, default: 0 },
+    estimatedShippingCost: { type: Number, default: null },
+    actualShippingCost: { type: Number, default: null },
+
     status: {
       type: String,
       default: "CREATING",

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getVendorShippingConfig } from "./VendorIntegrationConfig.js";
+import { calculateShipmentParcel } from "./ShipmentParcel.js";
 
 const normalizeShiprocketOrderResponse = (payload) => {
   const candidates = [
@@ -132,6 +133,7 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, v
       throw new Error("Customer shipping name is missing");
     }
 
+    const parcel = calculateShipmentParcel(orderData.items);
     const token = await getShiprocketToken(vendorId);
 
     let subTotal = 0;
@@ -178,10 +180,7 @@ export const createShiprocketOrderFromOrder = async (orderData, pickupAddress, v
 
       sub_total: subTotal,
 
-      length: 10,
-      breadth: 10,
-      height: 10,
-      weight: 0.5,
+      ...parcel,
     };
 
     const response = await axios.post(
@@ -216,6 +215,9 @@ export const getAvailableShiprocketCouriers = async ({
   pickupPostcode,
   deliveryPostcode,
   weight,
+  length,
+  breadth,
+  height,
   cod,
   declaredValue,
 }) => {
@@ -240,6 +242,9 @@ export const getAvailableShiprocketCouriers = async ({
         pickup_postcode: normalizedPickupPostcode,
         delivery_postcode: normalizedDeliveryPostcode,
         weight,
+        length,
+        breadth,
+        height,
         cod,
         declared_value: declaredValue,
       },
@@ -257,6 +262,9 @@ export const getShiprocketShippingQuote = async ({
   pickupPostcode,
   deliveryPostcode,
   weight,
+  length,
+  breadth,
+  height,
   cod = 0,
   declaredValue,
 }) => {
@@ -283,6 +291,9 @@ export const getShiprocketShippingQuote = async ({
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
     weight,
+    length,
+    breadth,
+    height,
     cod,
     declaredValue,
   });
@@ -324,6 +335,9 @@ export const getShiprocketShippingQuote = async ({
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
     weight,
+    length,
+    breadth,
+    height,
   };
 };
 

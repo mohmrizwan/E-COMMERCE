@@ -40,6 +40,10 @@ const UpadteProduct = () => {
     pricing: "",
     discount: 0,
     stockQuantity: "",
+    weight: "",
+    length: "",
+    breadth: "",
+    height: "",
     status: "",
   });
 
@@ -73,6 +77,10 @@ const UpadteProduct = () => {
           pricing: data.pricing ?? "",
           discount: data.discount ?? 0,
           stockQuantity: data.stockQuantity ?? "",
+          weight: data.weight ?? "",
+          length: data.length ?? "",
+          breadth: data.breadth ?? "",
+          height: data.height ?? "",
           status: data.status || "",
         });
 
@@ -208,6 +216,13 @@ const UpadteProduct = () => {
         "Stock quantity cannot be negative",
       );
       return;
+    }
+
+    for (const [field, label, minimum] of [["weight", "Weight", 0], ["length", "Length", 0.5], ["breadth", "Breadth / Width", 0.5], ["height", "Height", 0.5]]) {
+      if (!Number.isFinite(Number(product[field])) || Number(product[field]) <= minimum) {
+        setErrorMessage(`${label} must be greater than ${minimum}${field === "weight" ? " kg" : " cm"}`);
+        return;
+      }
     }
 
     // Status validation
@@ -473,6 +488,25 @@ const UpadteProduct = () => {
                         />
                       </div>
                     </CCol>
+                  </CRow>
+                </CCardBody>
+              </CCard>
+
+              <CCard className="border-0 shadow-sm mt-4">
+                <CCardHeader className="bg-transparent border-0 px-4 pt-4">
+                  <h5 className="fw-bold mb-1">Shipping Details</h5>
+                  <small className="text-body-secondary">Enter packed product measurements for accurate Shiprocket rates.</small>
+                </CCardHeader>
+                <CCardBody className="px-4 pb-4">
+                  <CRow>
+                    {[["weight", "Weight (kg)", "0.01", "0.001"], ["length", "Length (cm)", "0.01", "0.51"], ["breadth", "Breadth / Width (cm)", "0.01", "0.51"], ["height", "Height (cm)", "0.01", "0.51"]].map(([field, label, step, min]) => (
+                      <CCol md={6} key={field}>
+                        <div className="mb-3">
+                          <CFormLabel className="fw-semibold">{label}</CFormLabel>
+                          <CFormInput type="number" name={field} value={product[field]} onChange={handleChange} min={min} step={step} required disabled={updating} />
+                        </div>
+                      </CCol>
+                    ))}
                   </CRow>
                 </CCardBody>
               </CCard>

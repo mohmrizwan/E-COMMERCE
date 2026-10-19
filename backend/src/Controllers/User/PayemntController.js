@@ -4,6 +4,7 @@ import productModel from "../../models/vendor/ProductModel.js";
 import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
 import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
+import { calculateShipmentParcel } from "../../Services/ShipmentParcel.js";
 import { confirmRazorpayPayment } from "../../utils/RazorpayPaymentVerification.js";
 import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
 import {
@@ -66,6 +67,7 @@ export const order = async (req, res) => {
       ? await VendorModel.findOne({ storefrontDomains: storefrontHost, isVerified: true }).select("_id")
       : null;
     const vendorSubtotalsPaise = new Map();
+    const vendorProducts = new Map();
     let subtotalPaise = 0;
 
     for (const item of normalizedItems) {
@@ -111,6 +113,8 @@ export const order = async (req, res) => {
         vendorId,
         (vendorSubtotalsPaise.get(vendorId) || 0) + unitPricePaise * quantity,
       );
+      if (!vendorProducts.has(vendorId)) vendorProducts.set(vendorId, []);
+      vendorProducts.get(vendorId).push({ productId: product, quantity });
       checkoutItems.push({
         productId: product._id,
         vendorId: product.vendorId,
@@ -163,11 +167,17 @@ export const order = async (req, res) => {
         });
       }
 
+      let parcel;
+      try {
+        parcel = calculateShipmentParcel(vendorProducts.get(String(vendorId)));
+      } catch (error) {
+        return res.status(400).json({ message: error.message });
+      }
       const quote = await getShiprocketShippingQuote({
         vendorId: vendor._id,
         pickupPostcode,
         deliveryPostcode,
-        weight: 0.5,
+        ...parcel,
         cod: 0,
         declaredValue: vendorSubtotalPaise / 100,
       });
@@ -179,10 +189,14 @@ export const order = async (req, res) => {
         pickupPostcode,
         deliveryPostcode,
         shippingAmount: vendorShippingPaise / 100,
+        estimatedShippingCost: vendorShippingPaise / 100,
         courierCompanyId: quote.courierCompanyId,
         courierName: quote.courierName,
         estimatedDelivery: quote.estimatedDelivery,
         weight: quote.weight,
+        length: quote.length,
+        breadth: quote.breadth,
+        height: quote.height,
       });
     }
 
@@ -273,7 +287,7 @@ export const order = async (req, res) => {
       shippingCourierCompanyId: vendorShippingQuotes[0]?.courierCompanyId || "",
       shippingCourierName: primaryQuote?.courierName || "",
       shippingPickupPostcode: primaryQuote?.pickupPostcode || "",
-      shippingWeight: primaryQuote?.weight || 0.5,
+      shippingWeight: primaryQuote?.weight || 0,
       estimatedDelivery: primaryQuote?.estimatedDelivery || "",
       vendorShippingQuotes,
       vendorAllocations: persistedAllocations,
