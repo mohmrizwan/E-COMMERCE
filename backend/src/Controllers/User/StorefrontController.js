@@ -1,5 +1,6 @@
 import VendorModel from "../../models/vendor/AuthModel.js";
 import Product from "../../models/vendor/ProductModel.js";
+import Banner from "../../models/user/Banner.js";
 import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
 
 const resolveStorefront = async (req) => {
@@ -55,5 +56,31 @@ export const getStorefrontProducts = async (req, res) => {
     });
   } catch {
     return res.status(500).json({ success: false, message: "Could not load storefront products" });
+  }
+};
+
+export const getStorefrontBanners = async (req, res) => {
+  try {
+    const vendor = await resolveStorefront(req);
+    const query = vendor ? { vendorId: vendor._id } : {};
+    const banners = await Banner.find(query)
+      .populate({ path: "productId", match: { status: "active" }, select: "name status" })
+      .populate("vendorId", "businessName")
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    return res.status(200).json({
+      success: true,
+      banners: banners
+        .filter((banner) => banner.productId)
+        .map((banner) => ({
+          ...banner,
+          vendorName: banner.vendorId?.businessName || "Store",
+          productUrl: `/product/${banner.productId._id}`,
+        })),
+    });
+  } catch (error) {
+    console.error("Get storefront banners error:", error);
+    return res.status(500).json({ success: false, message: "Could not load storefront banners" });
   }
 };
