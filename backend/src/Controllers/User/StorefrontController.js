@@ -64,7 +64,11 @@ export const getStorefrontBanners = async (req, res) => {
     const vendor = await resolveStorefront(req);
     const query = vendor ? { vendorId: vendor._id } : {};
     const banners = await Banner.find(query)
-      .populate({ path: "productId", match: { status: "active" }, select: "name status" })
+      .populate({
+        path: "productId",
+        match: { status: "active" },
+        select: "name status image pricing discount stockQuantity",
+      })
       .populate("vendorId", "businessName")
       .sort({ updatedAt: -1 })
       .lean();
@@ -73,11 +77,31 @@ export const getStorefrontBanners = async (req, res) => {
       success: true,
       banners: banners
         .filter((banner) => banner.productId)
-        .map((banner) => ({
-          ...banner,
-          vendorName: banner.vendorId?.businessName || "Store",
-          productUrl: `/product/${banner.productId._id}`,
-        })),
+        .map((banner) => {
+          const product = banner.productId;
+          const discount = Number(product.discount) || 0;
+          const vendorName = banner.vendorId?.businessName || "Vendor";
+          return {
+            ...banner,
+            vendorName,
+            productUrl: `/product/${product._id}`,
+            cartProduct: {
+              _id: product._id,
+              name: product.name,
+              image: product.image,
+              pricing: product.pricing,
+              discount,
+              price: discount > 0
+                ? Math.round(product.pricing * (1 - discount / 100))
+                : product.pricing,
+              oldPrice: discount > 0 ? product.pricing : null,
+              stockQuantity: product.stockQuantity,
+              status: product.status,
+              vendorName,
+              inStock: product.stockQuantity > 0,
+            },
+          };
+        }),
     });
   } catch (error) {
     console.error("Get storefront banners error:", error);
