@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 
 const AuthLayout = ({ eyebrow, title, description, children }) => (
-  <main className="grid min-h-dvh min-w-0 bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(360px,0.82fr)_minmax(560px,1.18fr)]">
+  <main className="grid min-h-dvh min-w-0 bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
     <section className="relative hidden overflow-hidden flex-col bg-[#17112B] p-8 text-white sm:p-12 lg:flex lg:p-16 xl:p-20">
       <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full border border-violet-400/20 bg-violet-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 size-[28rem] rounded-full border border-fuchsia-300/10 bg-fuchsia-500/10 blur-3xl" />

@@ -34,7 +34,7 @@ function Sidebar({ visible, setVisible }) {
       position="fixed"
       visible={visible}
       onVisibleChange={setVisible} 
-      className="!bg-[#17112B] !border-r !border-[#2D2545] !overflow-hidden"
+      className="vendor-sidebar !bg-[#17112B] !border-r !border-[#2D2545]"
     >
       {/* ================= LOGO ================= */}
 

@@ -100,8 +100,7 @@ const Inventory = () => {
 
             {/* Search */}
             <div
-              className="position-relative"
-              style={{ width: "260px" }}
+              className="position-relative vendor-inventory-search"
             >
               <CIcon
                 icon={cilSearch}
