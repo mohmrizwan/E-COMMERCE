@@ -4,6 +4,7 @@ import {
 	assignCourier,
 	getAvailableCouriers,
 	getMyOrders,
+	reconcileUnknownShipment,
 	getVendorShipmentTracking,
 	markOrderProcessing,
 	shipVendorOrder,
@@ -13,6 +14,11 @@ const router = express.Router();
 
 router.get("/myOrders", VendorAuthMiddleware, getMyOrders);
 router.patch("/accept/:orderId", VendorAuthMiddleware, acceptOrder);
+router.post(
+	"/shipments/:shipOrderId/reconcile",
+	VendorAuthMiddleware,
+	reconcileUnknownShipment,
+);
 router.get(
 	"/shipments/:shipOrderId/couriers",
 	VendorAuthMiddleware,

@@ -1,6 +1,9 @@
 import axios from "axios";
 import { getVendorShippingConfig } from "./VendorIntegrationConfig.js";
-import { calculateShipmentParcel } from "./ShipmentParcel.js";
+import {
+  calculateShipmentParcel,
+  formatServiceabilityParcel,
+} from "./ShipmentParcel.js";
 
 const normalizeShiprocketOrderResponse = (payload) => {
   const candidates = [
@@ -232,6 +235,12 @@ export const getAvailableShiprocketCouriers = async ({
     throw new Error("Customer shipping address must have a valid six-digit pincode");
   }
 
+  const serviceabilityParcel = formatServiceabilityParcel({
+    weight,
+    length,
+    breadth,
+    height,
+  });
   const token = await getShiprocketToken(vendorId);
 
   const response = await axios.get(
@@ -241,10 +250,7 @@ export const getAvailableShiprocketCouriers = async ({
         shipment_id: shipmentId,
         pickup_postcode: normalizedPickupPostcode,
         delivery_postcode: normalizedDeliveryPostcode,
-        weight,
-        length,
-        breadth,
-        height,
+        ...serviceabilityParcel,
         cod,
         declared_value: declaredValue,
       },
@@ -255,6 +261,55 @@ export const getAvailableShiprocketCouriers = async ({
   );
 
   return response.data;
+};
+
+export const matchShiprocketOrderReference = (orders, reference) => {
+  const normalizedReference = String(reference || "");
+  return (Array.isArray(orders) ? orders : []).filter(
+    (order) => String(order?.channel_order_id || "") === normalizedReference,
+  );
+};
+
+export const normalizeShiprocketOrderDetails = (details = {}, listOrder = {}) => {
+  const order = details.data ?? details;
+  const shipments = Array.isArray(order.shipments) ? order.shipments : [];
+  const shipment = shipments[0] || order.shipments || order.shipment || {};
+  return {
+    orderId: String(order.id ?? listOrder.id ?? ""),
+    shipmentId: String(
+      shipment.id ?? shipment.shipment_id ?? order.shipment_id ?? listOrder.shipment_id ?? "",
+    ),
+    awbCode: String(shipment.awb ?? shipment.awb_code ?? order.awb_code ?? ""),
+    courierCompanyId: String(
+      shipment.courier_company_id ?? order.courier_company_id ?? "",
+    ),
+    courierName: String(shipment.courier ?? shipment.courier_name ?? order.courier_name ?? ""),
+  };
+};
+
+/** Read-only lookup used to reconcile an ambiguous create timeout. */
+export const getShiprocketOrderByReference = async (reference, vendorId) => {
+  const token = await getShiprocketToken(vendorId);
+  const headers = { Authorization: `Bearer ${token}` };
+  const listResponse = await axios.get(
+    "https://apiv2.shiprocket.in/v1/external/orders",
+    { params: { search: String(reference) }, headers },
+  );
+  const payload = listResponse.data?.data ?? listResponse.data;
+  const orders = Array.isArray(payload) ? payload : payload?.data || [];
+  const matches = matchShiprocketOrderReference(orders, reference);
+  if (matches.length !== 1) return { matchCount: matches.length, shipment: null };
+
+  const listOrder = matches[0];
+  if (!listOrder.id) return { matchCount: 1, shipment: null };
+  const detailResponse = await axios.get(
+    `https://apiv2.shiprocket.in/v1/external/orders/show/${encodeURIComponent(listOrder.id)}`,
+    { headers },
+  );
+  return {
+    matchCount: 1,
+    shipment: normalizeShiprocketOrderDetails(detailResponse.data, listOrder),
+  };
 };
 
 export const getShiprocketShippingQuote = async ({

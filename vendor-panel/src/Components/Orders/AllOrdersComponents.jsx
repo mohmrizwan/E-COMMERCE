@@ -187,6 +187,18 @@ const Orders = () => {
       "Order accepted and shipment created.",
     );
 
+  const reconcileShipment = (order) =>
+    runOrderAction(
+      order.id,
+      () =>
+        axios.post(
+          `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/reconcile`,
+          {},
+          getVendorConfig(),
+        ),
+      "Existing Shiprocket shipment reconciled.",
+    );
+
   const markProcessing = (order) =>
     runOrderAction(
       order.id,
@@ -608,6 +620,18 @@ const Orders = () => {
                                           onClick={() => markProcessing(order)}
                                         >
                                           Mark Processing
+                                        </button>
+                                      )}
+                                      {order.shipment?.status === "CREATION_UNKNOWN" && (
+                                        <button
+                                          type="button"
+                                          className="btn btn-sm btn-outline-warning"
+                                          disabled={loadingOrderId === order.id}
+                                          onClick={() => reconcileShipment(order)}
+                                        >
+                                          {loadingOrderId === order.id
+                                            ? "Checking Shiprocket..."
+                                            : "Reconcile shipment"}
                                         </button>
                                       )}
                                       {order.shipment?.awbCode && (

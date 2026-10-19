@@ -6,13 +6,17 @@ import {
   createShiprocketOrderFromOrder,
   generateShiprocketPickup,
   getAvailableShiprocketCouriers,
+  getShiprocketOrderByReference,
   getShiprocketTracking,
 } from "../../Services/ShipRocket.js";
 import {
   refreshMarketplaceOrderStatus,
   updateTrackingSnapshot,
 } from "../../Services/MarketplaceShippingStatus.js";
-import { calculateShipmentParcel } from "../../Services/ShipmentParcel.js";
+import {
+  calculateShipmentParcel,
+  calculateVendorMerchandiseValue,
+} from "../../Services/ShipmentParcel.js";
 
 const findVendorShipment = (shipOrderId, vendorId) => {
   const query = { vendorId };
@@ -403,6 +407,60 @@ export const acceptOrder = async (req, res) => {
   }
 };
 
+/** Reconcile an ambiguous Shiprocket create timeout using read-only order
+ * lookup. This action never resubmits shipment creation.
+ */
+export const reconcileUnknownShipment = async (req, res) => {
+  try {
+    const shipment = await findVendorShipment(req.params.shipOrderId, req.vendor._id);
+    if (!shipment) return res.status(404).json({ message: "Shipment not found" });
+    if (shipment.status !== "CREATION_UNKNOWN") {
+      return res.status(409).json({ message: "Only an unknown shipment creation can be reconciled" });
+    }
+
+    const order = await orderModel.findById(shipment.orderId);
+    if (!order) return res.status(404).json({ message: "Order not found" });
+
+    const result = await getShiprocketOrderByReference(String(order._id), req.vendor._id);
+    if (result.matchCount !== 1 || !result.shipment?.shipmentId) {
+      return res.status(409).json({
+        success: false,
+        message: result.matchCount > 1
+          ? "Multiple Shiprocket orders match this reference; manual reconciliation is required"
+          : "No unique Shiprocket shipment was found. The reservation remains blocked and no new shipment was submitted.",
+      });
+    }
+
+    shipment.shiprocketOrderId = result.shipment.orderId;
+    shipment.shiprocketShipmentId = result.shipment.shipmentId;
+    shipment.awbCode = result.shipment.awbCode;
+    if (result.shipment.courierCompanyId) {
+      shipment.courierCompanyId = result.shipment.courierCompanyId;
+    }
+    if (result.shipment.courierName) shipment.courierName = result.shipment.courierName;
+    shipment.status = shipment.awbCode ? "AWB_ASSIGNED" : "NEW";
+    await shipment.save();
+
+    if (shipment.awbCode) await refreshMarketplaceOrderStatus(order);
+    return res.status(200).json({
+      success: true,
+      message: shipment.awbCode
+        ? "Existing Shiprocket shipment reconciled with its AWB"
+        : "Existing Shiprocket shipment found; continue with courier and AWB assignment",
+      shipment,
+    });
+  } catch (error) {
+    console.error("Shiprocket reservation reconciliation failed", {
+      status: error.response?.status,
+      code: error.code,
+    });
+    return res.status(error.response ? 502 : 500).json({
+      success: false,
+      message: "Could not reconcile the Shiprocket reservation. No new shipment was submitted.",
+    });
+  }
+};
+
 export const getAvailableCouriers = async (req, res) => {
   try {
     const { shipOrderId } = req.params;
@@ -453,7 +511,7 @@ export const getAvailableCouriers = async (req, res) => {
       deliveryPostcode,
       ...parcel,
       cod: order.paymentMethod?.toLowerCase() === "cod" ? 1 : 0,
-      declaredValue: order.totalAmount,
+      declaredValue: calculateVendorMerchandiseValue(order, vendorId),
     });
 
     const couriers =
@@ -557,7 +615,7 @@ export const assignCourier = async (req, res) => {
       deliveryPostcode,
       ...parcel,
       cod: order.paymentMethod?.toLowerCase() === "cod" ? 1 : 0,
-      declaredValue: order.totalAmount,
+      declaredValue: calculateVendorMerchandiseValue(order, req.vendor._id),
     });
     const availableCouriers =
       shiprocketResponse.data?.available_courier_companies ||
