@@ -24,6 +24,7 @@ import VendorForgotPassword from "./Pages/Auth/VendorForgotPassword";
 import VendorResetVerify from "./Pages/Auth/VendorResetVerify";
 import VendorNewPassword from "./Pages/Auth/VendorNewPassword";
 import ProtectedRoute from "./Components/ProtectedRoute";
+import Banner from "./Components/Banner/Banner";
 
 function App() {
   return (
@@ -62,6 +63,7 @@ function App() {
           <Route path="transactions" element={<Transaction />} />
           <Route path="messages" element={<Message />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="banner" element={<Banner/>}/>
           <Route path="settings" element={<Setting />} />
         </Route>
       </Route>

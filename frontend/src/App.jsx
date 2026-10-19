@@ -16,6 +16,7 @@ import ProtectedRoute from "./Components/ProtectedRoutes";
 import ForgotPassword from "./Components/ForgotPassword";
 import { FavoritesProvider } from "./Components/FavoritesContext";
 import { CartProvider } from "./Components/CartContext";
+import ProductDetails from "./Pages/ProductDetails";
 const App = () => {
   return (
     <>
@@ -28,6 +29,7 @@ const App = () => {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route element={<ProtectedRoute />}>
             <Route element={<FavoritesProvider />}>
+              <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/" element={<Home />} />
               <Route path="/cart" element={<AddToCart />} />
               <Route path="/products" element={<Products />} />

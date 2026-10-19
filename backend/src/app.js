@@ -14,6 +14,7 @@ import VendorIntegrationRoutes from "./Routes/Vendor/IntegrationRoutes.js";
 import Dashboard from "../src/Routes/Vendor/Dashboard.js";
 import StorefrontRoutes from "./Routes/Users/StorefrontRoutes.js";
 import RazorpayWebhookRoutes from "./Routes/Users/RazorpayWebhookRoutes.js";
+import VendorBannerRoutes from "./Routes/Vendor/BannerRoutes.js";
 export default function createApp() {
   const app = express();
 
@@ -45,6 +46,7 @@ export default function createApp() {
   app.use("/vendor", VendorRoutes);
   app.use("/vendor/integrations", VendorIntegrationRoutes);
   app.use("/vendor/products", ProductsRoutes);
+  app.use("/vendor/banner", VendorBannerRoutes);
   app.use("/vendor/orders", VendorOrderRoutes);
   app.use("/vendor/transactions", TransactionRoutes);
   app.use("/dashboard", Dashboard);

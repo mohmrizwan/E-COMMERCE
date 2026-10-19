@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_ORIGIN =
+export const API_ORIGIN =
   import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 
 export const getProductsForCurrentStorefront = async () => {

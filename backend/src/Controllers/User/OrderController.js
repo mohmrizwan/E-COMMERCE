@@ -13,7 +13,9 @@ export const createOrder = async (req, res) => {
     if (typeof razorpay_order_id !== "string" || !razorpay_order_id) {
       return res.status(400).json({ message: "Razorpay order ID is required" });
     }
-
+    if (!userId) {
+      return res.status(400).json({ message: "Login required" });
+    }
     const result = await createMarketplaceOrder({
       mongoose,
       Order: order,
@@ -24,7 +26,9 @@ export const createOrder = async (req, res) => {
     });
 
     return res.status(result.wasExisting ? 200 : 201).json({
-      message: result.wasExisting ? "Order already created for this payment" : "Order created successfully",
+      message: result.wasExisting
+        ? "Order already created for this payment"
+        : "Order created successfully",
       order: result.order,
     });
   } catch (error) {

@@ -174,6 +174,13 @@ function Sidebar({ visible, setVisible }) {
           <CIcon icon={cilPeople} customClassName="nav-icon !text-violet-400" />
           Customers
         </CNavItem>
+        <CNavItem
+          href="/banner"
+          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+        >
+          <CIcon icon={cilPeople} customClassName="nav-icon !text-violet-400" />
+          banner
+        </CNavItem>
 
 
 
