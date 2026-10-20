@@ -1,22 +1,14 @@
-import VendorModel from "../../models/vendor/AuthModel.js";
 import Product from "../../models/vendor/ProductModel.js";
 import Banner from "../../models/user/Banner.js";
-import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
+import { findStoreOwner, storeOwnerProductFilter } from "../../Services/StoreOwner.js";
 
-const resolveStorefront = async (req) => {
-  const hostname = normalizeStorefrontHost(req.headers.origin || req.headers.host);
-  if (!hostname) return null;
-
-  return VendorModel.findOne({ storefrontDomains: hostname, isVerified: true })
-    .select("businessName")
-    .lean();
-};
+const resolveStorefront = () => findStoreOwner().lean();
 
 export const getStorefront = async (req, res) => {
   try {
-    const vendor = await resolveStorefront(req);
+    const vendor = await resolveStorefront();
     if (!vendor) {
-      return res.status(404).json({ success: false, message: "Storefront not found" });
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
     }
 
     return res.status(200).json({
@@ -30,12 +22,12 @@ export const getStorefront = async (req, res) => {
 
 export const getStorefrontProducts = async (req, res) => {
   try {
-    const vendor = await resolveStorefront(req);
+    const vendor = await resolveStorefront();
     if (!vendor) {
-      return res.status(404).json({ success: false, message: "Storefront not found" });
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
     }
 
-    const products = await Product.find({ vendorId: vendor._id, status: "active" })
+    const products = await Product.find(storeOwnerProductFilter(vendor._id))
       .populate("vendorId", "businessName")
       .lean();
     return res.status(200).json({
@@ -61,12 +53,14 @@ export const getStorefrontProducts = async (req, res) => {
 
 export const getStorefrontBanners = async (req, res) => {
   try {
-    const vendor = await resolveStorefront(req);
-    const query = vendor ? { vendorId: vendor._id } : {};
-    const banners = await Banner.find(query)
+    const vendor = await resolveStorefront();
+    if (!vendor) {
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+    }
+    const banners = await Banner.find({ vendorId: vendor._id })
       .populate({
         path: "productId",
-        match: { status: "active" },
+        match: storeOwnerProductFilter(vendor._id),
         select: "name status image pricing discount stockQuantity",
       })
       .populate("vendorId", "businessName")

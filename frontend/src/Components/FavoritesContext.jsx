@@ -2,8 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import axios from "axios";
 import FavoritesContext from "./FavoritesStore";
+import { API_ORIGIN } from "../utils/productsApi";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
 const getAuthConfig = () => ({
   headers: {
@@ -40,7 +40,7 @@ export const FavoritesProvider = () => {
     setIsLoading(true);
     setErrorMessage("");
     try {
-      const response = await axios.get(`${API_URL}/profile/favorites`, getAuthConfig());
+      const response = await axios.get(`${API_ORIGIN}/profile/favorites`, getAuthConfig());
       setProducts(Array.isArray(response.data.favorites) ? response.data.favorites : []);
     } catch (error) {
       if (!handleUnauthorized(error)) {
@@ -81,9 +81,9 @@ export const FavoritesProvider = () => {
     setErrorMessage("");
     try {
       if (wasFavorite) {
-        await axios.delete(`${API_URL}/profile/favorites/${productId}`, getAuthConfig());
+        await axios.delete(`${API_ORIGIN}/profile/favorites/${productId}`, getAuthConfig());
       } else {
-        await axios.post(`${API_URL}/profile/favorites/${productId}`, {}, getAuthConfig());
+        await axios.post(`${API_ORIGIN}/profile/favorites/${productId}`, {}, getAuthConfig());
       }
 
       setProducts((current) =>
@@ -111,7 +111,7 @@ export const FavoritesProvider = () => {
     markPending(normalizedId, true);
     setErrorMessage("");
     try {
-      await axios.delete(`${API_URL}/profile/favorites/${normalizedId}`, getAuthConfig());
+      await axios.delete(`${API_ORIGIN}/profile/favorites/${normalizedId}`, getAuthConfig());
       setProducts((current) =>
         current.filter((product) => String(product._id) !== normalizedId),
       );

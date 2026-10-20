@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { apiUrl } from "../../config/api.js";
 import {
   CAlert, CButton, CCard, CCardBody, CCardHeader, CCol, CForm, CFormInput,
   CFormLabel, CFormSelect, CFormTextarea, CImage, CRow, CSpinner,
 } from "@coreui/react";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 const initialForm = { title: "", highlighted: "", productId: "", buttonText: "Shop Now" };
 const imageTypes = ["image/png", "image/jpeg", "image/webp"];
 
@@ -25,8 +25,8 @@ const VendorBannerForm = () => {
     const token = localStorage.getItem("vendorToken");
     const headers = { Authorization: `Bearer ${token}` };
     Promise.all([
-      axios.get(`${API_URL}/vendor/products/getAllProducts`, { headers }),
-      axios.get(`${API_URL}/vendor/banner`, { headers }),
+      axios.get(apiUrl("vendor/products/getAllProducts"), { headers }),
+      axios.get(apiUrl("vendor/banner"), { headers }),
     ]).then(([productResponse, bannerResponse]) => {
       const list = (productResponse.data.products || []).filter((product) => product.status === "active");
       const saved = bannerResponse.data.banner;
@@ -91,7 +91,7 @@ const VendorBannerForm = () => {
       payload.append("buttonText", form.buttonText);
       if (file) payload.append("image", file);
       const token = localStorage.getItem("vendorToken");
-      const response = await axios.post(`${API_URL}/vendor/banner`, payload, {
+      const response = await axios.post(apiUrl("vendor/banner"), payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setBanner(response.data.banner);

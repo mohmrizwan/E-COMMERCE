@@ -4,8 +4,8 @@ import { useCart } from "../Components/CartContext";
 import CheckoutAddress from "../Components/Checkout.jsx/Address";
 import Payment from "../Components/Checkout.jsx/Payment";
 import Confirmation from "../Components/Checkout.jsx/Confirmation";
-
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
+import { resolveRazorpayKeyId } from "../../../shared/razorpayKeyId.mjs";
+import { API_ORIGIN } from "../utils/productsApi";
 
 const Checkout = () => {
   const [step, setStep] = useState(1);
@@ -28,7 +28,7 @@ const Checkout = () => {
         quantity: item.quantity,
       })));
       const response = await axios.post(
-        `${API_URL}/payment/get-payment`,
+        `${API_ORIGIN}/payment/get-payment`,
         {
           items: cart.map((item) => ({
             productId: item.productId,
@@ -46,14 +46,21 @@ const Checkout = () => {
       );
 
       const checkout = response.data.checkout;
+      const razorpayOrder = {
+        ...response.data.data,
+        keyId: resolveRazorpayKeyId({
+          backendKeyId: response.data.data?.keyId,
+          frontendKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
+        }),
+      };
       console.info("[checkout:server-response]", {
         subtotal: checkout.subtotalAmount,
         shipping: checkout.shippingAmount,
         finalTotal: checkout.finalTotal,
-        razorpayAmount: response.data.data?.amount,
-        razorpayAmountRupees: Number(response.data.data?.amount) / 100,
+        razorpayAmount: razorpayOrder.amount,
+        razorpayAmountRupees: Number(razorpayOrder.amount) / 100,
       });
-      if (Number(response.data.data?.amount) !== Math.round(checkout.finalTotal * 100)) {
+      if (Number(razorpayOrder.amount) !== Math.round(checkout.finalTotal * 100)) {
         throw new Error("Checkout total does not match the Razorpay order amount. Please retry.");
       }
       const items = checkout.items.map((item) => {
@@ -77,7 +84,7 @@ const Checkout = () => {
         shippingCourierCompanyId: checkout.shippingCourierCompanyId,
         shippingCourierName: checkout.shippingCourierName,
         estimatedDelivery: checkout.estimatedDelivery,
-        razorpayOrder: response.data.data,
+        razorpayOrder,
       });
       setStep(2);
     } catch (error) {

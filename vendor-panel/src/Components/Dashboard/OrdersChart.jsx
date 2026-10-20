@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { CChartBar } from "@coreui/react-chartjs";
 import axios from "axios";
-const API_URL ="https://ecommerceba-6dtt.onrender.com";
+import { apiUrl } from "../../config/api.js";
 
 const OrdersChart = () => {
   const [ordersByStatus, setOrdersByStatus] = useState([]);
@@ -10,7 +10,7 @@ const OrdersChart = () => {
     const getOrdersByStatus = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/dashboard/order-status`,
+          apiUrl("dashboard/order-status"),
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,

@@ -17,6 +17,15 @@ import {
   calculateShipmentParcel,
   calculateVendorMerchandiseValue,
 } from "../../Services/ShipmentParcel.js";
+import {
+  getEligibleOrderItemsForShipment,
+  isStaleCreatingReservation,
+  reconcileShipmentReservation,
+  saveShipmentReservationForPaidOrder,
+  validateShiprocketCourierAssignment,
+  validateShiprocketPickupResponse,
+  SHIPROCKET_CREATING_STALE_AFTER_MS,
+} from "../../Services/ShiprocketShipmentSafety.js";
 
 const findVendorShipment = (shipOrderId, vendorId) => {
   const query = { vendorId };
@@ -149,20 +158,11 @@ export const acceptOrder = async (req, res) => {
       });
     }
 
-    const vendorItems = existingOrder.items.filter(
-      (item) => item.vendorId.toString() === vendorId.toString(),
-    );
-
-    if (vendorItems.length === 0) {
-      return res.status(403).json({
-        message: "You are not authorized to accept this order",
-      });
-    }
-
-    if (existingOrder.status === "Cancelled") {
-      return res.status(400).json({
-        message: "Order cannot be accepted",
-      });
+    let vendorItems;
+    try {
+      vendorItems = getEligibleOrderItemsForShipment(existingOrder, vendorId);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message });
     }
 
     const existingVendorShipment = await shipOrder.findOne({
@@ -256,7 +256,11 @@ export const acceptOrder = async (req, res) => {
       status: "CREATING",
     });
     try {
-      await shipmentReservation.save();
+      await saveShipmentReservationForPaidOrder({
+        order: existingOrder,
+        vendorId,
+        reservation: shipmentReservation,
+      });
     } catch (error) {
       if (error.code === 11000) {
         return res.status(409).json({
@@ -340,11 +344,13 @@ export const acceptOrder = async (req, res) => {
         Number(courierCompanyId),
         vendorId,
       );
-      assignmentData =
-        assignment.response?.data ||
-        assignment.data ||
-        assignment.response ||
-        assignment;
+      try {
+        assignmentData = validateShiprocketCourierAssignment(
+          assignment,
+        );
+      } catch (error) {
+        return res.status(502).json({ success: false, message: error.message });
+      }
     }
 
     const awbCode = assignmentData.awb_code || shiprocketOrder.awb_code;
@@ -354,10 +360,10 @@ export const acceptOrder = async (req, res) => {
         courierCompanyId,
     );
 
-    if (!awbCode || assignedCourierCompanyId !== courierCompanyId) {
+    if (!awbCode) {
       return res.status(502).json({
         success: false,
-        message: "Shiprocket could not assign the configured courier and AWB",
+        message: "Shiprocket could not assign an AWB",
       });
     }
 
@@ -414,40 +420,58 @@ export const reconcileUnknownShipment = async (req, res) => {
   try {
     const shipment = await findVendorShipment(req.params.shipOrderId, req.vendor._id);
     if (!shipment) return res.status(404).json({ message: "Shipment not found" });
-    if (shipment.status !== "CREATION_UNKNOWN") {
-      return res.status(409).json({ message: "Only an unknown shipment creation can be reconciled" });
+    if (shipment.status === "CREATING" && !isStaleCreatingReservation(shipment)) {
+      return res.status(409).json({
+        message: `Shipment creation is still in progress. Retry reconciliation after ${Math.ceil(SHIPROCKET_CREATING_STALE_AFTER_MS / 60000)} minutes.`,
+      });
+    }
+    if (shipment.status !== "CREATION_UNKNOWN" && shipment.status !== "CREATING") {
+      return res.status(409).json({ message: "Only unresolved shipment creation can be reconciled" });
     }
 
     const order = await orderModel.findById(shipment.orderId);
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    const result = await getShiprocketOrderByReference(String(order._id), req.vendor._id);
-    if (result.matchCount !== 1 || !result.shipment?.shipmentId) {
+    const recovery = await reconcileShipmentReservation({
+      Shipment: shipOrder,
+      shipment,
+      vendorId: req.vendor._id,
+      orderReference: String(order._id),
+      lookupOrder: getShiprocketOrderByReference,
+    });
+    if (recovery.state === "still_creating") {
       return res.status(409).json({
         success: false,
-        message: result.matchCount > 1
-          ? "Multiple Shiprocket orders match this reference; manual reconciliation is required"
-          : "No unique Shiprocket shipment was found. The reservation remains blocked and no new shipment was submitted.",
+        message: "Shipment creation is still in progress. Reconciliation can be retried after the reservation is stale.",
       });
     }
-
-    shipment.shiprocketOrderId = result.shipment.orderId;
-    shipment.shiprocketShipmentId = result.shipment.shipmentId;
-    shipment.awbCode = result.shipment.awbCode;
-    if (result.shipment.courierCompanyId) {
-      shipment.courierCompanyId = result.shipment.courierCompanyId;
+    if (recovery.state === "found" || recovery.state === "already_changed") {
+      const recoveredShipment = recovery.shipment;
+      if (recovery.state === "already_changed" &&
+          (!recoveredShipment || ["CREATING", "CREATION_UNKNOWN"].includes(recoveredShipment.status))) {
+        return res.status(409).json({
+          success: false,
+          unresolved: true,
+          message: "Shipment reconciliation is still unresolved. Check Shiprocket manually; do not submit another shipment.",
+          shipment: recoveredShipment,
+        });
+      }
+      if (recoveredShipment?.awbCode) await refreshMarketplaceOrderStatus(order);
+      return res.status(200).json({
+        success: true,
+        message: recoveredShipment?.awbCode
+          ? "Existing Shiprocket shipment reconciled with its AWB"
+          : "Existing Shiprocket shipment found; continue with courier and AWB assignment",
+        shipment: recoveredShipment,
+      });
     }
-    if (result.shipment.courierName) shipment.courierName = result.shipment.courierName;
-    shipment.status = shipment.awbCode ? "AWB_ASSIGNED" : "NEW";
-    await shipment.save();
-
-    if (shipment.awbCode) await refreshMarketplaceOrderStatus(order);
-    return res.status(200).json({
-      success: true,
-      message: shipment.awbCode
-        ? "Existing Shiprocket shipment reconciled with its AWB"
-        : "Existing Shiprocket shipment found; continue with courier and AWB assignment",
-      shipment,
+    return res.status(recovery.lookupFailed ? 503 : 409).json({
+      success: false,
+      unresolved: true,
+      message: recovery.lookupFailed
+        ? "Shiprocket lookup could not confirm whether shipment creation succeeded. The reservation remains unresolved; do not create another shipment. Retry reconciliation or resolve it manually in Shiprocket."
+        : "No unique exact Shiprocket order reference was found. The reservation remains unresolved; do not create another shipment. Retry reconciliation or resolve it manually in Shiprocket.",
+      shipment: recovery.shipment,
     });
   } catch (error) {
     console.error("Shiprocket reservation reconciliation failed", {
@@ -478,6 +502,13 @@ export const getAvailableCouriers = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
+    let vendorItems;
+    try {
+      vendorItems = getEligibleOrderItemsForShipment(order, vendorId);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message });
+    }
+
     const pickupPostcode = String(
       shipment.pickupPostcode || req.vendor.pickupAddress?.pincode || "",
     ).trim();
@@ -500,7 +531,7 @@ export const getAvailableCouriers = async (req, res) => {
 
     let parcel;
     try {
-      parcel = calculateShipmentParcel(order.items.filter((item) => item.vendorId.toString() === vendorId.toString()));
+      parcel = calculateShipmentParcel(vendorItems);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
@@ -576,17 +607,23 @@ export const assignCourier = async (req, res) => {
       return res.status(404).json({ message: "Shipment not found" });
     }
 
+    const order = await orderModel.findById(shipment.orderId).populate("items.productId");
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+    let vendorItems;
+    try {
+      vendorItems = getEligibleOrderItemsForShipment(order, req.vendor._id);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message });
+    }
+
     if (shipment.awbCode) {
       return res.status(200).json({
         success: true,
         message: "Courier and AWB are already assigned",
         shipment,
       });
-    }
-
-    const order = await orderModel.findById(shipment.orderId).populate("items.productId");
-    if (!order) {
-      return res.status(404).json({ message: "Order not found" });
     }
 
     const pickupPostcode = String(
@@ -604,7 +641,7 @@ export const assignCourier = async (req, res) => {
 
     let parcel;
     try {
-      parcel = calculateShipmentParcel(order.items.filter((item) => item.vendorId.toString() === req.vendor._id.toString()));
+      parcel = calculateShipmentParcel(vendorItems);
     } catch (error) {
       return res.status(400).json({ message: error.message });
     }
@@ -659,23 +696,19 @@ export const assignCourier = async (req, res) => {
       Number(requestedCourierCompanyId),
       req.vendor._id,
     );
-    const assignmentData =
-      assignment.response?.data ||
-      assignment.data ||
-      assignment.response ||
-      assignment;
-
-    if (!assignmentData.awb_code) {
+    let assignmentData;
+    try {
+      assignmentData = validateShiprocketCourierAssignment(
+        assignment,
+      );
+    } catch (error) {
       return res.status(502).json({
-        message: "Shiprocket did not return an AWB code",
-        error: assignment,
+        message: error.message,
       });
     }
 
     shipment.awbCode = String(assignmentData.awb_code);
-    shipment.courierCompanyId = String(
-      assignmentData.courier_company_id || requestedCourierCompanyId,
-    );
+    shipment.courierCompanyId = String(assignmentData.courier_company_id);
     shipment.courierName = assignmentData.courier_name || "";
     shipment.status = "AWB_ASSIGNED";
     await shipment.save();
@@ -731,14 +764,10 @@ export const markOrderProcessing = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const hasVendorItems = order.items.some(
-      (item) => item.vendorId.toString() === req.vendor._id.toString(),
-    );
-
-    if (!hasVendorItems) {
-      return res
-        .status(403)
-        .json({ message: "You do not own items in this order" });
+    try {
+      getEligibleOrderItemsForShipment(order, req.vendor._id);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message });
     }
 
     const shipment = await shipOrder.findOne({
@@ -785,14 +814,10 @@ export const shipVendorOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    const hasVendorItems = order.items.some(
-      (item) => item.vendorId.toString() === req.vendor._id.toString(),
-    );
-
-    if (!hasVendorItems) {
-      return res
-        .status(403)
-        .json({ message: "You do not own items in this order" });
+    try {
+      getEligibleOrderItemsForShipment(order, req.vendor._id);
+    } catch (error) {
+      return res.status(error.status || 400).json({ message: error.message });
     }
 
     const shipment = await shipOrder.findOne({
@@ -821,14 +846,9 @@ export const shipVendorOrder = async (req, res) => {
       req.vendor._id,
     );
 
-    if (
-      pickupResponse.pickup_status === 0 ||
-      pickupResponse.pickup_status === false ||
-      pickupResponse.status === false ||
-      pickupResponse.status === "ERROR"
-    ) {
+    if (!validateShiprocketPickupResponse(pickupResponse)) {
       return res.status(502).json({
-        message: "Shiprocket could not schedule pickup",
+        message: "Shiprocket did not confirm a scheduled pickup",
         error: pickupResponse,
       });
     }

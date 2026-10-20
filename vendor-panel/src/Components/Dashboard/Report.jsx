@@ -15,8 +15,8 @@ import {
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useEffect } from "react";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
 function Report() {
   const [message, setMessage] = useState("");
@@ -33,7 +33,7 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(`${API_URL}/dashboard/income`, {
+      const response = await axios.get(apiUrl("dashboard/income"), {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },
@@ -50,7 +50,7 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(`${API_URL}/dashboard/orders`, {
+      const response = await axios.get(apiUrl("dashboard/orders"), {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },
@@ -68,7 +68,7 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(`${API_URL}/dashboard/products`, {
+      const response = await axios.get(apiUrl("dashboard/products"), {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },
@@ -86,7 +86,7 @@ function Report() {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(`${API_URL}/dashboard/customers`, {
+      const response = await axios.get(apiUrl("dashboard/customers"), {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },

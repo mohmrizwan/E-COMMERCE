@@ -1,34 +1,28 @@
-import Razorpay from "razorpay";
 import crypto from "crypto";
 import productModel from "../../models/vendor/ProductModel.js";
 import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
 import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
 import { calculateShipmentParcel } from "../../Services/ShipmentParcel.js";
-import { confirmRazorpayPayment } from "../../utils/RazorpayPaymentVerification.js";
-import { normalizeStorefrontHost } from "../../Services/StorefrontDomain.js";
 import {
-  buildRouteTransferAllocations,
-  RouteTransferConfigurationError,
-} from "../../Services/RouteTransferAllocation.js";
+  confirmRazorpayPayment,
+  isVerifiedPaymentRetry,
+  verifyRazorpayCheckoutSignature,
+} from "../../utils/RazorpayPaymentVerification.js";
+import { findStoreOwner } from "../../Services/StoreOwner.js";
+import {
+  createRazorpayClient,
+  createStandardRazorpayOrder,
+  RazorpayConfigurationError,
+} from "../../Services/StandardRazorpay.js";
 import {
   assertCartStockAvailable,
   normalizeCartItems,
 } from "../../utils/CartValidation.js";
 
-const razorpayInstance = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_SECRET,
-});
-
 export const order = async (req, res) => {
   try {
-    if (String(process.env.RAZORPAY_ROUTE_ENABLED || "").trim().toLowerCase() !== "true") {
-      return res.status(503).json({
-        code: "RAZORPAY_ROUTE_DISABLED",
-        message: "Marketplace checkout is disabled because RAZORPAY_ROUTE_ENABLED is not true in the backend deployment. Enable it only after Razorpay Route approval, vendor linked-account activation, webhook setup, and sandbox verification.",
-      });
-    }
+    const { client: razorpayInstance, keyId } = createRazorpayClient();
 
     const userId = req.user.id || req.user.userId || req.user._id;
     const { items, shippingAddress } = req.body;
@@ -62,24 +56,24 @@ export const order = async (req, res) => {
     };
 
     const checkoutItems = [];
-    const storefrontHost = normalizeStorefrontHost(req.headers.origin || req.headers.host);
-    const storefrontVendor = storefrontHost
-      ? await VendorModel.findOne({ storefrontDomains: storefrontHost, isVerified: true }).select("_id")
-      : null;
+    const storeOwner = await findStoreOwner();
+    if (!storeOwner) {
+      return res.status(503).json({ message: "Store owner is not configured" });
+    }
     const vendorSubtotalsPaise = new Map();
     const vendorProducts = new Map();
     let subtotalPaise = 0;
 
     for (const item of normalizedItems) {
       const quantity = item.quantity;
-      const product = await productModel.findById(item.productId);
+      const product = await productModel.findOne({
+        _id: item.productId,
+        vendorId: storeOwner._id,
+        status: "active",
+      });
       if (!product || product.status !== "active") {
         return res.status(400).json({ message: "A cart product is unavailable" });
       }
-      if (storefrontVendor && String(product.vendorId) !== String(storefrontVendor._id)) {
-        return res.status(400).json({ message: "This storefront can only check out its own products" });
-      }
-
       try {
         assertCartStockAvailable(product.name, quantity, product.stockQuantity);
       } catch {
@@ -128,13 +122,10 @@ export const order = async (req, res) => {
 
     const subtotalAmount = subtotalPaise / 100;
     const vendorShippingQuotes = [];
-    const vendorConfigs = new Map();
     let shippingPaise = 0;
 
     for (const [vendorId, vendorSubtotalPaise] of vendorSubtotalsPaise) {
-      const vendor = await VendorModel.findById(vendorId).select(
-        "pickupAddress integrations.razorpay",
-      );
+      const vendor = await VendorModel.findById(vendorId).select("pickupAddress");
       const pickupAddress = vendor?.pickupAddress;
       const pickupPostcode = String(pickupAddress?.pincode || "").trim();
       const pickupLocationName = String(
@@ -146,14 +137,6 @@ export const order = async (req, res) => {
           message: "A vendor for this cart could not be found",
         });
       }
-
-      vendorConfigs.set(String(vendor._id), {
-        linkedAccountId: vendor.integrations?.razorpay?.linkedAccountId,
-        enabled: vendor.integrations?.razorpay?.enabled === true &&
-          vendor.integrations?.razorpay?.accountStatus === "created" &&
-          vendor.integrations?.razorpay?.productActivationStatus === "activated" &&
-          vendor.integrations?.razorpay?.settlementVerificationStatus === "verified",
-      });
 
       if (
         !pickupLocationName ||
@@ -205,37 +188,16 @@ export const order = async (req, res) => {
       : null;
     const amountPaise = subtotalPaise + shippingPaise;
     const finalTotal = amountPaise / 100;
-    let routeAllocations;
-    try {
-      routeAllocations = buildRouteTransferAllocations({
-        vendorSubtotalsPaise,
-        vendorShippingQuotes,
-        vendorConfigs,
-        orderAmountPaise: amountPaise,
-      });
-    } catch (error) {
-      if (!(error instanceof RouteTransferConfigurationError)) throw error;
-      return res.status(error.status).json({ message: error.message });
-    }
     console.info("[checkout:totals]", {
       subtotal: subtotalPaise / 100,
       shipping: shippingPaise / 100,
       finalTotal,
       vendorShippingQuotes,
     });
-    const option = {
-      amount: amountPaise,
-      currency: "INR",
+    const razorpayOrder = await createStandardRazorpayOrder(razorpayInstance, {
+      amountPaise,
       receipt: crypto.randomBytes(10).toString("hex"),
-      partial_payment: false,
-      transfers: routeAllocations.map(({ linkedAccountId, amountPaise: transferAmount }) => ({
-        account: linkedAccountId,
-        amount: transferAmount,
-        currency: "INR",
-      })),
-    };
-
-    const razorpayOrder = await razorpayInstance.orders.create(option);
+    });
     console.info("[checkout:razorpay-order]", {
       orderId: razorpayOrder.id,
       requestedAmountPaise: amountPaise,
@@ -249,32 +211,6 @@ export const order = async (req, res) => {
     ) {
       return res.status(502).json({ message: "Payment provider returned an invalid order" });
     }
-    const createdTransfers = Array.isArray(razorpayOrder.transfers)
-      ? razorpayOrder.transfers
-      : [];
-    if (createdTransfers.length !== routeAllocations.length) {
-      console.error("Razorpay Route order response omitted expected transfers", {
-        orderId: razorpayOrder.id,
-        expectedTransferCount: routeAllocations.length,
-        returnedTransferCount: createdTransfers.length,
-      });
-      return res.status(502).json({ message: "Payment provider returned an incomplete marketplace order" });
-    }
-    const persistedAllocations = routeAllocations.map((allocation) => {
-      const transfer = createdTransfers.find((candidate) =>
-        candidate.recipient === allocation.linkedAccountId &&
-        candidate.amount === allocation.amountPaise,
-      );
-      if (!transfer?.id) {
-        throw new Error("Razorpay Route response did not match the expected vendor allocations");
-      }
-      return {
-        ...allocation,
-        transferId: transfer.id,
-        transferStatus: transfer.status || "created",
-        settlementStatus: transfer.settlement_status || "pending",
-      };
-    });
     await Payment.create({
       razorpay_order_id: razorpayOrder.id,
       userId,
@@ -290,7 +226,6 @@ export const order = async (req, res) => {
       shippingWeight: primaryQuote?.weight || 0,
       estimatedDelivery: primaryQuote?.estimatedDelivery || "",
       vendorShippingQuotes,
-      vendorAllocations: persistedAllocations,
     });
 
     return res.status(201).json({
@@ -298,6 +233,7 @@ export const order = async (req, res) => {
         id: razorpayOrder.id,
         amount: razorpayOrder.amount,
         currency: razorpayOrder.currency,
+        keyId,
       },
       checkout: {
         items: checkoutItems,
@@ -311,6 +247,9 @@ export const order = async (req, res) => {
       },
     });
   } catch (error) {
+    if (error instanceof RazorpayConfigurationError) {
+      return res.status(error.status).json({ message: error.message, code: error.code });
+    }
     console.error("Create Razorpay Order Error", {
       status: error.response?.status,
       code: error.code,
@@ -334,28 +273,8 @@ export const verify = async (req, res) => {
       typeof razorpay_payment_id !== "string" ||
       !razorpay_payment_id ||
       typeof razorpay_signature !== "string" ||
-      !/^[a-f\d]{64}$/i.test(razorpay_signature) ||
-      !process.env.RAZORPAY_SECRET
+      !/^[a-f\d]{64}$/i.test(razorpay_signature)
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "Payment verification failed",
-      });
-    }
-
-    const sign = razorpay_order_id + "|" + razorpay_payment_id;
-
-    const expectedSign = crypto
-      .createHmac("sha256", process.env.RAZORPAY_SECRET)
-      .update(sign)
-      .digest();
-    const providedSign = Buffer.from(razorpay_signature, "hex");
-
-    const isAuthenticated =
-      providedSign.length === expectedSign.length &&
-      crypto.timingSafeEqual(expectedSign, providedSign);
-
-    if (!isAuthenticated) {
       return res.status(400).json({
         success: false,
         message: "Payment verification failed",
@@ -374,21 +293,34 @@ export const verify = async (req, res) => {
       });
     }
 
-    if (payment.paymentStatus === "Paid") {
-      if (payment.razorpay_payment_id !== razorpay_payment_id) {
-        return res.status(409).json({
-          success: false,
-          message: "A different payment is already recorded for this order",
-        });
-      }
+    const { client: razorpayInstance, keySecret } = createRazorpayClient();
+    const isAuthenticated = verifyRazorpayCheckoutSignature({
+      payment,
+      requestOrderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      signature: razorpay_signature,
+      secret: keySecret,
+    });
+    if (!isAuthenticated) {
+      return res.status(400).json({ success: false, message: "Payment verification failed" });
+    }
+
+    if (isVerifiedPaymentRetry(payment, razorpay_payment_id)) {
       return res.status(200).json({
         success: true,
         message: "Payment verified successfully",
       });
     }
+    if (payment.paymentStatus === "Paid") {
+      return res.status(409).json({
+        success: false,
+        message: "A different payment is already recorded for this order",
+      });
+    }
 
     if (
       payment.paymentStatus !== "Pending" ||
+      payment.razorpay_order_id !== razorpay_order_id ||
       !Number.isSafeInteger(payment.amountPaise) ||
       payment.amountPaise <= 0
     ) {
@@ -429,10 +361,7 @@ export const verify = async (req, res) => {
 
     if (update.modifiedCount !== 1) {
       const latest = await Payment.findById(payment._id);
-      if (
-        latest?.paymentStatus !== "Paid" ||
-        latest.razorpay_payment_id !== razorpay_payment_id
-      ) {
+      if (!isVerifiedPaymentRetry(latest, razorpay_payment_id)) {
         return res.status(409).json({
           success: false,
           message: "Payment verification is already being processed",
@@ -445,6 +374,13 @@ export const verify = async (req, res) => {
       message: "Payment verified successfully",
     });
   } catch (error) {
+    if (error instanceof RazorpayConfigurationError) {
+      return res.status(error.status).json({
+        success: false,
+        message: error.message,
+        code: error.code,
+      });
+    }
     console.error("Razorpay verification rejected", error.code || error.name);
 
     return res.status(error.status || 500).json({

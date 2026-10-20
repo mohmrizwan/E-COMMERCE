@@ -21,6 +21,7 @@ import ProductLoader from "../ProductLoader";
 import Alert from "@mui/material/Alert";
 import axios from "axios";
 import Snackbar from "@mui/material/Snackbar";
+import { apiUrl } from "../../config/api.js";
 
 const ProductTable = ({ search, category, status }) => {
   const [loading, setLoading] = useState(false);
@@ -48,7 +49,7 @@ const ProductTable = ({ search, category, status }) => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        "https://ecommerceba-6dtt.onrender.com/vendor/products/getAllProducts",
+        apiUrl("vendor/products/getAllProducts"),
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -80,7 +81,7 @@ const ProductTable = ({ search, category, status }) => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.delete(
-        `https://ecommerceba-6dtt.onrender.com/vendor/products/delete/${productId}`,
+        apiUrl(`vendor/products/delete/${productId}`),
         {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { apiUrl } from "../../config/api.js";
 import {
   CTable,
   CTableHead,
@@ -10,7 +11,6 @@ import {
   CBadge,
 } from "@coreui/react";
 
-const API_URL ="https://ecommerceba-6dtt.onrender.com";
 
 const RecentOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -19,7 +19,7 @@ const RecentOrders = () => {
     const getRecentOrders = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/dashboard/recent-orders`,
+          apiUrl("dashboard/recent-orders"),
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,

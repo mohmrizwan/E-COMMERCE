@@ -6,8 +6,8 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Fade from "@mui/material/Fade";
 import Snackbar from "@mui/material/Snackbar";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 
 const VendorForgotPassword = () => {
   const navigate = useNavigate();
@@ -18,7 +18,7 @@ const VendorForgotPassword = () => {
     setErrorMessage("");
 
     try {
-      const response = await axios.post(`${API_URL}/vendor/forgot-password`, values);
+      const response = await axios.post(apiUrl("vendor/forgot-password"), values);
       navigate("/vendor/reset-verify", {
         state: { email: values.email.trim().toLowerCase() },
       });

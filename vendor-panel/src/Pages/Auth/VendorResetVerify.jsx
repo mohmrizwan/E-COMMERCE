@@ -3,8 +3,8 @@ import { useForm } from "react-hook-form";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import AuthLayout from "../../Components/Auth/AuthLayout";
 import axios from "axios";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 
 const VendorResetVerify = () => {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ const VendorResetVerify = () => {
     setErrorMessage("");
 
     try {
-      await axios.post(`${API_URL}/vendor/verify-reset-otp`, {
+      await axios.post(apiUrl("vendor/verify-reset-otp"), {
         email,
         otp: values.otp,
       });

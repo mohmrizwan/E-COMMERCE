@@ -22,6 +22,7 @@ import { cilSearch } from "@coreui/icons";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { apiUrl } from "../../config/api.js";
 
 const Transactions = () => {
   const [search, setSearch] = useState("");
@@ -41,7 +42,7 @@ const Transactions = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        "https://ecommerceba-6dtt.onrender.com/vendor/transactions/myTransactions",
+        apiUrl("vendor/transactions/myTransactions"),
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,

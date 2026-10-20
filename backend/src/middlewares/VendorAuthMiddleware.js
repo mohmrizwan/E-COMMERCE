@@ -1,7 +1,12 @@
 import jwt from "jsonwebtoken";
 import VendorModel from "../models/vendor/AuthModel.js"
+import { matchesConfiguredStoreOwnerId } from "../Services/StoreOwner.js";
 
-const VendorAuthMiddleware = async (req, res, next) => {
+export const createVendorAuthMiddleware = ({
+  VendorModel,
+  jwt,
+  getStoreOwnerId = () => process.env.STORE_OWNER_ID,
+}) => async (req, res, next) => {
   try {
     // Get authorization header
     const authHeader = req.headers.authorization;
@@ -19,7 +24,11 @@ const VendorAuthMiddleware = async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Find vendor
+    if (!matchesConfiguredStoreOwnerId(decoded.userId, getStoreOwnerId())) {
+      return res.status(401).json({ success: false, message: "Unauthorized" });
+    }
+
+    // Resolve the account from the verified token's database ID.
     const vendor = await VendorModel.findById(decoded.userId).select(
       "-password -otp -otpExpiresAt",
     );
@@ -73,5 +82,7 @@ const VendorAuthMiddleware = async (req, res, next) => {
     });
   }
 };
+
+const VendorAuthMiddleware = createVendorAuthMiddleware({ VendorModel, jwt });
 
 export default VendorAuthMiddleware;

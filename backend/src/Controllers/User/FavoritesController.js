@@ -1,13 +1,25 @@
 import FavoritesModel from "../../models/user/FavioritesModel.js";
 import ProductModel from "../../models/vendor/ProductModel.js";
+import { findStoreOwner, storeOwnerProductFilter } from "../../Services/StoreOwner.js";
 
 export const addToFavorite = async (req, res) => {
   try {
     const userId = req.user.id;
     const { productId } = req.params;
+    const owner = await findStoreOwner();
 
-    // Check product
-    const product = await ProductModel.findById(productId);
+    if (!owner) {
+      return res.status(503).json({
+        success: false,
+        message: "Store owner is not configured",
+      });
+    }
+
+    // Only products in this deployment's active storefront may be favorited.
+    const product = await ProductModel.findOne({
+      _id: productId,
+      ...storeOwnerProductFilter(owner._id),
+    });
 
     if (!product) {
       return res.status(404).json({
@@ -77,10 +89,19 @@ export const addToFavorite = async (req, res) => {
 export const getFavorites = async (req, res) => {
   try {
     const userId = req.user.id;
+    const owner = await findStoreOwner();
 
-    const favorites = await FavoritesModel.findOne({ userId }).populate(
-      "favorites",
-    );
+    if (!owner) {
+      return res.status(503).json({
+        success: false,
+        message: "Store owner is not configured",
+      });
+    }
+
+    const favorites = await FavoritesModel.findOne({ userId }).populate({
+      path: "favorites",
+      match: storeOwnerProductFilter(owner._id),
+    });
 
     if (!favorites) {
       return res.status(200).json({
@@ -91,7 +112,7 @@ export const getFavorites = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      favorites: favorites.favorites,
+      favorites: favorites.favorites.filter(Boolean),
     });
   } catch (error) {
     console.error("Get Favorites Error:", error);

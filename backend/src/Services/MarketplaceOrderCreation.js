@@ -23,6 +23,7 @@ export const createMarketplaceOrder = async ({
   Order,
   Payment,
   Product,
+  ownerId,
   userId,
   razorpayOrderId,
 }) => {
@@ -49,6 +50,14 @@ export const createMarketplaceOrder = async ({
         );
       }
 
+      if (!ownerId) {
+        throw new MarketplaceOrderCreationError(
+          "Store owner is not configured",
+          503,
+          "STORE_OWNER_NOT_CONFIGURED",
+        );
+      }
+
       if (payment.orderId) {
         const existingOrder = await Order.findById(payment.orderId).session(session);
         if (existingOrder) {
@@ -71,10 +80,14 @@ export const createMarketplaceOrder = async ({
 
       const orderItems = [];
       for (const item of normalizedItems) {
-        const product = await Product.findById(item.productId).session(session);
+        const product = await Product.findOne({
+          _id: item.productId,
+          vendorId: ownerId,
+          status: "active",
+        }).session(session);
         if (!product) {
           throw new MarketplaceOrderCreationError(
-            "A product is no longer available",
+            "A product is no longer available in this store",
             409,
             "STOCK_UNAVAILABLE",
           );
@@ -90,7 +103,12 @@ export const createMarketplaceOrder = async ({
         }
 
         const stockUpdate = await Product.updateOne(
-          { _id: product._id, stockQuantity: { $gte: item.quantity } },
+          {
+            _id: product._id,
+            vendorId: ownerId,
+            status: "active",
+            stockQuantity: { $gte: item.quantity },
+          },
           { $inc: { stockQuantity: -item.quantity } },
           { session },
         );

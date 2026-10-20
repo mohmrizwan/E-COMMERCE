@@ -3,9 +3,9 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 import Loader from "../../Components/Dotter";
+import { API_ORIGIN } from "../../utils/productsApi";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
-const addressEndpoint = `${API_URL}/profile/address`;
+const addressEndpoint = `${API_ORIGIN}/profile/address`;
 const emptyAddress = {
   type: "Home",
   name: "",

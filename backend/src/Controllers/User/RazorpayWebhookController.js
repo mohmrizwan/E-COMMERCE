@@ -4,6 +4,11 @@ import Payment from "../../models/user/Payment.js";
 import RazorpayWebhookEvent from "../../models/user/RazorpayWebhookEvent.js";
 import { getRouteTransfersForSettlement } from "../../Services/RazorpayRoute.js";
 import { verifyRazorpayWebhookSignature } from "../../utils/RazorpayWebhookSignature.js";
+import {
+  applyRazorpayPaymentEvent,
+  RazorpayPaymentEventError,
+  withWebhookEventIdempotency,
+} from "../../Services/RazorpayPaymentEvents.js";
 
 const isDuplicateKey = (error) => error?.code === 11000;
 
@@ -61,12 +66,19 @@ export const handleRazorpayWebhook = async (req, res) => {
   }
 
   const eventName = String(payload?.event || "");
-  const relevant = new Set(["transfer.processed", "transfer.failed", "settlement.processed"]);
+  const paymentEvents = new Set([
+    "payment.authorized",
+    "payment.captured",
+    "payment.failed",
+  ]);
+  const transferEvents = new Set(["transfer.processed", "transfer.failed", "settlement.processed"]);
+  const relevant = new Set([...paymentEvents, ...transferEvents]);
   if (!relevant.has(eventName)) return res.sendStatus(200);
 
   const eventId = req.get("x-razorpay-event-id") ||
     crypto.createHash("sha256").update(rawBody).digest("hex");
   let transfers = [];
+  let paymentEntity;
   if (eventName === "settlement.processed") {
     const settlementId = String(payload?.payload?.settlement?.entity?.id || "");
     if (!settlementId) return res.status(400).json({ message: "Settlement event is incomplete" });
@@ -79,25 +91,43 @@ export const handleRazorpayWebhook = async (req, res) => {
       });
       return res.status(503).json({ message: "Settlement reconciliation will be retried" });
     }
-  } else {
+  } else if (transferEvents.has(eventName)) {
     const transfer = payload?.payload?.transfer?.entity;
     if (!transfer) return res.status(400).json({ message: "Transfer event is incomplete" });
     transfers = [transfer];
+  } else {
+    paymentEntity = payload?.payload?.payment?.entity;
+    if (!paymentEntity) return res.status(400).json({ message: "Payment event is incomplete" });
   }
 
   const session = await mongoose.startSession();
   try {
-    await session.withTransaction(async () => {
+    const result = await withWebhookEventIdempotency(() => session.withTransaction(async () => {
       await RazorpayWebhookEvent.create([{ eventId, event: eventName }], { session });
-      for (const transfer of transfers) await applyTransferSnapshot(transfer, session);
+      if (paymentEvents.has(eventName)) {
+        await applyRazorpayPaymentEvent({
+          Payment,
+          eventName,
+          paymentEntity,
+          session,
+        });
+      } else {
+        for (const transfer of transfers) await applyTransferSnapshot(transfer, session);
+      }
       await RazorpayWebhookEvent.updateOne(
         { eventId },
         { $set: { processedAt: new Date() } },
         { session },
       );
-    });
+    }));
+    if (result.duplicate) {
+      return res.sendStatus(200);
+    }
     return res.sendStatus(200);
   } catch (error) {
+    if (error instanceof RazorpayPaymentEventError) {
+      return res.status(error.status).json({ message: error.message });
+    }
     if (isDuplicateKey(error)) return res.sendStatus(200);
     console.error("Razorpay Route webhook processing failed", {
       event: eventName,

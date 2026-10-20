@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { API_ORIGIN } from "../utils/productsApi";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 
 const CreateAccount = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +32,7 @@ const CreateAccount = () => {
       console.log("Form Data:", data);
 
       const response = await axios.post(
-        `${API_URL}/user/create`,
+        `${API_ORIGIN}/user/create`,
         data
       );
 

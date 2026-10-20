@@ -1,8 +1,14 @@
 import Product from "../../models/vendor/ProductModel.js";
+import { findStoreOwner, storeOwnerProductFilter } from "../../Services/StoreOwner.js";
 
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find({ status: "active" })
+    const owner = await findStoreOwner();
+    if (!owner) {
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+    }
+
+    const products = await Product.find(storeOwnerProductFilter(owner._id))
       .populate("vendorId", "businessName")
       .lean();
 
@@ -36,7 +42,14 @@ export const getAllProducts = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({ _id: req.params.id, status: "active" })
+    const owner = await findStoreOwner();
+    if (!owner) {
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+    }
+    const product = await Product.findOne({
+      _id: req.params.id,
+      ...storeOwnerProductFilter(owner._id),
+    })
       .populate("vendorId", "businessName").lean();
     if (!product) return res.status(404).json({ success: false, message: "Product not found" });
     const discount = Number(product.discount) || 0;

@@ -4,8 +4,8 @@ import { AuthShell } from "./AuthShell";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { API_ORIGIN } from "../utils/productsApi";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com";
 
 const ForgotPassword = () => {
   const [step, setStep] = useState("email");
@@ -25,7 +25,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/user/forgotPassword`,
+        `${API_ORIGIN}/user/forgotPassword`,
         { email },
       );
       setMessage(response.data.message);
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/user/verifyForgotOtp`,
+        `${API_ORIGIN}/user/verifyForgotOtp`,
         { email: email.trim().toLowerCase(), otp },
       );
       setMessage(response.data.message);
@@ -80,7 +80,7 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post(
-        `${API_URL}/user/resetPassword`,
+        `${API_ORIGIN}/user/resetPassword`,
         { email: email.trim().toLowerCase(), otp, password, confirmPassword },
       );
       setMessage(response.data.message);

@@ -4,6 +4,7 @@ import sendOtp from "../../utils/SendOtp.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import generateToken from "../../utils/generateToken.js";
+import { matchesConfiguredStoreOwnerId } from "../../Services/StoreOwner.js";
 
 export const registerVendor = async (req, res) => {
   try {
@@ -142,6 +143,7 @@ export const verifyOtp = async (req, res) => {
         message: "OTP has expired",
       });
     }
+
     vendor.isVerified = true;
     vendor.otp = null;
     vendor.otpExpiresAt = null;
@@ -227,7 +229,8 @@ export const LoginAccount = async (req, res) => {
         .json({ success: false, message: "Email and password are required" });
     }
 
-    let vendorFind = await VendorModel.findOne({ email });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    let vendorFind = await VendorModel.findOne({ email: normalizedEmail });
 
     if (!vendorFind) {
       return res.status(401).json({ message: "Invalid Email Address" });
@@ -237,6 +240,10 @@ export const LoginAccount = async (req, res) => {
       return res
         .status(403)
         .json({ success: false, message: "Please verify your email first" });
+    }
+
+    if (!matchesConfiguredStoreOwnerId(vendorFind._id, process.env.STORE_OWNER_ID)) {
+      return res.status(401).json({ message: "Invalid Email Address" });
     }
 
     const comparePassword = await bcrypt.compare(password, vendorFind.password);
@@ -267,7 +274,9 @@ export const LoginAccount = async (req, res) => {
 
 export const forgotPassword = async (req, res) => {
   try {
-    const email = String(req.body.email || "").trim().toLowerCase();
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
     const vendor = await VendorModel.findOne({ email });
 
     if (vendor) {
@@ -293,7 +302,9 @@ export const forgotPassword = async (req, res) => {
 
 export const verifyResetOtp = async (req, res) => {
   try {
-    const email = String(req.body.email || "").trim().toLowerCase();
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
     const { otp } = req.body;
     const vendor = email ? await VendorModel.findOne({ email }) : null;
 
@@ -313,7 +324,9 @@ export const verifyResetOtp = async (req, res) => {
 
 export const resetPassword = async (req, res) => {
   try {
-    const email = String(req.body.email || "").trim().toLowerCase();
+    const email = String(req.body.email || "")
+      .trim()
+      .toLowerCase();
     const { otp, password, confirmPassword } = req.body;
 
     if (!email || !otp || !password || !confirmPassword) {
@@ -357,18 +370,24 @@ export const resetPassword = async (req, res) => {
 export const getVendorPickupAddress = async (req, res) => {
   try {
     const locations = await getShiprocketPickupLocations(req.vendor._id);
-    const pickupLocations = locations.map((location) => ({
-      shiprocketLocationName: String(location.pickup_location || location.name || "").trim(),
-      address: String(location.address || location.address_1 || "").trim(),
-      city: String(location.city || "").trim(),
-      state: String(location.state || "").trim(),
-      pincode: String(location.pin_code || location.pincode || "").trim(),
-    })).filter((location) => location.shiprocketLocationName);
+    const pickupLocations = locations
+      .map((location) => ({
+        shiprocketLocationName: String(
+          location.pickup_location || location.name || "",
+        ).trim(),
+        address: String(location.address || location.address_1 || "").trim(),
+        city: String(location.city || "").trim(),
+        state: String(location.state || "").trim(),
+        pincode: String(location.pin_code || location.pincode || "").trim(),
+      }))
+      .filter((location) => location.shiprocketLocationName);
 
-    const savedPickupAddress = req.vendor.pickupAddress?.toObject?.() ||
-      req.vendor.pickupAddress || {};
+    const savedPickupAddress =
+      req.vendor.pickupAddress?.toObject?.() || req.vendor.pickupAddress || {};
     const selectedLocation = pickupLocations.find(
-      (location) => location.shiprocketLocationName === savedPickupAddress.shiprocketLocationName,
+      (location) =>
+        location.shiprocketLocationName ===
+        savedPickupAddress.shiprocketLocationName,
     );
     const currentShiprocketLocation = selectedLocation || pickupLocations[0];
     const pickupAddress = currentShiprocketLocation
@@ -390,7 +409,9 @@ export const getVendorPickupAddress = async (req, res) => {
       "pincode",
     ];
     const pickupAddressChanged = pickupFields.some(
-      (field) => String(savedPickupAddress[field] || "") !== String(pickupAddress[field] || ""),
+      (field) =>
+        String(savedPickupAddress[field] || "") !==
+        String(pickupAddress[field] || ""),
     );
     if (pickupAddressChanged) {
       req.vendor.pickupAddress = pickupAddress;
@@ -405,7 +426,10 @@ export const getVendorPickupAddress = async (req, res) => {
   } catch (error) {
     return res.status(502).json({
       success: false,
-      message: error.response?.data?.message || error.message || "Could not fetch Shiprocket pickup locations",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Could not fetch Shiprocket pickup locations",
     });
   }
 };
@@ -423,9 +447,7 @@ export const updateVendorPickupAddress = async (req, res) => {
     pincode: String(req.body?.pincode || "").trim(),
   };
 
-  if (
-    !pickupAddress.shiprocketLocationName
-  ) {
+  if (!pickupAddress.shiprocketLocationName) {
     return res.status(400).json({
       success: false,
       message:
@@ -435,33 +457,46 @@ export const updateVendorPickupAddress = async (req, res) => {
 
   try {
     const locations = await getShiprocketPickupLocations(req.vendor._id);
-    const registeredLocation = locations.find((location) =>
-      String(location.pickup_location || location.name || "").trim() === pickupAddress.shiprocketLocationName,
+    const registeredLocation = locations.find(
+      (location) =>
+        String(location.pickup_location || location.name || "").trim() ===
+        pickupAddress.shiprocketLocationName,
     );
     if (!registeredLocation) {
       return res.status(400).json({
         success: false,
-        message: "Select a pickup location registered in your Shiprocket account",
+        message:
+          "Select a pickup location registered in your Shiprocket account",
       });
     }
-    pickupAddress.address = String(registeredLocation.address || registeredLocation.address_1 || "").trim();
+    pickupAddress.address = String(
+      registeredLocation.address || registeredLocation.address_1 || "",
+    ).trim();
     pickupAddress.city = String(registeredLocation.city || "").trim();
     pickupAddress.state = String(registeredLocation.state || "").trim();
-    pickupAddress.pincode = String(registeredLocation.pin_code || registeredLocation.pincode || "").trim();
+    pickupAddress.pincode = String(
+      registeredLocation.pin_code || registeredLocation.pincode || "",
+    ).trim();
   } catch (error) {
     return res.status(502).json({
       success: false,
-      message: error.response?.data?.message || error.message || "Could not verify Shiprocket pickup location",
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Could not verify Shiprocket pickup location",
     });
   }
 
   if (
-    !pickupAddress.address || !pickupAddress.city ||
-    !pickupAddress.state || !/^\d{6}$/.test(pickupAddress.pincode)
+    !pickupAddress.address ||
+    !pickupAddress.city ||
+    !pickupAddress.state ||
+    !/^\d{6}$/.test(pickupAddress.pincode)
   ) {
     return res.status(400).json({
       success: false,
-      message: "The selected Shiprocket pickup location has an incomplete address",
+      message:
+        "The selected Shiprocket pickup location has an incomplete address",
     });
   }
 
@@ -480,7 +515,6 @@ export const updateVendorPickupAddress = async (req, res) => {
       message: "Could not save the vendor pickup address",
     });
   }
-
 };
 
 export const getVendorProfile = async (req, res) => {

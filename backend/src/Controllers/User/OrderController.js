@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import order from "../../models/user/MyOrdersModel.js";
 import Payment from "../../models/user/Payment.js";
 import productModel from "../../models/vendor/ProductModel.js";
+import { findStoreOwner } from "../../Services/StoreOwner.js";
 import { createMarketplaceOrder } from "../../Services/MarketplaceOrderCreation.js";
 
 // Create Order
@@ -16,11 +17,16 @@ export const createOrder = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ message: "Login required" });
     }
+    const storeOwner = await findStoreOwner();
+    if (!storeOwner) {
+      return res.status(503).json({ message: "Store owner is not configured" });
+    }
     const result = await createMarketplaceOrder({
       mongoose,
       Order: order,
       Payment,
       Product: productModel,
+      ownerId: storeOwner._id,
       userId,
       razorpayOrderId: razorpay_order_id,
     });

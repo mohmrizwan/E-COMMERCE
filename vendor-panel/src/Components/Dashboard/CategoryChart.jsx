@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { CChartDoughnut } from "@coreui/react-chartjs";
 import axios from "axios";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL ="https://ecommerceba-6dtt.onrender.com";
 
 const CategoryChart = () => {
   const [categories, setCategories] = useState([]);
@@ -11,7 +11,7 @@ const CategoryChart = () => {
     const getProductCategories = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/dashboard/categories`,
+          apiUrl("dashboard/categories"),
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,

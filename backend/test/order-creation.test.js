@@ -71,9 +71,19 @@ const makeFixture = () => {
     },
   };
   const Product = {
-    findById: (id) => query(async () => id === productId ? state.product : null),
+    findOne: (filter) => query(async () =>
+      filter._id === productId &&
+      filter.vendorId === state.product.vendorId &&
+      filter.status === "active"
+        ? state.product
+        : null),
     updateOne: async (filter, update) => {
-      if (filter._id !== state.product._id || state.product.stockQuantity < filter.stockQuantity.$gte) {
+      if (
+        filter._id !== state.product._id ||
+        filter.vendorId !== state.product.vendorId ||
+        filter.status !== "active" ||
+        state.product.stockQuantity < filter.stockQuantity.$gte
+      ) {
         return { modifiedCount: 0 };
       }
       state.product.stockQuantity += update.$inc.stockQuantity;
@@ -98,6 +108,7 @@ test("concurrent duplicate create-order requests link one order and decrement st
   const fixture = makeFixture();
   const input = {
     ...fixture,
+    ownerId: fixture.state.product.vendorId,
     userId,
     razorpayOrderId,
   };
@@ -112,4 +123,22 @@ test("concurrent duplicate create-order requests link one order and decrement st
   assert.equal(fixture.state.payment.orderId, fixture.state.orders[0]._id);
   assert.equal(results.filter((result) => result.wasExisting).length, 1);
   assert.equal(fixture.state.orders[0].items[0].quantity, 3);
+});
+
+test("rejects order creation when payment products do not belong to the authorized owner", async () => {
+  const fixture = makeFixture();
+
+  await assert.rejects(
+    createMarketplaceOrder({
+      ...fixture,
+      ownerId: "507f1f77bcf86cd799439099",
+      userId,
+      razorpayOrderId,
+    }),
+    (error) => error.code === "STOCK_UNAVAILABLE",
+  );
+
+  assert.equal(fixture.state.orders.length, 0);
+  assert.equal(fixture.state.product.stockQuantity, 5);
+  assert.equal(fixture.state.payment.orderId, null);
 });

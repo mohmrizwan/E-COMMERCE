@@ -1,3 +1,37 @@
+import crypto from "crypto";
+
+export const verifyRazorpayCheckoutSignature = ({
+  payment,
+  requestOrderId,
+  paymentId,
+  signature,
+  secret,
+}) => {
+  const storedOrderId = String(payment?.razorpay_order_id || "");
+  if (
+    !storedOrderId ||
+    requestOrderId !== storedOrderId ||
+    typeof paymentId !== "string" ||
+    !paymentId ||
+    typeof signature !== "string" ||
+    !/^[a-f\d]{64}$/i.test(signature) ||
+    typeof secret !== "string" ||
+    !secret
+  ) {
+    return false;
+  }
+
+  const expected = crypto
+    .createHmac("sha256", secret)
+    .update(`${storedOrderId}|${paymentId}`)
+    .digest();
+  const provided = Buffer.from(signature, "hex");
+  return provided.length === expected.length && crypto.timingSafeEqual(expected, provided);
+};
+
+export const isVerifiedPaymentRetry = (payment, paymentId) =>
+  payment?.paymentStatus === "Paid" && payment.razorpay_payment_id === paymentId;
+
 const paymentMatchesExpectedOrder = (payment, expected) =>
   payment &&
   payment.id === expected.paymentId &&

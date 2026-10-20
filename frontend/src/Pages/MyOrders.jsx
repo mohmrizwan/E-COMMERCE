@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
+import { API_ORIGIN } from "../utils/productsApi";
 const getAuthConfig = () => ({
   headers: {
     Authorization: `Bearer ${localStorage.getItem("userToken")}`,
@@ -43,7 +43,7 @@ const MyOrders = () => {
     const loadOrders = async () => {
       try {
         const response = await axios.get(
-          `${API_URL}/profile/myOrder`,
+          `${API_ORIGIN}/profile/myOrder`,
           getAuthConfig(),
         );
         const backendOrders = response.data?.getOrder || [];
@@ -120,7 +120,7 @@ const MyOrders = () => {
 
     try {
       const response = await axios.get(
-        `${API_URL}/shiprocket/shipments/${order.id}/tracking`,
+        `${API_ORIGIN}/shiprocket/shipments/${order.id}/tracking`,
         getAuthConfig(),
       );
       setTracking(response.data?.tracking || null);

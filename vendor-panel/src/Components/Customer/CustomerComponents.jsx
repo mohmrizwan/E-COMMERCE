@@ -21,6 +21,7 @@ import {
 
 import CIcon from "@coreui/icons-react";
 import { cilSearch, cilTrash } from "@coreui/icons";
+import { apiUrl } from "../../config/api.js";
 
 const CustomerComponents = () => {
   const [search, setSearch] = useState("");
@@ -39,7 +40,7 @@ const CustomerComponents = () => {
       }
 
       const response = await axios.get(
-        "https://ecommerceba-6dtt.onrender.com/vendor/customers/myCustomers",
+        apiUrl("vendor/customers/myCustomers"),
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,

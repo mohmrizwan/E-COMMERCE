@@ -100,7 +100,6 @@ const AuthSchema = new mongoose.Schema(
 );
 
 AuthSchema.index({ storefrontDomains: 1 }, { unique: true, sparse: true });
-
 const AuthVendor = mongoose.model("Vendor", AuthSchema);
 
 export default AuthVendor;

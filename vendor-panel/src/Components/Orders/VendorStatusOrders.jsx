@@ -16,10 +16,8 @@ import CIcon from "@coreui/icons-react";
 import { cilSearch } from "@coreui/icons";
 import axios from "axios";
 import ProductLoader from "../ProductLoader";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://ecommerceba-6dtt.onrender.com";
 
 const getStatusColor = (status) => {
   switch (status) {
@@ -47,7 +45,7 @@ const VendorStatusOrders = ({ status, title }) => {
 
     const loadOrders = async () => {
       try {
-        const response = await axios.get(`${API_URL}/vendor/orders/myOrders`, {
+        const response = await axios.get(apiUrl("vendor/orders/myOrders"), {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
           },

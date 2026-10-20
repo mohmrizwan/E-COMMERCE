@@ -5,8 +5,8 @@ import axios from "axios";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import Dotter from "../Components/Dotter";
+import { API_ORIGIN } from "../utils/productsApi";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
 // simple function to get auth header, using token from localStorage
 const getAuthConfig = () => {
@@ -627,7 +627,7 @@ function Account() {
       try {
         // get profile
         const profileRes = await axios.get(
-          `${API_URL}/profile/getProfile`,
+          `${API_ORIGIN}/profile/getProfile`,
           getAuthConfig(),
         );
         setProfile((current) => ({
@@ -638,7 +638,7 @@ function Account() {
 
         // get addresses
         const addressRes = await axios.get(
-          `${API_URL}/profile/address`,
+          `${API_ORIGIN}/profile/address`,
           getAuthConfig(),
         );
         setAddresses(addressRes.data.addresses || []);
@@ -646,7 +646,7 @@ function Account() {
         // get orders
         // NOTE: confirm this endpoint with your backend, changed it if different
         const orderRes = await axios.get(
-          `${API_URL}/profile/myOrder`,
+          `${API_ORIGIN}/profile/myOrder`,
           getAuthConfig(),
         );
         console.log("ORDER API RESPONSE:", orderRes.data);
@@ -700,13 +700,13 @@ function Account() {
       let response;
       if (editingAddress) {
         response = await axios.put(
-          `${API_URL}/profile/address/${editingAddress._id}`,
+          `${API_ORIGIN}/profile/address/${editingAddress._id}`,
           data,
           getAuthConfig(),
         );
       } else {
         response = await axios.post(
-          `${API_URL}/profile/address`,
+          `${API_ORIGIN}/profile/address`,
           data,
           getAuthConfig(),
         );
@@ -754,7 +754,7 @@ function Account() {
   const deleteAddress = async (id) => {
     setLoadingAction(`delete-address-${id}`);
     try {
-      await axios.delete(`${API_URL}/profile/address/${id}`, getAuthConfig());
+      await axios.delete(`${API_ORIGIN}/profile/address/${id}`, getAuthConfig());
       setAddresses(addresses.filter((item) => item._id !== id));
       showNotice("Address removed");
     } catch (error) {
@@ -777,7 +777,7 @@ function Account() {
 
     try {
       const response = await axios.get(
-        `${API_URL}/shiprocket/shipments/${order.id}/tracking`,
+        `${API_ORIGIN}/shiprocket/shipments/${order.id}/tracking`,
         getAuthConfig(),
       );
       setTracking(response.data?.tracking || null);
@@ -808,7 +808,7 @@ function Account() {
     setLoadingAction("profile");
     try {
       const response = await axios.put(
-        `${API_URL}/profile/updateProfile`,
+        `${API_ORIGIN}/profile/updateProfile`,
         profileUpdates,
         getAuthConfig(),
       );

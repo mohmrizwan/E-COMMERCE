@@ -6,6 +6,8 @@ import FormField from "../../Components/Auth/FormField";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { API_URL, apiUrl } from "../../config/api.js";
+
 
 const VendorLogin = () => {
   const navigate = useNavigate();
@@ -24,8 +26,12 @@ const VendorLogin = () => {
 
   const onSubmit = async (values) => {
     try {
+      if (!API_URL) {
+        setErrorMessage("VITE_API_URL is not configured for this deployment.");
+        return;
+      }
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/vendor/login",
+        apiUrl("vendor/login"),
         values,
       );
 

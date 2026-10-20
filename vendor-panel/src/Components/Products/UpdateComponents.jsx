@@ -21,6 +21,7 @@ import ProductLoader from "../../Components/ProductLoader";
 // MUI
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
+import { apiUrl } from "../../config/api.js";
 
 const UpadteProduct = () => {
   const { id } = useParams();
@@ -57,7 +58,7 @@ const UpadteProduct = () => {
         const token = localStorage.getItem("vendorToken");
 
         const response = await axios.get(
-          `https://ecommerceba-6dtt.onrender.com/vendor/products/products/${id}`,
+          apiUrl(`vendor/products/products/${id}`),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -239,7 +240,7 @@ const UpadteProduct = () => {
       const token = localStorage.getItem("vendorToken");
 
       const response = await axios.put(
-        `https://ecommerceba-6dtt.onrender.com/vendor/products/update/${id}`,
+        apiUrl(`vendor/products/update/${id}`),
         product,
         {
           headers: {

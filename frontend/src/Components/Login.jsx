@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { API_ORIGIN } from "../utils/productsApi";
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -25,7 +26,7 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/user/login",
+        `${API_ORIGIN}/user/login`,
         data,
       );
 

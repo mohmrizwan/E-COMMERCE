@@ -16,8 +16,8 @@ import {
 } from "@coreui/react";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
 
 const emptyPickupAddress = {
   shiprocketLocationName: "",
@@ -78,33 +78,6 @@ const VendorProfile = () => {
   const [shiprocketError, setShiprocketError] = useState("");
   const [shiprocketMessage, setShiprocketMessage] = useState("");
 
-  const [razorpayDetails, setRazorpayDetails] = useState({
-    legalBusinessName: "",
-    businessType: "",
-    businessSubcategory: "",
-    websiteUrl: "",
-    pan: "",
-    stakeholderPan: "",
-    gst: "",
-    beneficiaryName: "",
-    accountNumber: "",
-    ifscCode: "",
-    registeredAddress: { street1: "", street2: "", city: "", state: "", postalCode: "" },
-    residentialAddress: { street: "", city: "", state: "", postalCode: "" },
-    tncAccepted: false,
-  });
-  const [razorpayStatus, setRazorpayStatus] = useState({
-    isLinked: false,
-    accountStatus: "",
-    productActivationStatus: "",
-    settlementVerificationStatus: "",
-  });
-  const [isLoadingRazorpay, setIsLoadingRazorpay] = useState(true);
-  const [isSubmittingRazorpay, setIsSubmittingRazorpay] = useState(false);
-  const [razorpayError, setRazorpayError] = useState("");
-  const [razorpayMessage, setRazorpayMessage] = useState("");
-  const razorpayActivated = razorpayStatus.productActivationStatus === "activated" &&
-    razorpayStatus.settlementVerificationStatus === "verified";
 
   // =========================
   // Profile Edit Mode
@@ -128,7 +101,7 @@ const VendorProfile = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        `${API_URL}/vendor/profile/pickup-address`,
+        apiUrl("vendor/profile/pickup-address"),
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,
@@ -155,7 +128,7 @@ const VendorProfile = () => {
 
   const getShiprocketConfig = async () => {
     try {
-      const response = await axios.get(`${API_URL}/vendor/integrations`, {
+      const response = await axios.get(apiUrl("vendor/integrations"), {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
         },
@@ -171,46 +144,6 @@ const VendorProfile = () => {
     }
   };
 
-  const refreshRazorpayStatus = async () => {
-    try {
-      const response = await axios.get(`${API_URL}/vendor/integrations/razorpay/status`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("vendorToken")}` },
-      });
-      setRazorpayStatus(response.data.razorpay || {});
-      setRazorpayError("");
-    } catch (error) {
-      setRazorpayError(error.response?.data?.message || "Could not load Razorpay Route status.");
-    } finally {
-      setIsLoadingRazorpay(false);
-    }
-  };
-
-  const submitRazorpayOnboarding = async () => {
-    setRazorpayError("");
-    setRazorpayMessage("");
-    setIsSubmittingRazorpay(true);
-    try {
-      const response = await axios.post(
-        `${API_URL}/vendor/integrations/razorpay/onboard`,
-        razorpayDetails,
-        { headers: { Authorization: `Bearer ${localStorage.getItem("vendorToken")}` } },
-      );
-      setRazorpayStatus(response.data.razorpay || {});
-      setRazorpayDetails((current) => ({
-        ...current,
-        accountNumber: "",
-        pan: "",
-        stakeholderPan: "",
-        gst: "",
-        tncAccepted: false,
-      }));
-      setRazorpayMessage("Route onboarding was submitted. Razorpay must review and activate your linked account before checkout can use it.");
-    } catch (error) {
-      setRazorpayError(error.response?.data?.message || "Could not submit Razorpay Route onboarding.");
-    } finally {
-      setIsSubmittingRazorpay(false);
-    }
-  };
 
   // =========================
   // Get Vendor Profile
@@ -220,7 +153,7 @@ const VendorProfile = () => {
       const vendorToken = localStorage.getItem("vendorToken");
 
       const response = await axios.get(
-        `${API_URL}/vendor/myProfile`,
+        apiUrl("vendor/myProfile"),
         {
           headers: {
             Authorization: `Bearer ${vendorToken}`,
@@ -266,7 +199,6 @@ const VendorProfile = () => {
   useEffect(() => {
     getPickupAddress();
     getShiprocketConfig();
-    refreshRazorpayStatus();
     getProfileData();
   }, []);
 
@@ -328,7 +260,7 @@ const VendorProfile = () => {
     setIsConnectingShiprocket(true);
     try {
       const response = await axios.put(
-        `${API_URL}/vendor/integrations`,
+        apiUrl("vendor/integrations"),
         { shiprocket: { email, password, enabled: true } },
         {
           headers: {
@@ -372,7 +304,7 @@ const VendorProfile = () => {
 
     try {
       const response = await axios.put(
-        `${API_URL}/vendor/profile/pickup-address`,
+        apiUrl("vendor/profile/pickup-address"),
         { shiprocketLocationName: selectedPickupAddress.shiprocketLocationName },
         {
           headers: {
@@ -479,69 +411,14 @@ const VendorProfile = () => {
         </CCol>
       </CRow>
 
-      {/* =========================
-          Razorpay Route Integration
-      ========================= */}
-      <CCard className="mb-4 border-0 shadow-sm">
-        <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <div className="d-flex justify-content-between align-items-start gap-3">
-            <div>
-              <h5 className="mb-1">Razorpay Route settlement</h5>
-              <p className="text-body-secondary small mb-0">
-                Submit your linked-account and bank details for platform marketplace settlements. Do not enter Razorpay API keys here.
-              </p>
-            </div>
-            {isLoadingRazorpay ? <CSpinner size="sm" aria-label="Loading Razorpay status" /> : (
-              <span className={`badge ${razorpayStatus.productActivationStatus === "activated" && razorpayStatus.settlementVerificationStatus === "verified" ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"}`}>
-                {razorpayStatus.productActivationStatus === "activated" && razorpayStatus.settlementVerificationStatus === "verified" ? "Activated" : razorpayStatus.isLinked ? "Review required" : "Not connected"}
-              </span>
-            )}
-          </div>
-        </CCardHeader>
-        <CCardBody className="px-4">
-          <p className="small text-body-secondary">
-            Account: {razorpayStatus.accountStatus || "not submitted"} · Route product: {razorpayStatus.productActivationStatus || "not submitted"} · Bank verification: {razorpayStatus.settlementVerificationStatus || "not submitted"}
-          </p>
-          {!razorpayActivated && (
-            <>
-              <CRow className="g-3">
-                <CCol md={6}><CFormLabel>Legal business name</CFormLabel><CFormInput value={razorpayDetails.legalBusinessName} onChange={(event) => setRazorpayDetails((current) => ({ ...current, legalBusinessName: event.target.value }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={6}><CFormLabel>Business type</CFormLabel><CFormSelect value={razorpayDetails.businessType} onChange={(event) => setRazorpayDetails((current) => ({ ...current, businessType: event.target.value }))} disabled={isSubmittingRazorpay}><option value="">Select business type</option>{["individual", "proprietorship", "partnership", "llp", "private_limited", "public_limited", "ngo", "trust", "society", "educational_institutes", "other"].map((type) => <option key={type} value={type}>{type.replaceAll("_", " ")}</option>)}</CFormSelect></CCol>
-                <CCol md={6}><CFormLabel>Business category</CFormLabel><CFormSelect value={razorpayDetails.businessSubcategory} onChange={(event) => setRazorpayDetails((current) => ({ ...current, businessSubcategory: event.target.value }))} disabled={isSubmittingRazorpay}><option value="">Select your product category</option>{[["ecommerce_marketplace", "Marketplace"], ["agriculture", "Agriculture"], ["books", "Books"], ["electronics_and_furniture", "Electronics and furniture"], ["fashion_and_lifestyle", "Fashion and lifestyle"], ["gifting", "Gifting"], ["grocery", "Grocery"], ["baby_products", "Baby products"], ["office_supplies", "Office supplies"], ["wholesale", "Wholesale"], ["pet_products", "Pet products"], ["sports_products", "Sports products"], ["arts_and_collectibles", "Arts and collectibles"], ["jewellery_and_watch_stores", "Jewellery and watches"], ["cosmetic_stores", "Cosmetics"], ["home_furnishing_stores", "Home furnishings"], ["computer_software_stores", "Computer software"], ["women_clothing", "Women's clothing"], ["department_stores", "Department store"], ["variety_stores", "Other retail / variety store"]].map(([value, label]) => <option key={value} value={value}>{label}</option>)}</CFormSelect></CCol>
-                <CCol md={6}><CFormLabel>Business website / storefront URL</CFormLabel><CFormInput type="url" placeholder="https://your-store.example" value={razorpayDetails.websiteUrl} onChange={(event) => setRazorpayDetails((current) => ({ ...current, websiteUrl: event.target.value }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol xs={12}><h6 className="mt-2 mb-0">Registered business address</h6><small className="text-body-secondary">Use the address shown on your business and bank records.</small></CCol>
-                <CCol md={6}><CFormLabel>Address line 1</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.street1} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, street1: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={6}><CFormLabel>Address line 2 (optional)</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.street2} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, street2: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={4}><CFormLabel>Business city</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.city} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, city: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={4}><CFormLabel>Business state</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.state} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, state: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={4}><CFormLabel>Business PIN code</CFormLabel><CFormInput value={razorpayDetails.registeredAddress.postalCode} onChange={(event) => setRazorpayDetails((current) => ({ ...current, registeredAddress: { ...current.registeredAddress, postalCode: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={6}><CFormLabel>PAN</CFormLabel><CFormInput value={razorpayDetails.pan} onChange={(event) => setRazorpayDetails((current) => ({ ...current, pan: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
-                <CCol md={6}><CFormLabel>Owner / stakeholder PAN</CFormLabel><CFormInput value={razorpayDetails.stakeholderPan} onChange={(event) => setRazorpayDetails((current) => ({ ...current, stakeholderPan: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
-                <CCol md={6}><CFormLabel>GSTIN (if applicable)</CFormLabel><CFormInput value={razorpayDetails.gst} onChange={(event) => setRazorpayDetails((current) => ({ ...current, gst: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
-                <CCol md={6}><CFormLabel>Bank account holder</CFormLabel><CFormInput value={razorpayDetails.beneficiaryName} onChange={(event) => setRazorpayDetails((current) => ({ ...current, beneficiaryName: event.target.value }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={6}><CFormLabel>Bank account number</CFormLabel><CFormInput value={razorpayDetails.accountNumber} onChange={(event) => setRazorpayDetails((current) => ({ ...current, accountNumber: event.target.value }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
-                <CCol md={6}><CFormLabel>IFSC</CFormLabel><CFormInput value={razorpayDetails.ifscCode} onChange={(event) => setRazorpayDetails((current) => ({ ...current, ifscCode: event.target.value.toUpperCase() }))} disabled={isSubmittingRazorpay} autoComplete="off" /></CCol>
-                <CCol md={6}><CFormLabel>Stakeholder residential street</CFormLabel><CFormInput value={razorpayDetails.residentialAddress.street} onChange={(event) => setRazorpayDetails((current) => ({ ...current, residentialAddress: { ...current.residentialAddress, street: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={6}><CFormLabel>Residential city</CFormLabel><CFormInput value={razorpayDetails.residentialAddress.city} onChange={(event) => setRazorpayDetails((current) => ({ ...current, residentialAddress: { ...current.residentialAddress, city: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={4}><CFormLabel>Residential state</CFormLabel><CFormInput value={razorpayDetails.residentialAddress.state} onChange={(event) => setRazorpayDetails((current) => ({ ...current, residentialAddress: { ...current.residentialAddress, state: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-                <CCol md={4}><CFormLabel>Residential PIN code</CFormLabel><CFormInput value={razorpayDetails.residentialAddress.postalCode} onChange={(event) => setRazorpayDetails((current) => ({ ...current, residentialAddress: { ...current.residentialAddress, postalCode: event.target.value } }))} disabled={isSubmittingRazorpay} /></CCol>
-              </CRow>
-              <label className="d-flex gap-2 align-items-start small mt-3">
-                <input type="checkbox" checked={razorpayDetails.tncAccepted} onChange={(event) => setRazorpayDetails((current) => ({ ...current, tncAccepted: event.target.checked }))} disabled={isSubmittingRazorpay} />
-                <span>I accept the Razorpay Route terms and authorize submission of these details for linked-account onboarding.</span>
-              </label>
-              <p className="small text-body-secondary mt-2 mb-0">Razorpay may require additional KYC or business documents and must activate the account and verify settlement details. Route access, KYC review and activation are completed by Razorpay; submitting this form does not itself activate settlements.</p>
-            </>
-          )}
-          {razorpayError && <Alert severity="error" className="mt-3">{razorpayError}</Alert>}
-          {razorpayMessage && <Alert severity="success" className="mt-3">{razorpayMessage}</Alert>}
-          <div className="d-flex justify-content-end gap-2 mt-3">
-            {razorpayStatus.isLinked && <CButton color="secondary" variant="outline" onClick={refreshRazorpayStatus} disabled={isLoadingRazorpay || isSubmittingRazorpay}>Refresh provider status</CButton>}
-            {!razorpayActivated && <CButton color="primary" onClick={submitRazorpayOnboarding} disabled={isSubmittingRazorpay || isLoadingRazorpay || !razorpayDetails.tncAccepted}>{isSubmittingRazorpay ? <><CSpinner size="sm" className="me-2" />Submitting...</> : razorpayStatus.isLinked ? "Continue Razorpay onboarding" : "Submit Razorpay onboarding"}</CButton>}
-          </div>
+      <CCard className="mb-4">
+        <CCardHeader>Razorpay Payments</CCardHeader>
+        <CCardBody>
+          <Alert severity="info">
+            Standard Payments use the Key ID and Key Secret configured in this store deployment's backend environment. The secret is not entered or stored in this panel. Contact the deployment administrator to configure payment credentials.
+          </Alert>
         </CCardBody>
       </CCard>
-
       {/* =========================
           Shiprocket Integration
       ========================= */}

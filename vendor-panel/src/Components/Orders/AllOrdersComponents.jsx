@@ -19,10 +19,8 @@ import axios from "axios";
 import CIcon from "@coreui/icons-react";
 import { cilSearch, cilChevronBottom, cilChevronRight } from "@coreui/icons";
 import ProductLoader from "../ProductLoader";
+import { apiUrl } from "../../config/api.js";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://ecommerceba-6dtt.onrender.com";
 
 const Orders = () => {
   const [expandedOrderId, setExpandedOrderId] = useState(null);
@@ -47,7 +45,7 @@ const Orders = () => {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(`${API_URL}/vendor/orders/myOrders`, {
+      const response = await axios.get(apiUrl("vendor/orders/myOrders"), {
         headers: {
           Authorization: `Bearer ${vendorToken}`,
         },
@@ -180,7 +178,7 @@ const Orders = () => {
       order.id,
       () =>
         axios.patch(
-          `${API_URL}/vendor/orders/accept/${order.id}`,
+          apiUrl(`vendor/orders/accept/${order.id}`),
           {},
           getVendorConfig(),
         ),
@@ -192,7 +190,7 @@ const Orders = () => {
       order.id,
       () =>
         axios.post(
-          `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/reconcile`,
+          apiUrl(`vendor/orders/shipments/${order.shipment?._id || order.id}/reconcile`),
           {},
           getVendorConfig(),
         ),
@@ -204,7 +202,7 @@ const Orders = () => {
       order.id,
       () =>
         axios.patch(
-          `${API_URL}/vendor/orders/processing/${order.id}`,
+          apiUrl(`vendor/orders/processing/${order.id}`),
           {},
           getVendorConfig(),
         ),
@@ -217,7 +215,7 @@ const Orders = () => {
 
     try {
       const response = await axios.get(
-        `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/couriers`,
+        apiUrl(`vendor/orders/shipments/${order.shipment?._id || order.id}/couriers`),
         getVendorConfig(),
       );
       setCourierOptions((current) => ({
@@ -236,7 +234,7 @@ const Orders = () => {
       order.id,
       () =>
         axios.patch(
-          `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/courier`,
+          apiUrl(`vendor/orders/shipments/${order.shipment?._id || order.id}/courier`),
           { courierCompanyId: selectedCouriers[order.id] },
           getVendorConfig(),
         ),
@@ -248,7 +246,7 @@ const Orders = () => {
       order.id,
       () =>
         axios.post(
-          `${API_URL}/vendor/orders/ship/${order.id}`,
+          apiUrl(`vendor/orders/ship/${order.id}`),
           {},
           getVendorConfig(),
         ),
@@ -261,7 +259,7 @@ const Orders = () => {
 
     try {
       const response = await axios.get(
-        `${API_URL}/vendor/orders/shipments/${order.shipment?._id || order.id}/tracking`,
+        apiUrl(`vendor/orders/shipments/${order.shipment?._id || order.id}/tracking`),
         getVendorConfig(),
       );
       setTrackingByOrder((current) => ({
@@ -622,7 +620,7 @@ const Orders = () => {
                                           Mark Processing
                                         </button>
                                       )}
-                                      {order.shipment?.status === "CREATION_UNKNOWN" && (
+                                      {["CREATION_UNKNOWN", "CREATING"].includes(order.shipment?.status) && (
                                         <button
                                           type="button"
                                           className="btn btn-sm btn-outline-warning"
@@ -631,7 +629,9 @@ const Orders = () => {
                                         >
                                           {loadingOrderId === order.id
                                             ? "Checking Shiprocket..."
-                                            : "Reconcile shipment"}
+                                            : order.shipment?.status === "CREATING"
+                                              ? "Check pending shipment"
+                                              : "Reconcile shipment"}
                                         </button>
                                       )}
                                       {order.shipment?.awbCode && (

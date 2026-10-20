@@ -3,7 +3,8 @@ import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 import axios from "axios";
 import { Toaster } from "react-hot-toast";
-const API_URL = "https://ecommerceba-6dtt.onrender.com";
+import { resolveRazorpayKeyId } from "../../../../shared/razorpayKeyId.mjs";
+import { API_ORIGIN } from "../../utils/productsApi";
 
 const Payment = ({ setStep, orderData, onPlaceOrder }) => {
   const [paymentState, setPaymentState] = useState("idle");
@@ -17,7 +18,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
   );
   const createStoreOrder = async (razorpayOrderId) => {
     const orderResponse = await axios.post(
-      `${API_URL}/order/createOrder`,
+      `${API_ORIGIN}/order/createOrder`,
       { razorpay_order_id: razorpayOrderId },
       {
         headers: {
@@ -68,7 +69,10 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
     }
 
     const option = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      key: resolveRazorpayKeyId({
+        backendKeyId: data.keyId,
+        frontendKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      }),
       amount: data.amount,
       currency: data.currency,
       name: "Rizwan",
@@ -94,7 +98,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
 
         try {
           const verifyResponse = await axios.post(
-            `${API_URL}/payment/verify`,
+            `${API_ORIGIN}/payment/verify`,
             {
               razorpay_order_id,
               razorpay_payment_id,

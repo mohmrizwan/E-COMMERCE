@@ -18,6 +18,7 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useNavigate } from "react-router-dom";
+import { API_URL, apiUrl } from "../../config/api.js";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -42,8 +43,14 @@ const AddProduct = () => {
 
     try {
       setLoading(true);
+      if (!API_URL) {
+        throw new Error("VITE_API_URL is not configured for this deployment.");
+      }
+      if (!token) {
+        throw new Error("Your vendor session has expired. Please sign in again.");
+      }
       const response = await axios.post(
-        "https://ecommerceba-6dtt.onrender.com/vendor/products/create",
+        apiUrl("vendor/products/create"),
         formData,
         {
           headers: {
@@ -59,7 +66,7 @@ const AddProduct = () => {
       console.log(error.response?.data);
 
       // Error message
-      setErrorMessage(error.response?.data?.message || "Something went wrong");
+      setErrorMessage(error.response?.data?.message || error.message || "Something went wrong");
 
       setMessage("");
     } finally {
