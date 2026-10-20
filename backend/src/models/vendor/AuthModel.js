@@ -56,6 +56,13 @@ const AuthSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
+    description: { type: String, trim: true, default: "" },
+    accountHolderName: { type: String, trim: true, default: "" },
+    bankName: { type: String, trim: true, default: "" },
+    accountNumber: { type: String, trim: true, default: "" },
+    ifscCode: { type: String, trim: true, uppercase: true, default: "" },
+    upiId: { type: String, trim: true, default: "" },
+    payoutMethod: { type: String, enum: ["bank", "upi"], default: "bank" },
 
     pickupAddress: {
       name: { type: String, trim: true, default: "" },

@@ -1,5 +1,6 @@
 import React from "react";
 import logo from "/Copilot_20260831_214454.png";
+import { STORE_NAME } from "../config/brand.js";
 import "../Assets/Stylesheets/Sidebar.css";
 import {
   CSidebar,
@@ -41,7 +42,7 @@ function Sidebar({ visible, setVisible }) {
       <CSidebarBrand className="!bg-[#17112B] !border-b !border-[#2D2545] px-4 py-4">
         <img
           src={logo}
-          alt="VendoraFlame"
+          alt={`${STORE_NAME} logo`}
           className="w-full max-h-70 object-contain"
         />
       </CSidebarBrand>

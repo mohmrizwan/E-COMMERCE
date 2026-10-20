@@ -48,7 +48,7 @@ const Cart = () => {
 
             <p className="my-2 font-[inter] text-xs text-[#6B7280] sm:text-sm">
               {cart.length}{" "}
-              {cart.length === 1 ? "item" : "items"} from vendors
+              {cart.length === 1 ? "item" : "items"}
             </p>
           </div>
         </div>

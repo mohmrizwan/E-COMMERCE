@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import { STORE_NAME } from "../../config/brand.js";
 
 const AuthLayout = ({ eyebrow, title, description, children }) => (
   <main className="grid min-h-dvh min-w-0 bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
@@ -8,7 +9,7 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
       <div className="pointer-events-none absolute -bottom-40 -left-40 size-[28rem] rounded-full border border-fuchsia-300/10 bg-fuchsia-500/10 blur-3xl" />
 
       <Link to="/vendor/login" className="relative flex w-fit items-center gap-3 text-lg font-extrabold tracking-tight text-white no-underline">
-        <img src="/Copilot_20260831_214454.png" alt="VendoraFlame" className="h-10 w-auto max-w-48 object-contain object-left" />
+        <img src="/Copilot_20260831_214454.png" alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
       </Link>
 
       <div className="relative my-auto max-w-xl py-16">
@@ -30,14 +31,14 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
         </div>
       </div>
 
-      <p className="m-0 text-xs text-slate-400">2026 VendoraFlame</p>
+      <p className="m-0 text-xs text-slate-400">2026 {STORE_NAME}</p>
     </section>
 
     <section className="grid min-h-dvh min-w-0 place-items-center bg-[radial-gradient(circle_at_top_right,#EDE9FE_0,transparent_28rem)] px-4 py-6 sm:px-6 sm:py-8 lg:px-16 xl:px-24">
       <div className="w-full min-w-0 max-w-xl">
         <div className="mb-7 lg:hidden">
           <Link to="/vendor/login" className="flex w-fit items-center text-lg font-extrabold tracking-tight text-[#17112B] no-underline">
-            <img src="/Copilot_20260831_214454.png" alt="VendoraFlame" className="h-10 w-auto max-w-48 object-contain object-left" />
+            <img src="/Copilot_20260831_214454.png" alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
           </Link>
         </div>
 

@@ -6,6 +6,7 @@ import ProductFilter from "../Components/ProductFilter";
 import ProductGrid from "../Components/ProductGrid";
 import ProductSort from "../Components/ProductSort";
 import { getCategoryLabel } from "../data/products";
+import { STORE_NAME } from "../config/brand.js";
 import Loader from "../Components/Loader";
 import { getProductsForCurrentStorefront } from "../utils/productsApi";
 
@@ -134,13 +135,13 @@ const Products = () => {
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6c3bff]">
-              Marketplace
+              Shop {STORE_NAME}
             </p>
             <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
               {getCategoryLabel(filters.category)}
             </h1>
             <p className="mt-2 text-sm text-[#6b7280]">
-              Explore trusted vendors and standout products.
+              Browse products from {STORE_NAME}.
             </p>
           </div>
           <button

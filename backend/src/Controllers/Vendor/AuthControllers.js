@@ -542,3 +542,51 @@ export const getVendorProfile = async (req, res) => {
     });
   }
 };
+
+export const updateVendorProfile = async (req, res) => {
+  try {
+    const vendor = await VendorModel.findById(req.vendor.id);
+    if (!vendor) {
+      return res.status(404).json({ success: false, message: "Vendor not found" });
+    }
+
+    const editableFields = [
+      "businessName",
+      "ownerName",
+      "phone",
+      "description",
+      "accountHolderName",
+      "bankName",
+      "accountNumber",
+      "ifscCode",
+      "upiId",
+    ];
+    for (const field of editableFields) {
+      if (req.body?.[field] !== undefined) {
+        vendor[field] = String(req.body[field] ?? "").trim();
+      }
+    }
+    if (req.body?.payoutMethod !== undefined) {
+      const payoutMethod = String(req.body.payoutMethod).trim();
+      if (!["bank", "upi"].includes(payoutMethod)) {
+        return res.status(400).json({ success: false, message: "Invalid payout method" });
+      }
+      vendor.payoutMethod = payoutMethod;
+    }
+    if (!vendor.businessName || !vendor.ownerName || !vendor.phone) {
+      return res.status(400).json({ success: false, message: "Shop name, owner name, and phone are required" });
+    }
+
+    await vendor.save();
+    const vendorProfile = vendor.toObject();
+    delete vendorProfile.password;
+    delete vendorProfile.otp;
+    delete vendorProfile.otpExpiresAt;
+    return res.status(200).json({ success: true, message: "Profile changes saved.", vendorProfile });
+  } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.phone) {
+      return res.status(409).json({ success: false, message: "This phone number is already used by another account" });
+    }
+    return res.status(500).json({ success: false, message: "Could not save vendor profile" });
+  }
+};

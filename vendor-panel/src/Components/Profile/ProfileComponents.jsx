@@ -48,6 +48,7 @@ const VendorProfile = () => {
 
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // =========================
   // Pickup Address
@@ -64,20 +65,6 @@ const VendorProfile = () => {
 
   const [isSavingPickupAddress, setIsSavingPickupAddress] =
     useState(false);
-
-  // =========================
-  // Shiprocket Integration
-  // =========================
-  const [shiprocketCredentials, setShiprocketCredentials] = useState({
-    email: "",
-    password: "",
-  });
-  const [shiprocketStatus, setShiprocketStatus] = useState(false);
-  const [isLoadingShiprocket, setIsLoadingShiprocket] = useState(true);
-  const [isConnectingShiprocket, setIsConnectingShiprocket] = useState(false);
-  const [shiprocketError, setShiprocketError] = useState("");
-  const [shiprocketMessage, setShiprocketMessage] = useState("");
-
 
   // =========================
   // Profile Edit Mode
@@ -125,25 +112,6 @@ const VendorProfile = () => {
       setIsLoadingPickupAddress(false);
     }
   };
-
-  const getShiprocketConfig = async () => {
-    try {
-      const response = await axios.get(apiUrl("vendor/integrations"), {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
-        },
-      });
-      setShiprocketStatus(Boolean(response.data.integrations?.shiprocket?.enabled));
-      setShiprocketError("");
-    } catch (error) {
-      setShiprocketError(
-        error.response?.data?.message || "Could not load Shiprocket connection status.",
-      );
-    } finally {
-      setIsLoadingShiprocket(false);
-    }
-  };
-
 
   // =========================
   // Get Vendor Profile
@@ -198,7 +166,6 @@ const VendorProfile = () => {
   // =========================
   useEffect(() => {
     getPickupAddress();
-    getShiprocketConfig();
     getProfileData();
   }, []);
 
@@ -215,7 +182,7 @@ const VendorProfile = () => {
   // =========================
   // Profile Save
   // =========================
-  const handleSave = () => {
+  const handleSave = async () => {
     const requiredFields = [
       ["businessName", "Shop Name"],
       ["ownerName", "Owner Name"],
@@ -238,48 +205,39 @@ const VendorProfile = () => {
     }
 
     setErrorMessage("");
-    setMessage("Profile changes saved.");
-    setEditMode(false);
-  };
-
-  const connectShiprocket = async () => {
-    setShiprocketError("");
-    setShiprocketMessage("");
-    const email = shiprocketCredentials.email.trim().toLowerCase();
-    const password = shiprocketCredentials.password.trim();
-
-    if (!email || !password) {
-      setShiprocketError("Enter your Shiprocket API user email and password.");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setShiprocketError("Enter a valid Shiprocket API user email.");
-      return;
-    }
-
-    setIsConnectingShiprocket(true);
+    setMessage("");
+    setIsSavingProfile(true);
     try {
       const response = await axios.put(
-        apiUrl("vendor/integrations"),
-        { shiprocket: { email, password, enabled: true } },
+        apiUrl("vendor/myProfile"),
+        formData,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
           },
         },
       );
-
-      setShiprocketStatus(Boolean(response.data.integrations?.shiprocket?.enabled));
-      setShiprocketCredentials({ email: "", password: "" });
-      setShiprocketMessage("Shiprocket connected successfully.");
-      setIsLoadingPickupAddress(true);
-      await getPickupAddress();
+      const vendorProfile = response.data.vendorProfile;
+      setFormData((current) => ({
+        ...current,
+        businessName: vendorProfile.businessName || "",
+        ownerName: vendorProfile.ownerName || "",
+        email: vendorProfile.email || current.email,
+        phone: vendorProfile.phone || "",
+        description: vendorProfile.description || "",
+        accountHolderName: vendorProfile.accountHolderName || "",
+        bankName: vendorProfile.bankName || "",
+        accountNumber: vendorProfile.accountNumber || "",
+        ifscCode: vendorProfile.ifscCode || "",
+        upiId: vendorProfile.upiId || "",
+        payoutMethod: vendorProfile.payoutMethod || "bank",
+      }));
+      setMessage(response.data.message || "Profile changes saved.");
+      setEditMode(false);
     } catch (error) {
-      setShiprocketError(
-        error.response?.data?.message || "Could not connect to Shiprocket. Please try again.",
-      );
+      setErrorMessage(error.response?.data?.message || "Could not save profile changes.");
     } finally {
-      setIsConnectingShiprocket(false);
+      setIsSavingProfile(false);
     }
   };
 
@@ -419,59 +377,11 @@ const VendorProfile = () => {
           </Alert>
         </CCardBody>
       </CCard>
-      {/* =========================
-          Shiprocket Integration
-      ========================= */}
       <CCard className="mb-4 border-0 shadow-sm">
-        <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <div className="d-flex justify-content-between align-items-start gap-3">
-            <div>
-              <h5 className="mb-1">Shiprocket Integration</h5>
-              <p className="text-body-secondary small mb-0">
-                Use an API user created in Shiprocket under Settings → API. Credentials are validated and stored securely by the backend.
-              </p>
-            </div>
-            {isLoadingShiprocket ? (
-              <CSpinner size="sm" aria-label="Loading Shiprocket status" />
-            ) : (
-              <span className={`badge ${shiprocketStatus ? "bg-success-subtle text-success" : "bg-secondary-subtle text-secondary"}`}>
-                {shiprocketStatus ? "Connected" : "Not connected"}
-              </span>
-            )}
-          </div>
-        </CCardHeader>
         <CCardBody className="px-4">
-          <CRow className="g-3">
-            <CCol md={6}>
-              <CFormLabel htmlFor="shiprocket-api-email">Shiprocket API user email</CFormLabel>
-              <CFormInput
-                id="shiprocket-api-email"
-                type="email"
-                autoComplete="username"
-                value={shiprocketCredentials.email}
-                onChange={(event) => setShiprocketCredentials((current) => ({ ...current, email: event.target.value }))}
-                disabled={isConnectingShiprocket}
-              />
-            </CCol>
-            <CCol md={6}>
-              <CFormLabel htmlFor="shiprocket-api-password">Shiprocket API password</CFormLabel>
-              <CFormInput
-                id="shiprocket-api-password"
-                type="password"
-                autoComplete="new-password"
-                value={shiprocketCredentials.password}
-                onChange={(event) => setShiprocketCredentials((current) => ({ ...current, password: event.target.value }))}
-                disabled={isConnectingShiprocket}
-              />
-            </CCol>
-          </CRow>
-          {shiprocketError && <Alert severity="error" className="mt-3">{shiprocketError}</Alert>}
-          {shiprocketMessage && <Alert severity="success" className="mt-3">{shiprocketMessage}</Alert>}
-          <div className="d-flex justify-content-end mt-3">
-            <CButton color="primary" onClick={connectShiprocket} disabled={isConnectingShiprocket || isLoadingShiprocket}>
-              {isConnectingShiprocket ? <><CSpinner size="sm" className="me-2" />Connecting...</> : shiprocketStatus ? "Reconnect Shiprocket" : "Connect Shiprocket"}
-            </CButton>
-          </div>
+          <Alert severity="info" className="mb-0">
+            Shiprocket credentials are managed in the backend deployment environment. Configure SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD there. This profile only manages the pickup address.
+          </Alert>
         </CCardBody>
       </CCard>
 
@@ -675,8 +585,7 @@ const VendorProfile = () => {
               </h5>
 
               <p className="text-body-secondary small mb-0">
-                Details customers and the marketplace
-                use to identify your store.
+                Manage store details and customer information.
               </p>
             </CCardHeader>
 
@@ -733,8 +642,9 @@ const VendorProfile = () => {
                         formData.email
                       }
                       onChange={handleChange}
-                      disabled={!editMode}
+                      disabled
                     />
+                    <small className="text-body-secondary">Email changes require account verification and cannot be edited here.</small>
                   </div>
                 </CCol>
 
@@ -805,7 +715,7 @@ const VendorProfile = () => {
                   </h5>
 
                   <p className="text-body-secondary small mb-0">
-                    Where your marketplace earnings
+                    Where your store earnings
                     will be deposited.
                   </p>
                 </div>
@@ -950,8 +860,9 @@ const VendorProfile = () => {
                   <CButton
                     color="primary"
                     onClick={handleSave}
+                    disabled={isSavingProfile}
                   >
-                    Save Changes
+                    {isSavingProfile ? "Saving..." : "Save Changes"}
                   </CButton>
 
                 </div>

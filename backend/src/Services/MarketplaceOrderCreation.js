@@ -195,3 +195,35 @@ export const createMarketplaceOrder = async ({
     await session.endSession();
   }
 };
+
+/** Recover an order from a locally recorded captured payment, such as a webhook. */
+export const createOrderForCapturedPayment = async ({
+  mongoose,
+  Order,
+  Payment,
+  Product,
+  ownerId,
+  razorpayOrderId,
+}) => {
+  const payment = await Payment.findOne({
+    razorpay_order_id: razorpayOrderId,
+    paymentStatus: "Paid",
+  });
+  if (!payment) {
+    throw new MarketplaceOrderCreationError(
+      "A captured payment record is required",
+      409,
+      "CAPTURED_PAYMENT_NOT_FOUND",
+    );
+  }
+
+  return createMarketplaceOrder({
+    mongoose,
+    Order,
+    Payment,
+    Product,
+    ownerId,
+    userId: payment.userId,
+    razorpayOrderId,
+  });
+};

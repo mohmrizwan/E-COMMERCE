@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createMarketplaceOrder } from "../src/Services/MarketplaceOrderCreation.js";
+import {
+  createMarketplaceOrder,
+  createOrderForCapturedPayment,
+} from "../src/Services/MarketplaceOrderCreation.js";
 import orderModel from "../src/models/user/MyOrdersModel.js";
 
 const userId = "507f1f77bcf86cd799439012";
@@ -56,12 +59,15 @@ const makeFixture = () => {
       };
     },
   };
-  const query = (resolve) => ({ session: async () => resolve() });
+  const query = (resolve) => ({
+    session: async () => resolve(),
+    then: (onFulfilled, onRejected) => Promise.resolve().then(resolve).then(onFulfilled, onRejected),
+  });
   const Payment = {
     findOne: (filter) => query(async () =>
       filter.razorpay_order_id === state.payment.razorpay_order_id &&
-      filter.userId === state.payment.userId &&
-      filter.paymentStatus === state.payment.paymentStatus
+      (!filter.userId || filter.userId === state.payment.userId) &&
+      (!filter.paymentStatus || filter.paymentStatus === state.payment.paymentStatus)
         ? state.payment
         : null),
     updateOne: async (_filter, update) => {
@@ -141,4 +147,27 @@ test("rejects order creation when payment products do not belong to the authoriz
   assert.equal(fixture.state.orders.length, 0);
   assert.equal(fixture.state.product.stockQuantity, 5);
   assert.equal(fixture.state.payment.orderId, null);
+});
+
+test("captured-payment recovery creates the owner-scoped order without browser-supplied user data", async () => {
+  const fixture = makeFixture();
+  const result = await createOrderForCapturedPayment({
+    ...fixture,
+    ownerId: fixture.state.product.vendorId,
+    razorpayOrderId,
+  });
+
+  assert.equal(result.order.userId, userId);
+  assert.equal(result.order.razorpayOrderId, razorpayOrderId);
+  assert.equal(fixture.state.orders.length, 1);
+  assert.equal(fixture.state.product.stockQuantity, 2);
+
+  const retry = await createOrderForCapturedPayment({
+    ...fixture,
+    ownerId: fixture.state.product.vendorId,
+    razorpayOrderId,
+  });
+  assert.equal(retry.wasExisting, true);
+  assert.equal(fixture.state.orders.length, 1);
+  assert.equal(fixture.state.product.stockQuantity, 2);
 });

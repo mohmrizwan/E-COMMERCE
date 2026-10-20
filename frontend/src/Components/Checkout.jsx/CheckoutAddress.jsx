@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
 import Loader from "../../Components/Dotter";
 import { API_ORIGIN } from "../../utils/productsApi";
+import { STORE_NAME } from "../../config/brand.js";
 
 const addressEndpoint = `${API_ORIGIN}/profile/address`;
 const emptyAddress = {
@@ -168,7 +169,7 @@ const CheckoutAddress = ({
           <div className="address-header flex items-center justify-between">
             <Link to="/" className="shrink-0">
               <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                Vendor<span className="text-[#6c3bff]">Aflame</span>
+                {STORE_NAME}
               </p>
             </Link>
             <p className="text-sm font-[inter]">Secure Checkout</p>

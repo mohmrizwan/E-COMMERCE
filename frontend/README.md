@@ -2,7 +2,9 @@
 
 ## Configure the API
 
-The storefront needs `VITE_API_URL`, the origin of the shared backend (for example, `https://your-api.onrender.com`). Vite embeds this value into the JavaScript bundle at build time.
+The storefront needs `VITE_API_URL`, the origin of this client's deployed backend (for example, `https://your-api.onrender.com`). Vite embeds this value into the JavaScript bundle at build time.
+
+Set `VITE_STORE_NAME` to customize storefront copy. Replace the storefront logo and imagery under `src/assets`, replace the vendor-panel logo at `vendor-panel/public/Copilot_20260831_214454.png`, and review contact details and legal copy before publishing each client build.
 
 For local development, copy `.env.example` to `.env` and keep the local backend URL:
 

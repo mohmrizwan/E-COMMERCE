@@ -1,8 +1,12 @@
 import crypto from "crypto";
 import mongoose from "mongoose";
 import Payment from "../../models/user/Payment.js";
+import Order from "../../models/user/MyOrdersModel.js";
+import Product from "../../models/vendor/ProductModel.js";
 import RazorpayWebhookEvent from "../../models/user/RazorpayWebhookEvent.js";
 import { getRouteTransfersForSettlement } from "../../Services/RazorpayRoute.js";
+import { findStoreOwner } from "../../Services/StoreOwner.js";
+import { createOrderForCapturedPayment } from "../../Services/MarketplaceOrderCreation.js";
 import { verifyRazorpayWebhookSignature } from "../../utils/RazorpayWebhookSignature.js";
 import {
   applyRazorpayPaymentEvent,
@@ -102,7 +106,7 @@ export const handleRazorpayWebhook = async (req, res) => {
 
   const session = await mongoose.startSession();
   try {
-    const result = await withWebhookEventIdempotency(() => session.withTransaction(async () => {
+    await withWebhookEventIdempotency(() => session.withTransaction(async () => {
       await RazorpayWebhookEvent.create([{ eventId, event: eventName }], { session });
       if (paymentEvents.has(eventName)) {
         await applyRazorpayPaymentEvent({
@@ -120,8 +124,17 @@ export const handleRazorpayWebhook = async (req, res) => {
         { session },
       );
     }));
-    if (result.duplicate) {
-      return res.sendStatus(200);
+    if (eventName === "payment.captured") {
+      const owner = await findStoreOwner();
+      if (!owner) throw new Error("Configured store owner could not be resolved");
+      await createOrderForCapturedPayment({
+        mongoose,
+        Order,
+        Payment,
+        Product,
+        ownerId: owner._id,
+        razorpayOrderId: String(paymentEntity.order_id),
+      });
     }
     return res.sendStatus(200);
   } catch (error) {

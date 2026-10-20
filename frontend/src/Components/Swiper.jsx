@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Navigation, Pagination } from "swiper/modules";
 import { API_ORIGIN } from "../utils/productsApi";
+import { STORE_NAME } from "../config/brand.js";
 import { useCart } from "./CartContext";
 import fallbackImage from "../assets/images/banner.jpg";
 
@@ -14,11 +15,11 @@ import "swiper/css/navigation";
 const fallbackBanner = {
   _id: "marketplace-banner",
   title: "Find something you’ll love",
-  highlighted: "Discover products from independent sellers.",
+  highlighted: `Discover products from ${STORE_NAME}.`,
   image: fallbackImage,
   productUrl: "/products",
   buttonText: "Start Shopping",
-  vendorName: "VendoraFlame Marketplace",
+  vendorName: STORE_NAME,
 };
 
 export default function StorefrontSwiper() {

@@ -2,6 +2,7 @@ import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
+import { STORE_NAME } from "../config/brand.js";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -88,7 +89,7 @@ const Header = () => {
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
             <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-              Vendor<span className="text-[#6c3bff]">Aflame</span>
+              {STORE_NAME}
             </p>
           </Link>
 

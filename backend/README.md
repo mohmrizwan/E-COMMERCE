@@ -79,7 +79,7 @@ server/
 
 ### Database
 
-`src/database/db.js` connects to MongoDB using the configured `MONGO_URL`.
+`src/database/dbConnect.js` connects to MongoDB using the configured `MONGODB_URI`.
 
 ### Middleware
 
@@ -148,17 +148,7 @@ Some password reset service logic is currently present as commented code, so tho
 
 ## Environment Variables
 
-Create a `.env` file in the `server/` folder:
-
-```env
-PORT=3000
-MONGO_URL=mongodb://127.0.0.1:27017/your_database
-GOOGLE_CALLBACK_URL=http://localhost:3000/api/user/google/callback
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-ACCESSTOKEN=your_access_token_secret
-REFRESHTOKEN=your_refresh_token_secret
-```
+Use [`backend/.env.example`](./.env.example) for local development and see the [single-vendor deployment guide](./DEPLOYMENT.md) for the exact Render and Vercel settings. The backend reads `MONGODB_URI` (not `MONGO_URL`).
 
 ## Installation
 
@@ -180,23 +170,13 @@ http://localhost:3000
 
 ## Vendor Integrations
 
-Set `INTEGRATION_ENCRYPTION_KEY` in the backend environment to a randomly generated 32-byte hex value. Generate one with:
-
-```bash
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Keep this key in the backend secret store only. Losing or rotating it without re-encrypting stored credentials makes vendor Shiprocket credentials unreadable.
-
-Authenticated vendors can read integration status at `GET /vendor/integrations` and update Shiprocket credentials at `PUT /vendor/integrations` with a `shiprocket` object containing `email`, `password`, and optionally `enabled`. GET and PUT responses report whether credentials are present, never their values. A blank credential on update leaves its stored value unchanged. The vendor identity comes from the bearer token; clients cannot select another vendor's record.
-
-Shiprocket calls resolve credentials from the order's or shipment's vendor ID. Legacy global Shiprocket login credentials are no longer used by the service. Configure each vendor before checkout or fulfillment that requires that vendor's Shiprocket account.
+Configure Shiprocket only in the backend environment using the paired `SHIPROCKET_EMAIL` and `SHIPROCKET_PASSWORD` variables. Vendor profiles cannot save Shiprocket credentials; they only select the registered pickup location. Configure the variables before checkout or fulfillment that requires Shiprocket.
 
 New single-store checkouts use Razorpay Standard Payments and do not require vendor linked accounts or vendor API credentials.
 
-### Shared storefront domains
+### Storefront domain
 
-The public `GET /storefront` and `GET /storefront/products` endpoints resolve the browser `Origin` (or `Host` for same-origin calls) against `Vendor.storefrontDomains`. The domain list is platform-managed and must only be populated after domain ownership and DNS have been verified; do not add it to vendor self-service profile updates. A domain that does not match a verified vendor returns 404. The products endpoint only returns active products for that host's vendor. For Vercel, add each custom domain or `*.vendoraflame.com` to the same project. Vercel requires Vercel nameservers to issue wildcard certificates. Use the DNS values Vercel displays for the project; verified domains receive managed TLS. Configure the shared API origin in the frontend separately; the browser origin selects the storefront while all requests continue to use the one Render backend.
+Each client's Vercel storefront points to that client's dedicated backend and database. The backend selects its one verified owner by `STORE_OWNER_ID`; it does not resolve tenants from the request domain. Add the client's domain to that client's Vercel project and set the same client's backend origin in `VITE_API_URL` for the storefront and vendor panel.
 
 ### Razorpay Standard Payments
 
@@ -204,7 +184,7 @@ Checkout creates one normal INR Razorpay order without Route transfers. The serv
 
 Configure `RAZORPAY_KEY_ID` and `RAZORPAY_SECRET` in the backend environment for each store deployment. The secret stays on the backend. The frontend may set `VITE_RAZORPAY_KEY_ID`, which must match the backend Key ID, or use the public Key ID returned by the backend. Configure the distinct `RAZORPAY_WEBHOOK_SECRET` in the backend and Razorpay Dashboard.
 
-The webhook endpoint is `POST /webhooks/razorpay`. Subscribe to `payment.authorized`, `payment.captured`, and `payment.failed` for new checkout payments. The endpoint validates `X-Razorpay-Signature` over the exact raw body, checks payment/order references, amount and currency, and processes event IDs transactionally. Only captured events mark a payment paid. Legacy Route transfer and settlement webhook handling remains for historical payment records; it is not used to create new checkout payments. No live payment request has been made as part of this implementation.
+The webhook endpoint is `POST /webhooks/razorpay`. Subscribe to `payment.authorized`, `payment.captured`, and `payment.failed` for new checkout payments. The endpoint validates `X-Razorpay-Signature` over the exact raw body, checks payment/order references, amount and currency, and processes event IDs transactionally. Only captured events mark a payment paid; captured events also attempt idempotent order recovery. Legacy Route transfer and settlement webhook handling remains for historical payment records; it is not used to create new checkout payments. No live payment request has been made as part of this implementation.
 ## Main Dependencies
 
 - `express` - HTTP server framework.

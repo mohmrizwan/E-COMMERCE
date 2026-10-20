@@ -76,6 +76,7 @@ const Checkout = () => {
 
       setOrderData({
         items,
+        storeName: checkout.storeName,
         address,
         subtotal: checkout.subtotalAmount,
         discount: 0,

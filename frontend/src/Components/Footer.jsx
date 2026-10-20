@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { STORE_NAME } from "../config/brand.js";
 
 const Footer = () => {
   return (
@@ -11,14 +12,14 @@ const Footer = () => {
             <div className="footer-logo">
               <Link to="/" className="inline-block">
                 <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                  Vendor<span className="text-[#6c3bff]">Aflame</span>
+                  {STORE_NAME}
                 </p>
               </Link>
 
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
                   Discover quality products and enjoy a smarter shopping
-                  experience with VendoraFlame.
+                  experience with {STORE_NAME}.
                 </p>
               </div>
 
@@ -98,7 +99,7 @@ const Footer = () => {
         <div className="mt-12 border-t border-gray-200 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="font-[Inter] text-xs text-[#9CA3AF]">
-              © 2026 VendoraFlame. All rights reserved.
+              © 2026 {STORE_NAME}. All rights reserved.
             </p>
 
             <div className="flex gap-5">

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
+import { STORE_NAME } from "../config/brand.js";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
@@ -64,11 +65,11 @@ const CreateAccount = () => {
   return (
     <AuthShell>
       <div className="auth-heading">
-        <p className="auth-eyebrow">JOIN THE MARKETPLACE</p>
+        <p className="auth-eyebrow">JOIN THE STORE</p>
 
         <h2>Create your account</h2>
 
-        <p>Join VendorAflame and start shopping today.</p>
+        <p>Join {STORE_NAME} and start shopping today.</p>
       </div>
 
       {/* Success Snackbar */}

@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import OrderSummary from "../OrderSummary";
+import { STORE_NAME } from "../../config/brand.js";
 
 const Confirmation = ({ orderData }) => {
   return (
@@ -11,7 +12,7 @@ const Confirmation = ({ orderData }) => {
           <div className="flex items-center justify-between gap-4">
             <Link to="/" className="shrink-0">
               <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                Vendor<span className="text-[#6c3bff]">Aflame</span>
+                {STORE_NAME}
               </p>
             </Link>
 

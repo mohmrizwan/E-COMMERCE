@@ -6,6 +6,7 @@ import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import Dotter from "../Components/Dotter";
 import { API_ORIGIN } from "../utils/productsApi";
+import { STORE_NAME } from "../config/brand.js";
 
 
 // simple function to get auth header, using token from localStorage
@@ -333,7 +334,7 @@ function AddressesPage({
     <>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <PageIntro eyebrow="Delivery details" title="Saved Addresses">
-          Choose where your Vendora orders should arrive.
+          Choose where your {STORE_NAME} orders should arrive.
         </PageIntro>
         <button
           onClick={onAdd}
@@ -483,7 +484,7 @@ function OrdersPage({ orders, selectedOrder, tracking, isTracking, onTrack, onCl
   return (
     <>
       <PageIntro eyebrow="Purchase history" title="My Orders">
-        Everything you have ordered from Vendora, in one place.
+        Everything you have ordered from {STORE_NAME}, in one place.
       </PageIntro>
       <div className="space-y-4">
         {orders.map((order) => (

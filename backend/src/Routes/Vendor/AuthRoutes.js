@@ -11,6 +11,7 @@ import {
   resendOtp,
   verifyOtp,
   getVendorProfile,
+  updateVendorProfile,
 } from "../../Controllers/Vendor/AuthControllers.js";
 import VendorAuthMiddleware from "../../middlewares/VendorAuthMiddleware.js";
 
@@ -32,5 +33,6 @@ router.put(
   updateVendorPickupAddress,
 );
 router.get("/myProfile", VendorAuthMiddleware, getVendorProfile);
+router.put("/myProfile", VendorAuthMiddleware, updateVendorProfile);
 
 export default router;

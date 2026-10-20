@@ -1,5 +1,7 @@
 # Deployment store owner
 
+For the complete per-client environment variable list and Render/Vercel setup, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
 Each deployment authorizes exactly one verified vendor account. Vendor signup remains public and creates an unverified account; the six-digit email OTP must be verified before the account can log in. Signup, OTP verification, and client-supplied role/owner fields do not grant store-owner access.
 
 After completing signup and OTP verification, configure the selected vendor account's MongoDB `_id` as `STORE_OWNER_ID` in the backend environment. For local development, add this line to `backend/.env`:

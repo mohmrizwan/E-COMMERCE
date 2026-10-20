@@ -125,7 +125,9 @@ export const order = async (req, res) => {
     let shippingPaise = 0;
 
     for (const [vendorId, vendorSubtotalPaise] of vendorSubtotalsPaise) {
-      const vendor = await VendorModel.findById(vendorId).select("pickupAddress");
+      const vendor = await VendorModel.findById(vendorId).select(
+        "pickupAddress businessName",
+      );
       const pickupAddress = vendor?.pickupAddress;
       const pickupPostcode = String(pickupAddress?.pincode || "").trim();
       const pickupLocationName = String(
@@ -146,7 +148,7 @@ export const order = async (req, res) => {
         !/^\d{6}$/.test(pickupPostcode)
       ) {
         return res.status(400).json({
-          message: `${vendor.businessName} must save a complete pickup address with a valid six-digit pincode and registered Shiprocket pickup location before checkout`,
+          message: `${vendor.businessName || "This store"} must save a complete pickup address with a valid six-digit pincode and registered Shiprocket pickup location before checkout`,
         });
       }
 
@@ -236,6 +238,7 @@ export const order = async (req, res) => {
         keyId,
       },
       checkout: {
+        storeName: storeOwner.businessName,
         items: checkoutItems,
         subtotalAmount,
         shippingAmount: shippingPaise / 100,

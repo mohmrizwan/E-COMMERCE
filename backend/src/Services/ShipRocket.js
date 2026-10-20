@@ -35,9 +35,9 @@ const normalizeShiprocketOrderResponse = (payload) => {
   };
 };
 
-export const authenticateShiprocketCredentials = async (credentials) => {
+export const authenticateShiprocketCredentials = async (credentials, httpClient = axios) => {
   try {
-    const response = await axios.post(
+    const response = await httpClient.post(
       "https://apiv2.shiprocket.in/v1/external/auth/login",
       credentials,
     );
@@ -352,9 +352,24 @@ export const getShiprocketShippingQuote = async ({
     cod,
     declaredValue,
   });
+  return selectShiprocketCourierQuote(serviceability, preferredCourierCompanyId, {
+    pickupPostcode: normalizedPickupPostcode,
+    deliveryPostcode: normalizedDeliveryPostcode,
+    weight,
+    length,
+    breadth,
+    height,
+  });
+};
+
+export const selectShiprocketCourierQuote = (
+  serviceability,
+  preferredCourierCompanyId = "",
+  route = {},
+) => {
   const couriers =
-    serviceability.data?.available_courier_companies ||
-    serviceability.available_courier_companies ||
+    serviceability?.data?.available_courier_companies ||
+    serviceability?.available_courier_companies ||
     [];
   const serviceableCouriers = couriers
     .map((option) => ({
@@ -387,12 +402,7 @@ export const getShiprocketShippingQuote = async ({
     courierName: courier.option.courier_name || "",
     estimatedDelivery:
       courier.option.etd || courier.option.estimated_delivery_days || null,
-    pickupPostcode: normalizedPickupPostcode,
-    deliveryPostcode: normalizedDeliveryPostcode,
-    weight,
-    length,
-    breadth,
-    height,
+    ...route,
   };
 };
 

@@ -5,6 +5,7 @@ import axios from "axios";
 import { Toaster } from "react-hot-toast";
 import { resolveRazorpayKeyId } from "../../../../shared/razorpayKeyId.mjs";
 import { API_ORIGIN } from "../../utils/productsApi";
+import { STORE_NAME } from "../../config/brand.js";
 
 const Payment = ({ setStep, orderData, onPlaceOrder }) => {
   const [paymentState, setPaymentState] = useState("idle");
@@ -75,8 +76,8 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
       }),
       amount: data.amount,
       currency: data.currency,
-      name: "Rizwan",
-      description: "Test Mode",
+      name: orderData.storeName || "Store",
+      description: "Secure checkout",
       order_id: data.id,
 
       handler: async (response) => {
@@ -180,7 +181,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
           <div className="address-header flex justify-between  items-center ">
             <Link to="/" className="shrink-0">
               <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                Vendor<span className="text-[#6c3bff]">Aflame</span>
+                {STORE_NAME}
               </p>
             </Link>
 

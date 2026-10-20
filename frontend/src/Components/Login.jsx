@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
+import { STORE_NAME } from "../config/brand.js";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
@@ -58,7 +59,7 @@ const Login = () => {
       <div className="auth-heading">
         <p className="auth-eyebrow">WELCOME BACK</p>
         <h2>Welcome back</h2>
-        <p>Login to your VendorAflame account</p>
+        <p>Login to your {STORE_NAME} account</p>
       </div>
 
       <Snackbar

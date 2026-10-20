@@ -1,5 +1,6 @@
 // src/pages/TermsAndConditions.jsx
 import React, { useState } from "react";
+import { STORE_NAME } from "../config/brand.js";
 
 const sections = [
   "Introduction",
@@ -7,7 +8,7 @@ const sections = [
   "Orders & Payments",
   "Shipping & Delivery",
   "Returns & Refunds",
-  "Products & Vendors",
+  "Products & Store",
   "User Responsibilities",
   "Privacy",
   "Intellectual Property",
@@ -34,7 +35,7 @@ const TermsAndConditions = () => {
           Terms & Conditions
         </h1>
         <p className="mt-2 text-gray-600">
-          Please read these terms carefully before using Vendora.
+          Please read these terms carefully before using {STORE_NAME}.
         </p>
         <p className="mt-1 text-sm text-gray-500">Last Updated: August 2026</p>
       </header>
@@ -108,7 +109,7 @@ const TermsAndConditions = () => {
           {/* Footer Note */}
           <div className="bg-white border rounded-md shadow-sm p-6 text-center">
             <p className="text-gray-700 mb-4">
-              By using Vendora, you acknowledge that you have read and agreed to these Terms & Conditions.
+              By using {STORE_NAME}, you acknowledge that you have read and agreed to these Terms & Conditions.
             </p>
             <button className="px-6 py-2 bg-[#6C3BFF] text-white rounded-md shadow hover:bg-[#5a2fe0] transition">
               Contact Support
