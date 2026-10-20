@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const configuredApiUrl = (import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com").trim();
 
 if (!configuredApiUrl) {
   throw new Error("VITE_API_URL must be configured for this storefront.");
