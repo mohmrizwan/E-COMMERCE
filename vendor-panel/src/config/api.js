@@ -1,4 +1,4 @@
-const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const configuredApiUrl = (import.meta.env.VITE_API_URL || "https://ecommerceba-6dtt.onrender.com").trim();
 
 export const API_URL = configuredApiUrl
   ? configuredApiUrl.replace(/\/+$/, "")
