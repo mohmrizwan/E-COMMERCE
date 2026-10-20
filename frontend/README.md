@@ -1,18 +1,28 @@
-# React + Vite
+# Storefront
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+## Configure the API
 
-Currently, two official plugins are available:
+The storefront needs `VITE_API_URL`, the origin of the shared backend (for example, `https://your-api.onrender.com`). Vite embeds this value into the JavaScript bundle at build time.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+For local development, copy `.env.example` to `.env` and keep the local backend URL:
 
-## React Compiler
+```text
+VITE_API_URL=http://localhost:3000
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+For a Vercel deployment, open the storefront project's **Settings → Environment Variables**, add `VITE_API_URL` with the deployed backend origin, and apply it to the environments you deploy. Then trigger a new deployment; changing the variable does not update an already-built bundle.
 
-## Expanding the Oxlint configuration
+Do not include a trailing path such as `/api`, and do not put backend secrets in frontend variables. The browser's storefront domain is sent to the backend to resolve the vendor.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Run locally
 
+```sh
+npm install
+npm run dev
+```
 
+## Build
+
+```sh
+npm run build
+```
