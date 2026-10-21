@@ -1,38 +1,47 @@
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import { API_ORIGIN } from "../utils/productsApi";
 
 let storefrontCache = null;
 let storefrontRequest = null;
+let refreshTimer = null;
+const listeners = new Set();
 
-export const useStorefront = () => {
-  const [storefront, setStorefront] = useState(storefrontCache);
+const refreshStorefront = () => {
+  if (storefrontRequest) return storefrontRequest;
 
-  useEffect(() => {
-    if (storefrontCache) {
-      setStorefront(storefrontCache);
-      return;
-    }
-    if (!storefrontRequest) {
-      storefrontRequest = fetch(`${API_ORIGIN}/storefront`)
-        .then((response) => response.ok ? response.json() : null)
-        .then((data) => {
-          storefrontCache = data?.storefront || null;
-          return storefrontCache;
-        })
-        .finally(() => {
-          storefrontRequest = null;
-        });
-    }
-    let active = true;
-    storefrontRequest
-      .then((data) => {
-        if (active) setStorefront(data);
-      })
-      .catch(() => {});
-    return () => {
-      active = false;
-    };
-  }, []);
+  storefrontRequest = fetch(`${API_ORIGIN}/storefront`, { cache: "no-store" })
+    .then((response) => response.ok ? response.json() : null)
+    .then((data) => {
+      const nextStorefront = data?.storefront || null;
+      const hasChanged = JSON.stringify(nextStorefront) !== JSON.stringify(storefrontCache);
+      storefrontCache = nextStorefront;
+      if (hasChanged) listeners.forEach((listener) => listener());
+      return storefrontCache;
+    })
+    .catch(() => storefrontCache)
+    .finally(() => {
+      storefrontRequest = null;
+    });
 
-  return storefront;
+  return storefrontRequest;
 };
+
+const subscribe = (listener) => {
+  listeners.add(listener);
+  if (listeners.size === 1) {
+    refreshStorefront();
+    refreshTimer = window.setInterval(refreshStorefront, 5000);
+  }
+  return () => {
+    listeners.delete(listener);
+    if (listeners.size === 0 && refreshTimer) {
+      window.clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
+  };
+};
+
+const getSnapshot = () => storefrontCache;
+
+export const useStorefront = () =>
+  useSyncExternalStore(subscribe, getSnapshot, getSnapshot);

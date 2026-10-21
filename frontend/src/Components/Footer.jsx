@@ -20,7 +20,7 @@ const Footer = () => {
                 {storefront?.websiteLogo ? (
                   <img
                     src={storefront.websiteLogo}
-                    alt={storeName}
+                    // alt={storeName}
                     className="h-10 max-w-48 object-contain object-left"
                   />
                 ) : (

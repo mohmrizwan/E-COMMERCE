@@ -33,12 +33,17 @@ import {
 function Sidebar({ visible, setVisible }) {
   const [storeLogo, setStoreLogo] = useState(defaultLogo);
   useEffect(() => {
+    const handleSettingsUpdated = (event) => {
+      if (event.detail?.websiteLogo) setStoreLogo(event.detail.websiteLogo);
+    };
+    window.addEventListener("storefront:settings-updated", handleSettingsUpdated);
     fetch(apiUrl("storefront"))
       .then((response) => response.ok ? response.json() : null)
       .then((data) => {
         if (data?.storefront?.websiteLogo) setStoreLogo(data.storefront.websiteLogo);
       })
       .catch(() => {});
+    return () => window.removeEventListener("storefront:settings-updated", handleSettingsUpdated);
   }, []);
   return (
     <CSidebar

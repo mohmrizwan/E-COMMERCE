@@ -228,6 +228,13 @@ const VendorProfile = () => {
       }));
       setWebsiteLogoFile(null);
       setWebsiteLogoPreview("");
+      window.dispatchEvent(new CustomEvent("storefront:settings-updated", {
+        detail: {
+          websiteLogo: vendorProfile.websiteLogo || "",
+          businessName: vendorProfile.businessName || "",
+          footerText: vendorProfile.footerText || "",
+        },
+      }));
       setMessage(response.data.message || "Profile changes saved.");
       setEditMode(false);
     } catch (error) {
