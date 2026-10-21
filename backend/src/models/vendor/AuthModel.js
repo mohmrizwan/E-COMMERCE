@@ -57,6 +57,8 @@ const AuthSchema = new mongoose.Schema(
       trim: true,
     },
     description: { type: String, trim: true, default: "" },
+    websiteLogo: { type: String, trim: true, default: "" },
+    footerText: { type: String, trim: true, default: "" },
     accountHolderName: { type: String, trim: true, default: "" },
     bankName: { type: String, trim: true, default: "" },
     accountNumber: { type: String, trim: true, default: "" },

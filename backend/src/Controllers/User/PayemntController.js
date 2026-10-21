@@ -297,6 +297,8 @@ export const order = async (req, res) => {
       status: error.response?.status,
       code: error.code,
       name: error.name,
+      providerCode: error.response?.data?.error?.code || null,
+      providerDescription: error.response?.data?.error?.description || error.response?.data?.message || null,
     });
     return res.status(error.response ? 502 : 500).json({
       message: "Could not create a checkout payment",

@@ -14,6 +14,7 @@ import {
   updateVendorProfile,
 } from "../../Controllers/Vendor/AuthControllers.js";
 import VendorAuthMiddleware from "../../middlewares/VendorAuthMiddleware.js";
+import upload from "../../middlewares/multer.js";
 
 router.post("/register", registerVendor);
 router.post("/verify", verifyOtp);
@@ -33,6 +34,11 @@ router.put(
   updateVendorPickupAddress,
 );
 router.get("/myProfile", VendorAuthMiddleware, getVendorProfile);
-router.put("/myProfile", VendorAuthMiddleware, updateVendorProfile);
+router.put("/myProfile", VendorAuthMiddleware, (req, res, next) => {
+  upload.single("websiteLogo")(req, res, (error) => {
+    if (error) return res.status(400).json({ message: error.message });
+    next();
+  });
+}, updateVendorProfile);
 
 export default router;

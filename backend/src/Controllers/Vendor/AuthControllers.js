@@ -5,6 +5,15 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import generateToken from "../../utils/generateToken.js";
 import { matchesConfiguredStoreOwnerId } from "../../Services/StoreOwner.js";
+import Cloudinary from "../../Config/Cloudinary.js";
+
+const hasValidLogoSignature = ({ mimetype, buffer }) => {
+  if (!buffer) return false;
+  if (mimetype === "image/png") return buffer.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]));
+  if (mimetype === "image/jpeg") return buffer[0] === 0xff && buffer[1] === 0xd8 && buffer[2] === 0xff;
+  if (mimetype === "image/webp") return buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP";
+  return false;
+};
 
 export const registerVendor = async (req, res) => {
   try {
@@ -560,11 +569,22 @@ export const updateVendorProfile = async (req, res) => {
       "accountNumber",
       "ifscCode",
       "upiId",
+      "footerText",
     ];
     for (const field of editableFields) {
       if (req.body?.[field] !== undefined) {
         vendor[field] = String(req.body[field] ?? "").trim();
       }
+    }
+    if (req.file) {
+      if (!hasValidLogoSignature(req.file)) {
+        return res.status(400).json({ success: false, message: "Only PNG, JPG and WEBP images are allowed" });
+      }
+      const uploadedLogo = await Cloudinary.uploader.upload(
+        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+        { folder: "storefront", resource_type: "image" },
+      );
+      vendor.websiteLogo = uploadedLogo.secure_url;
     }
     if (req.body?.payoutMethod !== undefined) {
       const payoutMethod = String(req.body.payoutMethod).trim();

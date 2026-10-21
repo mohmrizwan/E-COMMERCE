@@ -1,8 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { STORE_NAME } from "../config/brand.js";
+import { API_ORIGIN } from "../utils/productsApi";
 
 const Footer = () => {
+  const [storefront, setStorefront] = useState(null);
+  useEffect(() => {
+    if (!API_ORIGIN) return;
+    fetch(`${API_ORIGIN}/storefront`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setStorefront(data?.storefront || null))
+      .catch(() => {});
+  }, []);
+  const storeName = storefront?.businessName || STORE_NAME;
+  const copyright = storefront?.footerText || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   return (
     <footer className="footer-wrapper border-t-2 border-gray-200 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-0">
@@ -99,7 +110,7 @@ const Footer = () => {
         <div className="mt-12 border-t border-gray-200 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="font-[Inter] text-xs text-[#9CA3AF]">
-              © 2026 {STORE_NAME}. All rights reserved.
+              {copyright}
             </p>
 
             <div className="flex gap-5">

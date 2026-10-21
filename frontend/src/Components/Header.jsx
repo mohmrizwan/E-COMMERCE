@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 import { STORE_NAME } from "../config/brand.js";
+import { API_ORIGIN } from "../utils/productsApi";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -12,6 +13,7 @@ const Header = () => {
     () => new URLSearchParams(location.search).get("search") || "",
   );
   const { cart } = useCart();
+  const [storefront, setStorefront] = useState(null);
   const cartItemCount = cart.reduce(
     (count, item) => count + Number(item.quantity || 1),
     0,
@@ -25,6 +27,14 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!API_ORIGIN) return;
+    fetch(`${API_ORIGIN}/storefront`)
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => setStorefront(data?.storefront || null))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -88,9 +98,7 @@ const Header = () => {
       >
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
-            <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-              {STORE_NAME}
-            </p>
+            {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storefront.businessName || STORE_NAME} className="h-10 max-w-48 object-contain" /> : <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">{storefront?.businessName || STORE_NAME}</p>}
           </Link>
 
           <div className="order-3 flex w-full items-center rounded-full border border-gray-300 bg-gray-50 px-4 py-2.5 transition-all duration-300 focus-within:border-[#6c3bff] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#6c3bff]/10 lg:order-none lg:mx-auto lg:max-w-4xl">

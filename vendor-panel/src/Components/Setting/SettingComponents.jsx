@@ -8,25 +8,20 @@ import {
   CContainer,
   CFormInput,
   CFormLabel,
-  CFormSelect,
-  CFormTextarea,
   CRow,
 } from "@coreui/react";
 
 const WebsiteSettings = () => {
   const [settings, setSettings] = useState({
-    websiteName: "Urban Store",
-    websiteUrl: "urbanstore.com",
-    email: "contact@urbanstore.com",
+    websiteName: "Meera Plastic Center",
+    logo: "",
+    email: "contact@meerastore.com",
     phone: "+91 9876543210",
-    currency: "INR",
-    language: "English",
-    description:
-      "Welcome to Urban Store. We provide quality products at affordable prices.",
-    footerText: "© 2026 Urban Store. All rights reserved.",
+    footerText: "© 2026 Meera Plastic Center. All rights reserved.",
   });
 
   const [editMode, setEditMode] = useState(false);
+  const [logoPreview, setLogoPreview] = useState("");
 
   const handleChange = (e) => {
     setSettings({
@@ -35,18 +30,29 @@ const WebsiteSettings = () => {
     });
   };
 
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+
+    if (file) {
+      setLogoPreview(URL.createObjectURL(file));
+      setSettings({
+        ...settings,
+        logo: file,
+      });
+    }
+  };
+
   const handleSave = () => {
     setEditMode(false);
   };
 
   return (
     <CContainer fluid className="py-3">
-      {/* Header */}
       <CRow className="mb-4">
         <CCol>
           <h3 className="fw-bold mb-1">Website Settings</h3>
           <p className="text-body-secondary mb-0">
-            Manage your website information and settings
+            Manage your website information and branding.
           </p>
         </CCol>
       </CRow>
@@ -59,7 +65,31 @@ const WebsiteSettings = () => {
             </CCardHeader>
 
             <CCardBody>
-              {/* Website Name */}
+              <div className="mb-3">
+                <CFormLabel>Website Logo</CFormLabel>
+
+                {(logoPreview || (typeof settings.logo === "string" && settings.logo)) && (
+                  <div className="mb-2">
+                    <img
+                      src={logoPreview || settings.logo}
+                      alt="Website Logo"
+                      style={{
+                        width: "100px",
+                        height: "100px",
+                        objectFit: "contain",
+                      }}
+                    />
+                  </div>
+                )}
+
+                <CFormInput
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoChange}
+                  disabled={!editMode}
+                />
+              </div>
+
               <div className="mb-3">
                 <CFormLabel>Website Name</CFormLabel>
                 <CFormInput
@@ -70,18 +100,6 @@ const WebsiteSettings = () => {
                 />
               </div>
 
-              {/* Website URL */}
-              <div className="mb-3">
-                <CFormLabel>Website URL</CFormLabel>
-                <CFormInput
-                  name="websiteUrl"
-                  value={settings.websiteUrl}
-                  onChange={handleChange}
-                  disabled={!editMode}
-                />
-              </div>
-
-              {/* Email */}
               <div className="mb-3">
                 <CFormLabel>Contact Email</CFormLabel>
                 <CFormInput
@@ -93,10 +111,10 @@ const WebsiteSettings = () => {
                 />
               </div>
 
-              {/* Phone */}
               <div className="mb-3">
                 <CFormLabel>Contact Phone</CFormLabel>
                 <CFormInput
+                  type="tel"
                   name="phone"
                   value={settings.phone}
                   onChange={handleChange}
@@ -104,51 +122,8 @@ const WebsiteSettings = () => {
                 />
               </div>
 
-              {/* Currency */}
               <div className="mb-3">
-                <CFormLabel>Currency</CFormLabel>
-                <CFormSelect
-                  name="currency"
-                  value={settings.currency}
-                  onChange={handleChange}
-                  disabled={!editMode}
-                >
-                  <option value="INR">Indian Rupee (₹)</option>
-                  <option value="USD">US Dollar ($)</option>
-                  <option value="EUR">Euro (€)</option>
-                  <option value="GBP">British Pound (£)</option>
-                </CFormSelect>
-              </div>
-
-              {/* Language */}
-              <div className="mb-3">
-                <CFormLabel>Language</CFormLabel>
-                <CFormSelect
-                  name="language"
-                  value={settings.language}
-                  onChange={handleChange}
-                  disabled={!editMode}
-                >
-                  <option value="English">English</option>
-                  <option value="Hindi">Hindi</option>
-                </CFormSelect>
-              </div>
-
-              {/* Website Description */}
-              <div className="mb-3">
-                <CFormLabel>Website Description</CFormLabel>
-                <CFormTextarea
-                  rows={4}
-                  name="description"
-                  value={settings.description}
-                  onChange={handleChange}
-                  disabled={!editMode}
-                />
-              </div>
-
-              {/* Footer */}
-              <div className="mb-3">
-                <CFormLabel>Footer Text</CFormLabel>
+                <CFormLabel>Footer Copyright Text</CFormLabel>
                 <CFormInput
                   name="footerText"
                   value={settings.footerText}
@@ -157,7 +132,6 @@ const WebsiteSettings = () => {
                 />
               </div>
 
-              {/* Buttons */}
               <div className="d-flex justify-content-end gap-2 mt-4">
                 {editMode ? (
                   <>

@@ -18,7 +18,6 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { apiUrl } from "../../config/api.js";
 
-
 const emptyPickupAddress = {
   shiprocketLocationName: "",
   address: "",
@@ -38,6 +37,8 @@ const VendorProfile = () => {
     phone: "",
     address: "",
     description: "",
+    websiteLogo: "",
+    footerText: "",
     accountHolderName: "",
     bankName: "",
     accountNumber: "",
@@ -49,22 +50,21 @@ const VendorProfile = () => {
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [websiteLogoFile, setWebsiteLogoFile] = useState(null);
+  const [websiteLogoPreview, setWebsiteLogoPreview] = useState("");
 
   // =========================
   // Pickup Address
   // =========================
-  const [pickupAddress, setPickupAddress] =
-    useState(emptyPickupAddress);
+  const [pickupAddress, setPickupAddress] = useState(emptyPickupAddress);
   const [pickupLocations, setPickupLocations] = useState([]);
 
   const [pickupAddressError, setPickupAddressError] = useState("");
   const [pickupAddressMessage, setPickupAddressMessage] = useState("");
 
-  const [isLoadingPickupAddress, setIsLoadingPickupAddress] =
-    useState(true);
+  const [isLoadingPickupAddress, setIsLoadingPickupAddress] = useState(true);
 
-  const [isSavingPickupAddress, setIsSavingPickupAddress] =
-    useState(false);
+  const [isSavingPickupAddress, setIsSavingPickupAddress] = useState(false);
 
   // =========================
   // Profile Edit Mode
@@ -105,8 +105,7 @@ const VendorProfile = () => {
       setPickupAddressError("");
     } catch (error) {
       setPickupAddressError(
-        error.response?.data?.message ||
-          "Could not load the pickup address.",
+        error.response?.data?.message || "Could not load the pickup address.",
       );
     } finally {
       setIsLoadingPickupAddress(false);
@@ -120,17 +119,13 @@ const VendorProfile = () => {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
 
-      const response = await axios.get(
-        apiUrl("vendor/myProfile"),
-        {
-          headers: {
-            Authorization: `Bearer ${vendorToken}`,
-          },
+      const response = await axios.get(apiUrl("vendor/myProfile"), {
+        headers: {
+          Authorization: `Bearer ${vendorToken}`,
         },
-      );
+      });
 
-      const vendorProfile =
-        response.data.vendorProfile;
+      const vendorProfile = response.data.vendorProfile;
 
       setFormData({
         businessName: vendorProfile.businessName || "",
@@ -139,23 +134,19 @@ const VendorProfile = () => {
         phone: vendorProfile.phone || "",
         address: vendorProfile.address || "",
         description: vendorProfile.description || "",
-        accountHolderName:
-          vendorProfile.accountHolderName || "",
+        websiteLogo: vendorProfile.websiteLogo || "",
+        footerText: vendorProfile.footerText || "",
+        accountHolderName: vendorProfile.accountHolderName || "",
         bankName: vendorProfile.bankName || "",
-        accountNumber:
-          vendorProfile.accountNumber || "",
+        accountNumber: vendorProfile.accountNumber || "",
         ifscCode: vendorProfile.ifscCode || "",
         upiId: vendorProfile.upiId || "",
-        payoutMethod:
-          vendorProfile.payoutMethod || "bank",
+        payoutMethod: vendorProfile.payoutMethod || "bank",
       });
 
       setErrorMessage("");
     } catch (error) {
-      setErrorMessage(
-        error.response?.data?.message ||
-          "Something went wrong",
-      );
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
 
       setMessage("");
     }
@@ -173,6 +164,13 @@ const VendorProfile = () => {
   // Profile Input Change
   // =========================
   const handleChange = (e) => {
+    if (e.target.name === "websiteLogo") {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setWebsiteLogoFile(file);
+      setWebsiteLogoPreview(URL.createObjectURL(file));
+      return;
+    }
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -191,16 +189,11 @@ const VendorProfile = () => {
     ];
 
     const emptyFields = requiredFields
-      .filter(
-        ([field]) =>
-          !String(formData[field] || "").trim(),
-      )
+      .filter(([field]) => !String(formData[field] || "").trim())
       .map(([, label]) => label);
 
     if (emptyFields.length) {
-      setErrorMessage(
-        `Please fill in: ${emptyFields.join(", ")}.`,
-      );
+      setErrorMessage(`Please fill in: ${emptyFields.join(", ")}.`);
       return;
     }
 
@@ -208,15 +201,14 @@ const VendorProfile = () => {
     setMessage("");
     setIsSavingProfile(true);
     try {
-      const response = await axios.put(
-        apiUrl("vendor/myProfile"),
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
-          },
+      const payload = new FormData();
+      Object.entries(formData).forEach(([key, value]) => payload.append(key, value ?? ""));
+      if (websiteLogoFile) payload.append("websiteLogo", websiteLogoFile);
+      const response = await axios.put(apiUrl("vendor/myProfile"), payload, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
         },
-      );
+      });
       const vendorProfile = response.data.vendorProfile;
       setFormData((current) => ({
         ...current,
@@ -225,6 +217,8 @@ const VendorProfile = () => {
         email: vendorProfile.email || current.email,
         phone: vendorProfile.phone || "",
         description: vendorProfile.description || "",
+        websiteLogo: vendorProfile.websiteLogo || "",
+        footerText: vendorProfile.footerText || "",
         accountHolderName: vendorProfile.accountHolderName || "",
         bankName: vendorProfile.bankName || "",
         accountNumber: vendorProfile.accountNumber || "",
@@ -232,10 +226,14 @@ const VendorProfile = () => {
         upiId: vendorProfile.upiId || "",
         payoutMethod: vendorProfile.payoutMethod || "bank",
       }));
+      setWebsiteLogoFile(null);
+      setWebsiteLogoPreview("");
       setMessage(response.data.message || "Profile changes saved.");
       setEditMode(false);
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || "Could not save profile changes.");
+      setErrorMessage(
+        error.response?.data?.message || "Could not save profile changes.",
+      );
     } finally {
       setIsSavingProfile(false);
     }
@@ -249,7 +247,9 @@ const VendorProfile = () => {
     setPickupAddressMessage("");
 
     const selectedPickupAddress = pickupLocations.find(
-      (location) => location.shiprocketLocationName === addressToSave.shiprocketLocationName,
+      (location) =>
+        location.shiprocketLocationName ===
+        addressToSave.shiprocketLocationName,
     );
     if (!selectedPickupAddress) {
       setPickupAddressError(
@@ -263,28 +263,24 @@ const VendorProfile = () => {
     try {
       const response = await axios.put(
         apiUrl("vendor/profile/pickup-address"),
-        { shiprocketLocationName: selectedPickupAddress.shiprocketLocationName },
+        {
+          shiprocketLocationName: selectedPickupAddress.shiprocketLocationName,
+        },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem(
-              "vendorToken",
-            )}`,
+            Authorization: `Bearer ${localStorage.getItem("vendorToken")}`,
           },
         },
       );
 
-      setPickupAddress(
-        response.data.pickupAddress,
-      );
+      setPickupAddress(response.data.pickupAddress);
 
       setPickupAddressMessage(
-        response.data.message ||
-          "Pickup address saved successfully.",
+        response.data.message || "Pickup address saved successfully.",
       );
     } catch (error) {
       setPickupAddressError(
-        error.response?.data?.message ||
-          "Could not save the pickup address.",
+        error.response?.data?.message || "Could not save the pickup address.",
       );
     } finally {
       setIsSavingPickupAddress(false);
@@ -293,7 +289,6 @@ const VendorProfile = () => {
 
   return (
     <CContainer fluid className="py-3">
-
       {/* =========================
           Success Snackbar
       ========================= */}
@@ -347,22 +342,16 @@ const VendorProfile = () => {
             Account center
           </p>
 
-          <h3 className="fw-bold mb-1">
-            Vendor Profile
-          </h3>
+          <h3 className="fw-bold mb-1">Vendor Profile</h3>
 
           <p className="text-body-secondary mb-0">
-            Keep your store identity and payout
-            information up to date.
+            Keep your store identity and payout information up to date.
           </p>
         </CCol>
 
         <CCol xs="auto">
           {!editMode && (
-            <CButton
-              color="primary"
-              onClick={() => setEditMode(true)}
-            >
+            <CButton color="primary" onClick={() => setEditMode(true)}>
               Edit Profile
             </CButton>
           )}
@@ -373,14 +362,19 @@ const VendorProfile = () => {
         <CCardHeader>Razorpay Payments</CCardHeader>
         <CCardBody>
           <Alert severity="info">
-            Standard Payments use the Key ID and Key Secret configured in this store deployment's backend environment. The secret is not entered or stored in this panel. Contact the deployment administrator to configure payment credentials.
+            Standard Payments use the Key ID and Key Secret configured in this
+            store deployment's backend environment. The secret is not entered or
+            stored in this panel. Contact the deployment administrator to
+            configure payment credentials.
           </Alert>
         </CCardBody>
       </CCard>
       <CCard className="mb-4 border-0 shadow-sm">
         <CCardBody className="px-4">
           <Alert severity="info" className="mb-0">
-            Shiprocket credentials are managed in the backend deployment environment. Configure SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD there. This profile only manages the pickup address.
+            Shiprocket credentials are managed in the backend deployment
+            environment. Configure SHIPROCKET_EMAIL and SHIPROCKET_PASSWORD
+            there. This profile only manages the pickup address.
           </Alert>
         </CCardBody>
       </CCard>
@@ -390,9 +384,7 @@ const VendorProfile = () => {
       ========================= */}
       <CCard className="mb-4 border-0 shadow-sm">
         <CCardHeader className="bg-white border-0 px-4 pt-4">
-          <h5 className="mb-1">
-            Shiprocket pickup / warehouse address
-          </h5>
+          <h5 className="mb-1">Shiprocket pickup / warehouse address</h5>
 
           <p className="text-body-secondary small mb-0">
             Choose a pickup location registered in your Shiprocket account.
@@ -406,16 +398,16 @@ const VendorProfile = () => {
               className="d-flex align-items-center justify-content-center gap-2 text-sm text-body-secondary"
               style={{ minHeight: "112px" }}
             >
-              <CSpinner
-                size="sm"
-                aria-hidden="true"
-              />
+              <CSpinner size="sm" aria-hidden="true" />
               Loading pickup address...
             </div>
           ) : (
             <>
               {pickupLocations.length === 0 ? (
-                <Alert severity="info">No Shiprocket pickup address found. Please add a pickup address in your Shiprocket account.</Alert>
+                <Alert severity="info">
+                  No Shiprocket pickup address found. Please add a pickup
+                  address in your Shiprocket account.
+                </Alert>
               ) : (
                 <>
                   <CRow className="g-3">
@@ -424,7 +416,11 @@ const VendorProfile = () => {
                       <CFormSelect
                         value={pickupAddress.shiprocketLocationName || ""}
                         onChange={(event) => {
-                          const selected = pickupLocations.find((location) => location.shiprocketLocationName === event.target.value);
+                          const selected = pickupLocations.find(
+                            (location) =>
+                              location.shiprocketLocationName ===
+                              event.target.value,
+                          );
                           if (selected) {
                             setPickupAddress(selected);
                             savePickupAddress(selected);
@@ -433,21 +429,35 @@ const VendorProfile = () => {
                       >
                         <option value="">Select a pickup location</option>
                         {pickupLocations.map((location) => (
-                          <option key={location.shiprocketLocationName} value={location.shiprocketLocationName}>
+                          <option
+                            key={location.shiprocketLocationName}
+                            value={location.shiprocketLocationName}
+                          >
                             {location.shiprocketLocationName}
                           </option>
                         ))}
                       </CFormSelect>
                     </CCol>
-                    {[["Address", "address"], ["City", "city"], ["State", "state"], ["Pincode", "pincode"]].map(([label, field]) => (
+                    {[
+                      ["Address", "address"],
+                      ["City", "city"],
+                      ["State", "state"],
+                      ["Pincode", "pincode"],
+                    ].map(([label, field]) => (
                       <CCol md={field === "address" ? 12 : 4} key={field}>
                         <CFormLabel>{label}</CFormLabel>
-                        <CFormInput value={pickupAddress[field] || ""} readOnly />
+                        <CFormInput
+                          value={pickupAddress[field] || ""}
+                          readOnly
+                        />
                       </CCol>
                     ))}
                   </CRow>
                   {isSavingPickupAddress && (
-                    <p className="small text-body-secondary mt-2 mb-0" role="status">
+                    <p
+                      className="small text-body-secondary mt-2 mb-0"
+                      role="status"
+                    >
                       Saving selected pickup location...
                     </p>
                   )}
@@ -456,22 +466,14 @@ const VendorProfile = () => {
 
               {(pickupAddressError || pickupAddressMessage) && (
                 <p
-                  role={
-                    pickupAddressError
-                      ? "alert"
-                      : "status"
-                  }
+                  role={pickupAddressError ? "alert" : "status"}
                   className={`mt-3 mb-0 small ${
-                    pickupAddressError
-                      ? "text-danger"
-                      : "text-success"
+                    pickupAddressError ? "text-danger" : "text-success"
                   }`}
                 >
-                  {pickupAddressError ||
-                    pickupAddressMessage}
+                  {pickupAddressError || pickupAddressMessage}
                 </p>
               )}
-
             </>
           )}
         </CCardBody>
@@ -481,48 +483,37 @@ const VendorProfile = () => {
           Profile
       ========================= */}
       <CRow className="g-4">
-
         {/* Left Profile Card */}
         <CCol xl={4}>
           <CCard className="h-100 border-0 shadow-sm">
-
             {/* Profile Header */}
             <div className="bg-primary text-white p-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
-
                 <div>
-                  <div className="small text-white-50 mb-1">
-                    Vendor Account
-                  </div>
+                  <div className="small text-white-50 mb-1">Vendor Account</div>
 
-                  <h4 className="fw-bold mb-1">
-                    {formData.businessName}
-                  </h4>
+                  <h4 className="fw-bold mb-1">{formData.businessName}</h4>
 
                   <p className="mb-0 text-white-50">
-                    {formData.ownerName ||
-                      "Owner"}
+                    {formData.ownerName || "Owner"}
                   </p>
                 </div>
 
                 <span className="badge rounded-pill bg-white text-primary px-3 py-2">
                   Active
                 </span>
-
               </div>
             </div>
 
             {/* Profile Details */}
             <CCardBody className="p-4">
-
               <div className="mb-4">
                 <div className="small text-body-secondary mb-1">
                   Email Address
                 </div>
 
                 <div className="fw-semibold text-break">
-                  {formData.email ||
-                    "Not available"}
+                  {formData.email || "Not available"}
                 </div>
               </div>
 
@@ -532,8 +523,7 @@ const VendorProfile = () => {
                 </div>
 
                 <div className="fw-semibold">
-                  {formData.phone ||
-                    "Not available"}
+                  {formData.phone || "Not available"}
                 </div>
               </div>
 
@@ -543,8 +533,7 @@ const VendorProfile = () => {
                 </div>
 
                 <div className="fw-semibold">
-                  {shiprocketAddress ||
-                    "Not available"}
+                  {shiprocketAddress || "Not available"}
                 </div>
               </div>
 
@@ -568,21 +557,16 @@ const VendorProfile = () => {
                   </span>
                 </div>
               </div>
-
             </CCardBody>
           </CCard>
         </CCol>
 
         {/* Right Side */}
         <CCol xl={8}>
-
           {/* Business Information */}
           <CCard className="border-0 shadow-sm mb-4">
-
             <CCardHeader className="bg-white border-0 px-4 pt-4">
-              <h5 className="mb-1">
-                Business information
-              </h5>
+              <h5 className="mb-1">Business information</h5>
 
               <p className="text-body-secondary small mb-0">
                 Manage store details and customer information.
@@ -591,19 +575,14 @@ const VendorProfile = () => {
 
             <CCardBody className="px-4">
               <CRow>
-
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Shop Name
-                    </CFormLabel>
+                    <CFormLabel>Shop Name</CFormLabel>
 
                     <CFormInput
                       required
                       name="businessName"
-                      value={
-                        formData.businessName
-                      }
+                      value={formData.businessName}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -612,16 +591,12 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Owner Name
-                    </CFormLabel>
+                    <CFormLabel>Owner Name</CFormLabel>
 
                     <CFormInput
                       required
                       name="ownerName"
-                      value={
-                        formData.ownerName
-                      }
+                      value={formData.ownerName}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -630,36 +605,31 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Email
-                    </CFormLabel>
+                    <CFormLabel>Email</CFormLabel>
 
                     <CFormInput
                       required
                       type="email"
                       name="email"
-                      value={
-                        formData.email
-                      }
+                      value={formData.email}
                       onChange={handleChange}
                       disabled
                     />
-                    <small className="text-body-secondary">Email changes require account verification and cannot be edited here.</small>
+                    <small className="text-body-secondary">
+                      Email changes require account verification and cannot be
+                      edited here.
+                    </small>
                   </div>
                 </CCol>
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Phone
-                    </CFormLabel>
+                    <CFormLabel>Phone</CFormLabel>
 
                     <CFormInput
                       required
                       name="phone"
-                      value={
-                        formData.phone
-                      }
+                      value={formData.phone}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -668,79 +638,80 @@ const VendorProfile = () => {
 
                 <CCol xs={12}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Shop Address
-                    </CFormLabel>
+                    <CFormLabel>Shop Address</CFormLabel>
 
-                    <CFormInput
-                      value={
-                        shiprocketAddress
-                      }
-                      readOnly
-                    />
+                    <CFormInput value={shiprocketAddress} readOnly />
                   </div>
                 </CCol>
 
                 <CCol xs={12}>
                   <div className="mb-2">
-                    <CFormLabel>
-                      Business Description
-                    </CFormLabel>
+                    <CFormLabel>Business Description</CFormLabel>
 
                     <CFormTextarea
                       rows={3}
                       name="description"
-                      value={
-                        formData.description
-                      }
+                      value={formData.description}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
                   </div>
                 </CCol>
+                {/* Storefront logo */}
+                <CCol xs={12}>
+                  <div className="mb-3">
+                    <CFormLabel>Website Logo (storefront and vendor panel)</CFormLabel>
+                    {(websiteLogoPreview || formData.websiteLogo) && <div className="mb-2"><img src={websiteLogoPreview || formData.websiteLogo} alt="Website logo preview" style={{ width: 160, height: 72, objectFit: "contain" }} /></div>}
+                    <CFormInput type="file" accept="image/png,image/jpeg,image/webp" name="websiteLogo" onChange={handleChange} disabled={!editMode} />
+                    <small className="text-body-secondary">PNG, JPG or WEBP, up to 5 MB.</small>
+                  </div>
+                </CCol>
 
+                {/* Footer Copyright */}
+                <CCol xs={12}>
+                <div className="mb-3">
+                  <CFormLabel>
+                    Footer Copyright / All Rights Reserved
+                  </CFormLabel>
+                  <CFormInput
+                    name="footerText"
+                    value={formData.footerText}
+                    onChange={handleChange}
+                    disabled={!editMode}
+                  />
+                </div>
+                </CCol>
               </CRow>
             </CCardBody>
           </CCard>
 
           {/* Payment & Bank Details */}
           <CCard className="border-0 shadow-sm">
-
             <CCardHeader className="bg-white border-0 px-4 pt-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
-
                 <div>
-                  <h5 className="mb-1">
-                    Payment & Bank Details
-                  </h5>
+                  <h5 className="mb-1">Payment & Bank Details</h5>
 
                   <p className="text-body-secondary small mb-0">
-                    Where your store earnings
-                    will be deposited.
+                    Where your store earnings will be deposited.
                   </p>
                 </div>
 
                 <span className="badge bg-success-subtle text-success">
                   Payout ready
                 </span>
-
               </div>
             </CCardHeader>
 
             <CCardBody className="px-4">
               <CRow>
-
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Account Holder Name
-                    </CFormLabel>
+                    <CFormLabel>Account Holder Name</CFormLabel>
 
                     <CFormInput
                       name="accountHolderName"
-                      value={
-                        formData.accountHolderName
-                      }
+                      value={formData.accountHolderName}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -749,15 +720,11 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Bank Name
-                    </CFormLabel>
+                    <CFormLabel>Bank Name</CFormLabel>
 
                     <CFormInput
                       name="bankName"
-                      value={
-                        formData.bankName
-                      }
+                      value={formData.bankName}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -766,17 +733,13 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Account Number
-                    </CFormLabel>
+                    <CFormLabel>Account Number</CFormLabel>
 
                     <CFormInput
                       type="text"
                       inputMode="numeric"
                       name="accountNumber"
-                      value={
-                        formData.accountNumber
-                      }
+                      value={formData.accountNumber}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -785,15 +748,11 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      IFSC Code
-                    </CFormLabel>
+                    <CFormLabel>IFSC Code</CFormLabel>
 
                     <CFormInput
                       name="ifscCode"
-                      value={
-                        formData.ifscCode
-                      }
+                      value={formData.ifscCode}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -802,15 +761,11 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      UPI ID (Optional)
-                    </CFormLabel>
+                    <CFormLabel>UPI ID (Optional)</CFormLabel>
 
                     <CFormInput
                       name="upiId"
-                      value={
-                        formData.upiId
-                      }
+                      value={formData.upiId}
                       onChange={handleChange}
                       disabled={!editMode}
                     />
@@ -819,40 +774,28 @@ const VendorProfile = () => {
 
                 <CCol md={6}>
                   <div className="mb-3">
-                    <CFormLabel>
-                      Preferred Payout Method
-                    </CFormLabel>
+                    <CFormLabel>Preferred Payout Method</CFormLabel>
 
                     <CFormSelect
                       name="payoutMethod"
-                      value={
-                        formData.payoutMethod
-                      }
+                      value={formData.payoutMethod}
                       onChange={handleChange}
                       disabled={!editMode}
                     >
-                      <option value="bank">
-                        Bank Account
-                      </option>
+                      <option value="bank">Bank Account</option>
 
-                      <option value="upi">
-                        UPI
-                      </option>
+                      <option value="upi">UPI</option>
                     </CFormSelect>
                   </div>
                 </CCol>
-
               </CRow>
 
               {editMode && (
                 <div className="d-flex justify-content-end gap-2 border-top pt-3 mt-2">
-
                   <CButton
                     color="secondary"
                     variant="outline"
-                    onClick={() =>
-                      setEditMode(false)
-                    }
+                    onClick={() => setEditMode(false)}
                   >
                     Cancel
                   </CButton>
@@ -864,12 +807,10 @@ const VendorProfile = () => {
                   >
                     {isSavingProfile ? "Saving..." : "Save Changes"}
                   </CButton>
-
                 </div>
               )}
             </CCardBody>
           </CCard>
-
         </CCol>
       </CRow>
     </CContainer>

@@ -50,6 +50,7 @@ export const authenticateShiprocketCredentials = async (credentials, httpClient 
     console.error("Shiprocket authentication failed", {
       status: error.response?.status,
       code: error.code,
+      providerMessage: error.response?.data?.message || error.response?.data?.errors || error.response?.data?.error || null,
     });
 
     throw error;

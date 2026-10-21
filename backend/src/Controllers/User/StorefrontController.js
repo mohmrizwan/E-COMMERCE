@@ -13,7 +13,12 @@ export const getStorefront = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      storefront: { vendorId: vendor._id, businessName: vendor.businessName },
+      storefront: {
+        vendorId: vendor._id,
+        businessName: vendor.businessName,
+        websiteLogo: vendor.websiteLogo || "",
+        footerText: vendor.footerText || `© ${new Date().getFullYear()} ${vendor.businessName}. All rights reserved.`,
+      },
     });
   } catch {
     return res.status(500).json({ success: false, message: "Could not load storefront" });

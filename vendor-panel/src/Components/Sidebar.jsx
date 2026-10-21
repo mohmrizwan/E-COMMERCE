@@ -1,6 +1,7 @@
-import React from "react";
-import logo from "/Copilot_20260831_214454.png";
+import React, { useEffect, useState } from "react";
+import defaultLogo from "/Copilot_20260831_214454.png";
 import { STORE_NAME } from "../config/brand.js";
+import { apiUrl } from "../config/api.js";
 import "../Assets/Stylesheets/Sidebar.css";
 import {
   CSidebar,
@@ -30,6 +31,15 @@ import {
 } from "@coreui/icons";
 
 function Sidebar({ visible, setVisible }) {
+  const [storeLogo, setStoreLogo] = useState(defaultLogo);
+  useEffect(() => {
+    fetch(apiUrl("storefront"))
+      .then((response) => response.ok ? response.json() : null)
+      .then((data) => {
+        if (data?.storefront?.websiteLogo) setStoreLogo(data.storefront.websiteLogo);
+      })
+      .catch(() => {});
+  }, []);
   return (
     <CSidebar
       position="fixed"
@@ -41,7 +51,7 @@ function Sidebar({ visible, setVisible }) {
 
       <CSidebarBrand className="!bg-[#17112B] !border-b !border-[#2D2545] px-4 py-4">
         <img
-          src={logo}
+          src={storeLogo}
           alt={`${STORE_NAME} logo`}
           className="w-full max-h-70 object-contain"
         />
@@ -234,7 +244,7 @@ function Sidebar({ visible, setVisible }) {
 
         {/* Settings */}
 
-        <CNavItem
+        {/* <CNavItem
           href="/settings"
           className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
         >
@@ -243,7 +253,7 @@ function Sidebar({ visible, setVisible }) {
             customClassName="nav-icon !text-violet-400"
           />
           Settings
-        </CNavItem>
+        </CNavItem> */}
       </CSidebarNav>
     </CSidebar>
   );
