@@ -358,7 +358,7 @@ function Report() {
                 </span>
               </>
             }
-            title="Users"
+            title="Customers"
             chart={
               <CChartBar
                 className="mt-3 mx-3"
