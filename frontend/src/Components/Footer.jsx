@@ -38,23 +38,7 @@ const Footer = () => {
               </div>
 
               {/* Payment Methods */}
-              <div className="mt-5 flex flex-wrap gap-3">
-                <p className="rounded-2xl border border-[#EEDCE0] px-3 py-2 text-xs font-semibold text-[#6B7280]">
-                  Visa
-                </p>
-
-                <p className="rounded-2xl border border-[#EEDCE0] px-3 py-2 text-xs font-semibold text-[#6B7280]">
-                  MC
-                </p>
-
-                <p className="rounded-2xl border border-[#EEDCE0] px-3 py-2 text-xs font-semibold text-[#6B7280]">
-                  Amex
-                </p>
-
-                <p className="rounded-2xl border border-[#EEDCE0] px-3 py-2 text-xs font-semibold text-[#6B7280]">
-                  PayPal
-                </p>
-              </div>
+            
             </div>
           </div>
           {/* Footer Links */}
