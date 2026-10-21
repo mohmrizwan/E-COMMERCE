@@ -58,50 +58,24 @@ const Footer = () => {
             </div>
           </div>
           {/* Footer Links */}
-          <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 lg:max-w-3xl">
-            {/* Shop */}
-            <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Shop
-              </h3>
-
-              <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">
-                  New Arrivals
-                </Link>
-                <Link className="footer-link" to="/">
-                  Best Sellers
-                </Link>
-                <Link className="footer-link" to="/">
-                  Deals & Offers
-                </Link>
-                <Link className="footer-link" to="/">
-                  Gift Cards
-                </Link>
-                <Link className="footer-link" to="/">
-                  Brands
-                </Link>
-              </div>
-            </div>
-
-            {/* Support */}
+          <div className="w-full lg:max-w-3xl">
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
                 Support
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">
-                  Help Center
-                </Link>
                 <Link className="footer-link" to="/orders">
-                  My Orders & Tracking
+                  My Orders
                 </Link>
-                <Link className="footer-link" to="/">
-                  Shipping Info
+                <Link className="footer-link" to="/track-order">
+                  Track Order
                 </Link>
                 <Link className="footer-link" to="/contact">
-                  Contact Us
+                  Help & Contact Support
+                </Link>
+                <Link className="footer-link" to="/term&condition">
+                  Terms & Conditions
                 </Link>
               </div>
             </div>
@@ -116,13 +90,6 @@ const Footer = () => {
             </p>
 
             <div className="flex gap-5">
-              <Link
-                to="/privacy-policy"
-                className="font-[Inter] text-xs text-[#9CA3AF] transition-colors duration-300 hover:text-[#6c3bff]"
-              >
-                Privacy Policy
-              </Link>
-
               <Link
                 to="/term&condition"
                 className="font-[Inter] text-xs text-[#9CA3AF] transition-colors duration-300 hover:text-[#6c3bff]"
