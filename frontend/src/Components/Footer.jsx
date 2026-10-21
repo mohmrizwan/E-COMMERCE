@@ -57,9 +57,7 @@ const Footer = () => {
               </div>
             </div>
           </div>
-
           {/* Footer Links */}
-
           <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 lg:max-w-3xl">
             {/* Shop */}
             <div className="footer-links">
@@ -68,107 +66,47 @@ const Footer = () => {
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/products">
-                  All Products
-                </Link>
-
-                <Link className="footer-link" to="/products?sort=newest">
+                <Link className="footer-link" to="/">
                   New Arrivals
                 </Link>
-
-                <Link className="footer-link" to="/products?sort=popular">
+                <Link className="footer-link" to="/">
                   Best Sellers
                 </Link>
-
-                <Link className="footer-link" to="/categories">
-                  Categories
-                </Link>
-
-                <Link className="footer-link" to="/products?offer=true">
+                <Link className="footer-link" to="/">
                   Deals & Offers
                 </Link>
-
-                <Link className="footer-link" to="/cart">
-                  Shopping Cart
+                <Link className="footer-link" to="/">
+                  Gift Cards
                 </Link>
-
-                <Link className="footer-link" to="/wishlist">
-                  Wishlist
+                <Link className="footer-link" to="/">
+                  Brands
                 </Link>
               </div>
             </div>
 
-            {/* Customer Support */}
+            {/* Support */}
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Customer Support
+                Support
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
+                <Link className="footer-link" to="/">
+                  Help Center
+                </Link>
+                <Link className="footer-link" to="/orders">
+                  My Orders & Tracking
+                </Link>
+                <Link className="footer-link" to="/">
+                  Shipping Info
+                </Link>
                 <Link className="footer-link" to="/contact">
                   Contact Us
                 </Link>
-
-                <Link className="footer-link" to="/orders">
-                  My Orders
-                </Link>
-
-                <Link className="footer-link" to="/track-order">
-                  Track Order
-                </Link>
-
-                <Link className="footer-link" to="/shipping-policy">
-                  Shipping Policy
-                </Link>
-
-                <Link className="footer-link" to="/returns-refunds">
-                  Returns & Refunds
-                </Link>
-
-                <Link className="footer-link" to="/faq">
-                  FAQs
-                </Link>
               </div>
             </div>
-
-            {/* About */}
-            <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                About Us
-              </h3>
-
-              <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/about">
-                  Our Story
-                </Link>
-
-                <Link className="footer-link" to="/contact">
-                  Store Information
-                </Link>
-              </div>
-            </div>
-
-            {/* Legal */}
-            <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Legal
-              </h3>
-
-              <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/privacy-policy">
-                  Privacy Policy
-                </Link>
-
-                <Link className="footer-link" to="/terms-and-conditions">
-                  Terms & Conditions
-                </Link>
-
-                <Link className="footer-link" to="/cancellation-policy">
-                  Cancellation Policy
-                </Link>
-              </div>
-            </div>
-          </div>
+          </div>{" "}
+          ske andr vse link lga jo ek single vendor store me hot ih
         </div>
 
         {/* Footer Bottom */}
