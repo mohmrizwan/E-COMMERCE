@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
 import { STORE_NAME } from "../config/brand.js";
-import { API_ORIGIN } from "../utils/productsApi";
+import { useStorefront } from "../hooks/useStorefront.js";
 
 const Footer = () => {
-  const [storefront, setStorefront] = useState(null);
-  useEffect(() => {
-    if (!API_ORIGIN) return;
-    fetch(`${API_ORIGIN}/storefront`)
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => setStorefront(data?.storefront || null))
-      .catch(() => {});
-  }, []);
+  const storefront = useStorefront();
   const storeName = storefront?.businessName || STORE_NAME;
   const copyright = storefront?.footerText || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   return (
@@ -22,15 +15,13 @@ const Footer = () => {
           <div className="w-full lg:max-w-sm">
             <div className="footer-logo">
               <Link to="/" className="inline-block">
-                <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                  {STORE_NAME}
-                </p>
+                {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storeName} className="h-10 max-w-48 object-contain object-left" /> : <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">{storeName}</p>}
               </Link>
 
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
                   Discover quality products and enjoy a smarter shopping
-                  experience with {STORE_NAME}.
+                    experience with {storeName}.
                 </p>
               </div>
 

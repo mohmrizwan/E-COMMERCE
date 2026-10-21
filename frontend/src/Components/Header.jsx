@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
 import { STORE_NAME } from "../config/brand.js";
-import { API_ORIGIN } from "../utils/productsApi";
+import { useStorefront } from "../hooks/useStorefront.js";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -13,7 +13,7 @@ const Header = () => {
     () => new URLSearchParams(location.search).get("search") || "",
   );
   const { cart } = useCart();
-  const [storefront, setStorefront] = useState(null);
+  const storefront = useStorefront();
   const cartItemCount = cart.reduce(
     (count, item) => count + Number(item.quantity || 1),
     0,
@@ -27,14 +27,6 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
 
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
-    if (!API_ORIGIN) return;
-    fetch(`${API_ORIGIN}/storefront`)
-      .then((response) => response.ok ? response.json() : null)
-      .then((data) => setStorefront(data?.storefront || null))
-      .catch(() => {});
   }, []);
 
   useEffect(() => {

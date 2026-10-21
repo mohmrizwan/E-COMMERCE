@@ -1,4 +1,5 @@
 import axios from "axios";
+import crypto from "crypto";
 import { getVendorShippingConfig } from "./VendorIntegrationConfig.js";
 import {
   calculateShipmentParcel,
@@ -35,6 +36,27 @@ const normalizeShiprocketOrderResponse = (payload) => {
   };
 };
 
+let cachedAuth = null;
+let authInFlight = null;
+let rejectedCredentials = null;
+const AUTH_FAILURE_COOLDOWN_MS = 15 * 60 * 1000;
+const TOKEN_EXPIRY_BUFFER_MS = 60 * 1000;
+
+const credentialFingerprint = (credentials) =>
+  crypto.createHash("sha256").update(JSON.stringify(credentials)).digest("hex");
+
+const getTokenExpiry = (token) => {
+  try {
+    const payload = JSON.parse(Buffer.from(token.split(".")[1], "base64url").toString("utf8"));
+    if (Number.isFinite(payload.exp)) {
+      return Math.max(Date.now(), payload.exp * 1000 - TOKEN_EXPIRY_BUFFER_MS);
+    }
+  } catch {
+    // If Shiprocket changes token format, use a short cache instead.
+  }
+  return Date.now() + 30 * 60 * 1000;
+};
+
 export const authenticateShiprocketCredentials = async (credentials, httpClient = axios) => {
   try {
     const response = await httpClient.post(
@@ -59,7 +81,42 @@ export const authenticateShiprocketCredentials = async (credentials, httpClient 
 
 export const getShiprocketToken = async (vendorId) => {
   const credentials = await getVendorShippingConfig(vendorId);
-  return authenticateShiprocketCredentials(credentials);
+  const fingerprint = credentialFingerprint(credentials);
+  if (cachedAuth?.fingerprint === fingerprint && cachedAuth.expiresAt > Date.now()) {
+    return cachedAuth.token;
+  }
+  if (
+    rejectedCredentials?.fingerprint === fingerprint &&
+    rejectedCredentials.retryAfter > Date.now()
+  ) {
+    const error = new Error("Shiprocket login is paused after a rejected attempt. Check credentials and wait before retrying.");
+    error.status = rejectedCredentials.status;
+    error.code = "SHIPROCKET_AUTH_COOLDOWN";
+    throw error;
+  }
+  if (authInFlight?.fingerprint === fingerprint) return authInFlight.promise;
+
+  const promise = authenticateShiprocketCredentials(credentials)
+    .then((token) => {
+      cachedAuth = { fingerprint, token, expiresAt: getTokenExpiry(token) };
+      rejectedCredentials = null;
+      return token;
+    })
+    .catch((error) => {
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        rejectedCredentials = {
+          fingerprint,
+          status: error.response.status,
+          retryAfter: Date.now() + AUTH_FAILURE_COOLDOWN_MS,
+        };
+      }
+      throw error;
+    })
+    .finally(() => {
+      if (authInFlight?.promise === promise) authInFlight = null;
+    });
+  authInFlight = { fingerprint, promise };
+  return promise;
 };
 
 export const getShiprocketPickupLocations = async (vendorId) => {

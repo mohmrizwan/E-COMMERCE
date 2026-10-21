@@ -5,6 +5,7 @@ import OrderSummary from "../OrderSummary";
 import Loader from "../../Components/Dotter";
 import { API_ORIGIN } from "../../utils/productsApi";
 import { STORE_NAME } from "../../config/brand.js";
+import { useStorefront } from "../../hooks/useStorefront.js";
 
 const addressEndpoint = `${API_ORIGIN}/profile/address`;
 const emptyAddress = {
@@ -32,6 +33,7 @@ const CheckoutAddress = ({
   isContinuing,
   continueError,
 }) => {
+  const storefront = useStorefront();
   const initialAddressId = initialAddress?._id
     ? String(initialAddress._id)
     : "";
@@ -168,9 +170,7 @@ const CheckoutAddress = ({
         <div className="mx-auto w-full px-4 sm:px-6 md:px-8 lg:px-10 xl:px-15">
           <div className="address-header flex items-center justify-between">
             <Link to="/" className="shrink-0">
-              <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
-                {STORE_NAME}
-              </p>
+              {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storefront.businessName || STORE_NAME} className="h-10 max-w-48 object-contain object-left" /> : <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">{storefront?.businessName || STORE_NAME}</p>}
             </Link>
             <p className="text-sm font-[inter]">Secure Checkout</p>
           </div>
