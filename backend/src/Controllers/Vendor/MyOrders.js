@@ -549,26 +549,11 @@ export const getAvailableCouriers = async (req, res) => {
       shiprocketResponse.data?.available_courier_companies ||
       shiprocketResponse.available_courier_companies ||
       [];
-    const vendorQuote = (order.vendorShippingQuotes || []).find(
-      (quote) => quote.vendorId.toString() === vendorId.toString(),
+    const couriersToReturn = [...couriers].sort(
+      (left, right) =>
+        Number(left.rate ?? left.freight_charge ?? Infinity) -
+        Number(right.rate ?? right.freight_charge ?? Infinity),
     );
-    const preferredCourierCompanyId = String(
-      shipment.courierCompanyId ||
-        vendorQuote?.courierCompanyId ||
-        process.env.SHIPROCKET_COURIER_ID ||
-        "",
-    );
-    const preferredCourier = couriers.find(
-      (courier) =>
-        String(courier.courier_company_id) === preferredCourierCompanyId,
-    );
-    const couriersToReturn = preferredCourier
-      ? [preferredCourier]
-      : [...couriers].sort(
-          (left, right) =>
-            Number(left.rate ?? left.freight_charge ?? Infinity) -
-            Number(right.rate ?? right.freight_charge ?? Infinity),
-        );
 
     return res.status(200).json({
       success: true,
@@ -658,33 +643,13 @@ export const assignCourier = async (req, res) => {
       shiprocketResponse.data?.available_courier_companies ||
       shiprocketResponse.available_courier_companies ||
       [];
-    const vendorQuote = (order.vendorShippingQuotes || []).find(
-      (quote) => quote.vendorId.toString() === req.vendor._id.toString(),
-    );
-    const preferredCourierCompanyId = String(
-      shipment.courierCompanyId ||
-        vendorQuote?.courierCompanyId ||
-        process.env.SHIPROCKET_COURIER_ID ||
-        "",
-    );
-    const preferredIsAvailable = availableCouriers.some(
-      (courier) =>
-        String(courier.courier_company_id) === preferredCourierCompanyId,
-    );
-    const requestedCourierCompanyId = String(
-      req.body?.courierCompanyId ||
-        (preferredIsAvailable ? preferredCourierCompanyId : ""),
-    );
+    const requestedCourierCompanyId = String(req.body?.courierCompanyId || "");
     const requestedIsAvailable = availableCouriers.some(
       (courier) =>
         String(courier.courier_company_id) === requestedCourierCompanyId,
     );
 
-    if (
-      !requestedIsAvailable ||
-      (preferredIsAvailable &&
-        requestedCourierCompanyId !== preferredCourierCompanyId)
-    ) {
+    if (!requestedIsAvailable) {
       return res.status(400).json({
         message:
           "Select a courier available for this pickup and delivery route",
