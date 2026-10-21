@@ -5,8 +5,8 @@ import Banner from "../Components/Banner";
 import Category from "../Components/Category";
 import Features from "../Components/Features";
 import Product from "../Components/Product";
-import Sesssion from "../Components/Sesssion";
-import Trending from "../Components/Trending";
+// import Sesssion from "../Components/Sesssion";
+// import Trending from "../Components/Trending";
 // import Vendors from "../Components/Vendors";
 // import Subscribe from "../Components/Subscribe";
 import { Link } from "react-router-dom";
@@ -40,7 +40,15 @@ const Home = () => {
         </div>
       </div>
       <Product />
-      {/* <Sesssion /> */}
+     
+      <Footer />
+    </>
+  );
+};
+
+export default Home;
+
+ {/* <Sesssion /> */}
        {/* <div className="product-wrapper my-8 sm:my-12 md:my-15">
         <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
           <div className="product-head flex items-end justify-between gap-3">
@@ -65,9 +73,3 @@ const Home = () => {
       <Trending /> */}
       {/* <Vendors /> */}
       {/* <Subscribe /> */}
-      <Footer />
-    </>
-  );
-};
-
-export default Home;
