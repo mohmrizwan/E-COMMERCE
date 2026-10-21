@@ -6,7 +6,9 @@ import { useStorefront } from "../hooks/useStorefront.js";
 const Footer = () => {
   const storefront = useStorefront();
   const storeName = storefront?.businessName || STORE_NAME;
-  const copyright = storefront?.footerText || `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
+  const copyright =
+    storefront?.footerText ||
+    `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   return (
     <footer className="footer-wrapper border-t-2 border-gray-200 bg-[#FFFFFF]">
       <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-0">
@@ -15,13 +17,23 @@ const Footer = () => {
           <div className="w-full lg:max-w-sm">
             <div className="footer-logo">
               <Link to="/" className="inline-block">
-                {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storeName} className="h-10 max-w-48 object-contain object-left" /> : <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">{storeName}</p>}
+                {storefront?.websiteLogo ? (
+                  <img
+                    src={storefront.websiteLogo}
+                    alt={storeName}
+                    className="h-10 max-w-48 object-contain object-left"
+                  />
+                ) : (
+                  <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
+                    {storeName}
+                  </p>
+                )}
               </Link>
 
               <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
                 <p>
                   Discover quality products and enjoy a smarter shopping
-                    experience with {storeName}.
+                  experience with {storeName}.
                 </p>
               </div>
 
@@ -47,6 +59,7 @@ const Footer = () => {
           </div>
 
           {/* Footer Links */}
+
           <div className="grid w-full grid-cols-2 gap-x-8 gap-y-10 lg:max-w-3xl">
             {/* Shop */}
             <div className="footer-links">
@@ -55,42 +68,103 @@ const Footer = () => {
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">
+                <Link className="footer-link" to="/products">
+                  All Products
+                </Link>
+
+                <Link className="footer-link" to="/products?sort=newest">
                   New Arrivals
                 </Link>
-                <Link className="footer-link" to="/">
+
+                <Link className="footer-link" to="/products?sort=popular">
                   Best Sellers
                 </Link>
-                <Link className="footer-link" to="/">
+
+                <Link className="footer-link" to="/categories">
+                  Categories
+                </Link>
+
+                <Link className="footer-link" to="/products?offer=true">
                   Deals & Offers
                 </Link>
-                <Link className="footer-link" to="/">
-                  Gift Cards
+
+                <Link className="footer-link" to="/cart">
+                  Shopping Cart
                 </Link>
-                <Link className="footer-link" to="/">
-                  Brands
+
+                <Link className="footer-link" to="/wishlist">
+                  Wishlist
                 </Link>
               </div>
             </div>
 
-            {/* Support */}
+            {/* Customer Support */}
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
-                Support
+                Customer Support
               </h3>
 
               <div className="mt-4 flex flex-col gap-3">
-                <Link className="footer-link" to="/">
-                  Help Center
-                </Link>
-                <Link className="footer-link" to="/orders">
-                  My Orders & Tracking
-                </Link>
-                <Link className="footer-link" to="/">
-                  Shipping Info
-                </Link>
                 <Link className="footer-link" to="/contact">
                   Contact Us
+                </Link>
+
+                <Link className="footer-link" to="/orders">
+                  My Orders
+                </Link>
+
+                <Link className="footer-link" to="/track-order">
+                  Track Order
+                </Link>
+
+                <Link className="footer-link" to="/shipping-policy">
+                  Shipping Policy
+                </Link>
+
+                <Link className="footer-link" to="/returns-refunds">
+                  Returns & Refunds
+                </Link>
+
+                <Link className="footer-link" to="/faq">
+                  FAQs
+                </Link>
+              </div>
+            </div>
+
+            {/* About */}
+            <div className="footer-links">
+              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
+                About Us
+              </h3>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <Link className="footer-link" to="/about">
+                  Our Story
+                </Link>
+
+                <Link className="footer-link" to="/contact">
+                  Store Information
+                </Link>
+              </div>
+            </div>
+
+            {/* Legal */}
+            <div className="footer-links">
+              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
+                Legal
+              </h3>
+
+              <div className="mt-4 flex flex-col gap-3">
+                <Link className="footer-link" to="/privacy-policy">
+                  Privacy Policy
+                </Link>
+
+                <Link className="footer-link" to="/terms-and-conditions">
+                  Terms & Conditions
+                </Link>
+
+                <Link className="footer-link" to="/cancellation-policy">
+                  Cancellation Policy
                 </Link>
               </div>
             </div>
