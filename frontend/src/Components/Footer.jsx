@@ -11,7 +11,7 @@ const Footer = () => {
     `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   return (
     <footer className="footer-wrapper border-t-2 border-gray-200 bg-[#FFFFFF]">
-      <div className="mx-auto max-w-7xl px-6 py-12 sm:px-8 lg:px-0">
+      <div className="mx-auto w-full px-4 py-12 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-16">
           {/* Left Section */}
           <div className="w-full lg:max-w-sm">
