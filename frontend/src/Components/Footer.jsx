@@ -20,7 +20,7 @@ const Footer = () => {
                 {storefront?.websiteLogo ? (
                   <img
                     src={storefront.websiteLogo}
-                    // alt={storeName}
+                    alt={storeName}
                     className="h-10 max-w-48 object-contain object-left"
                   />
                 ) : (
@@ -42,7 +42,16 @@ const Footer = () => {
             </div>
           </div>
           {/* Footer Links */}
-          <div className="w-full lg:max-w-3xl">
+          <div className="grid w-full grid-cols-2 gap-x-8 gap-y-8 lg:max-w-3xl lg:grid-cols-3">
+            <div className="footer-links">
+              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">Pages</h3>
+              <div className="mt-4 flex flex-col gap-3">
+                <Link className="footer-link" to="/">Home</Link>
+                <Link className="footer-link" to="/orders">Orders</Link>
+                <Link className="footer-link" to="/account">Profile</Link>
+                <Link className="footer-link" to="/favorite">Wishlist</Link>
+              </div>
+            </div>
             <div className="footer-links">
               <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
                 Support
@@ -63,6 +72,15 @@ const Footer = () => {
                 </Link>
               </div>
             </div>
+            <div className="footer-links">
+              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">Contact Details</h3>
+              <div className="mt-4 flex flex-col gap-3">
+                {storefront?.contactEmail && <a className="footer-link break-words" href={`mailto:${storefront.contactEmail}`}>{storefront.contactEmail}</a>}
+                {storefront?.contactPhone && <a className="footer-link" href={`tel:${storefront.contactPhone}`}>{storefront.contactPhone}</a>}
+                {storefront?.contactAddress && <a className="footer-link" href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storefront.contactAddress)}`} target="_blank" rel="noreferrer">{storefront.contactAddress}</a>}
+                {!storefront?.contactEmail && !storefront?.contactPhone && !storefront?.contactAddress && <Link className="footer-link" to="/contact">Contact Support</Link>}
+              </div>
+            </div>
           </div>{" "}
         </div>
 
@@ -70,7 +88,7 @@ const Footer = () => {
         <div className="mt-12 border-t border-gray-200 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
             <p className="font-[Inter] text-xs text-[#9CA3AF]">
-              {copyright} | All rights reserved.
+              {copyright}
             </p>
 
             <div className="flex gap-5">
