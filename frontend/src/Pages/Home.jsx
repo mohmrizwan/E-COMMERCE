@@ -2,7 +2,7 @@ import React from "react";
 import Header from "../Components/Header";
 import Footer from "../Components/Footer";
 import Banner from "../Components/Banner";
-import Category from "../Components/Category";
+// import Category from "../Components/Category";
 import Features from "../Components/Features";
 import Product from "../Components/Product";
 // import Sesssion from "../Components/Sesssion";
@@ -16,7 +16,7 @@ const Home = () => {
     <>
       <Header />
       <Banner />
-      <Category />
+      {/* <Category /> */}
       <Features />
       <div className="product-wrapper my-8 sm:my-12 md:my-15">
         <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
