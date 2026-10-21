@@ -2,7 +2,10 @@ import crypto from "crypto";
 import productModel from "../../models/vendor/ProductModel.js";
 import VendorModel from "../../models/vendor/AuthModel.js";
 import Payment from "../../models/user/Payment.js";
-import { getShiprocketShippingQuote } from "../../Services/ShipRocket.js";
+import {
+  getShiprocketPickupLocations,
+  getShiprocketShippingQuote,
+} from "../../Services/ShipRocket.js";
 import { calculateShipmentParcel } from "../../Services/ShipmentParcel.js";
 import {
   confirmRazorpayPayment,
@@ -146,6 +149,43 @@ export const order = async (req, res) => {
         !pickupAddress?.city ||
         !pickupAddress?.state ||
         !/^\d{6}$/.test(pickupPostcode)
+      ) {
+        return res.status(400).json({
+          message: `${vendor.businessName || "This store"} must save a complete pickup address with a valid six-digit pincode and registered Shiprocket pickup location before checkout`,
+        });
+      }
+
+      const registeredPickupLocations = await getShiprocketPickupLocations(
+        vendor._id,
+      );
+      const registeredPickupLocation = registeredPickupLocations.find(
+        (location) =>
+          String(location.pickup_location || location.name || "").trim() ===
+          pickupLocationName,
+      );
+      const registeredPickupPostcode = String(
+        registeredPickupLocation?.pin_code ||
+          registeredPickupLocation?.pincode ||
+          "",
+      ).trim();
+      const registeredPickupAddress = String(
+        registeredPickupLocation?.address ||
+          registeredPickupLocation?.address_1 ||
+          "",
+      ).trim();
+      const registeredPickupCity = String(
+        registeredPickupLocation?.city || "",
+      ).trim();
+      const registeredPickupState = String(
+        registeredPickupLocation?.state || "",
+      ).trim();
+      if (
+        !registeredPickupLocation ||
+        !registeredPickupAddress ||
+        !registeredPickupCity ||
+        !registeredPickupState ||
+        !/^\d{6}$/.test(registeredPickupPostcode) ||
+        registeredPickupPostcode !== pickupPostcode
       ) {
         return res.status(400).json({
           message: `${vendor.businessName || "This store"} must save a complete pickup address with a valid six-digit pincode and registered Shiprocket pickup location before checkout`,
