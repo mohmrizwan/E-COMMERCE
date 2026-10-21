@@ -106,7 +106,6 @@ const Footer = () => {
               </div>
             </div>
           </div>{" "}
-          ske andr vse link lga jo ek single vendor store me hot ih
         </div>
 
         {/* Footer Bottom */}

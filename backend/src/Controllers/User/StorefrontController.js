@@ -18,6 +18,14 @@ export const getStorefront = async (req, res) => {
         businessName: vendor.businessName,
         websiteLogo: vendor.websiteLogo || "",
         footerText: vendor.footerText || `© ${new Date().getFullYear()} ${vendor.businessName}. All rights reserved.`,
+        contactEmail: vendor.email || "",
+        contactPhone: vendor.phone || "",
+        contactAddress: [
+          vendor.pickupAddress?.address,
+          vendor.pickupAddress?.city,
+          vendor.pickupAddress?.state,
+          vendor.pickupAddress?.pincode,
+        ].filter(Boolean).join(", "),
       },
     });
   } catch {

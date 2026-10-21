@@ -17,7 +17,7 @@ export const findStoreOwner = (session) => {
     // Mongoose query interface expected by storefront callers when config is bad.
     _id: isValidStoreOwnerId(ownerId) ? new mongoose.Types.ObjectId(ownerId) : null,
     isVerified: true,
-  }).select("businessName websiteLogo footerText");
+  }).select("businessName websiteLogo footerText email phone pickupAddress.address pickupAddress.city pickupAddress.state pickupAddress.pincode");
 
   return session ? query.session(session) : query;
 };
