@@ -10,13 +10,6 @@ export const myCustomer = async (req, res) => {
       })
       .populate("userId", "name email phone");
 
-    if (orders.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Customer not found",
-      });
-    }
-
     // Unique customers
     const customerMap = new Map();
 
