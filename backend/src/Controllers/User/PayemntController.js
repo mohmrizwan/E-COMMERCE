@@ -23,12 +23,10 @@ import {
   normalizeCartItems,
 } from "../../utils/CartValidation.js";
 
-export const order = async (req, res) => {
+const processCheckout = async (req, res, quoteOnly = false) => {
   try {
-    const { client: razorpayInstance, keyId } = createRazorpayClient();
-
     const userId = req.user.id || req.user.userId || req.user._id;
-    const { items, shippingAddress } = req.body;
+    const { items, shippingAddress, selectedCouriers = {} } = req.body;
     const deliveryPostcode = String(shippingAddress?.pincode || "").trim();
 
     if (!Array.isArray(items) || items.length === 0) {
@@ -208,6 +206,7 @@ export const order = async (req, res) => {
         isDangerous: vendorProducts.get(String(vendorId)).some(
           ({ productId }) => productId.isDangerous,
         ),
+        preferredCourierCompanyId: selectedCouriers[String(vendorId)] || "",
       });
       const vendorShippingPaise = Math.round(quote.shippingAmount * 100);
       shippingPaise += vendorShippingPaise;
@@ -235,6 +234,21 @@ export const order = async (req, res) => {
       : null;
     const amountPaise = subtotalPaise + shippingPaise;
     const finalTotal = amountPaise / 100;
+    const checkout = {
+      storeName: storeOwner.businessName,
+      items: checkoutItems,
+      subtotalAmount,
+      shippingAmount: shippingPaise / 100,
+      finalTotal,
+      shippingCourierCompanyId: vendorShippingQuotes[0]?.courierCompanyId || "",
+      shippingCourierName: primaryQuote?.courierName || "",
+      estimatedDelivery: primaryQuote?.estimatedDelivery || "",
+      vendorShippingQuotes,
+    };
+
+    if (quoteOnly) return res.status(200).json({ checkout });
+
+    const { client: razorpayInstance, keyId } = createRazorpayClient();
     console.info("[checkout:totals]", {
       subtotal: subtotalPaise / 100,
       shipping: shippingPaise / 100,
@@ -282,17 +296,7 @@ export const order = async (req, res) => {
         currency: razorpayOrder.currency,
         keyId,
       },
-      checkout: {
-        storeName: storeOwner.businessName,
-        items: checkoutItems,
-        subtotalAmount,
-        shippingAmount: shippingPaise / 100,
-        finalTotal,
-        shippingCourierCompanyId: vendorShippingQuotes[0]?.courierCompanyId || "",
-        shippingCourierName: primaryQuote?.courierName || "",
-        estimatedDelivery: primaryQuote?.estimatedDelivery || "",
-        vendorShippingQuotes,
-      },
+      checkout,
     });
   } catch (error) {
     if (error instanceof RazorpayConfigurationError) {
@@ -313,6 +317,9 @@ export const order = async (req, res) => {
     });
   }
 };
+
+export const order = (req, res) => processCheckout(req, res);
+export const quote = (req, res) => processCheckout(req, res, true);
 
 export const verify = async (req, res) => {
   try {

@@ -383,11 +383,12 @@ export const getShiprocketShippingQuote = async ({
   cod = 0,
   declaredValue,
   isDangerous = false,
+  preferredCourierCompanyId: requestedCourierCompanyId = "",
 }) => {
   const normalizedPickupPostcode = String(pickupPostcode || "").trim();
   const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
   const preferredCourierCompanyId = String(
-    process.env.SHIPROCKET_COURIER_ID || ""
+    requestedCourierCompanyId || process.env.SHIPROCKET_COURIER_ID || ""
   ).trim();
 
   if (!/^\d{6}$/.test(normalizedPickupPostcode)) {
@@ -414,6 +415,17 @@ export const getShiprocketShippingQuote = async ({
     declaredValue,
     ...(isDangerous ? { mode: "Surface" } : {}),
   });
+  if (requestedCourierCompanyId) {
+    const available = serviceability?.data?.available_courier_companies || serviceability?.available_courier_companies || [];
+    const selectionExists = available.some((courier) =>
+      String(courier.courier_company_id) === String(requestedCourierCompanyId) &&
+      Number(courier.blocked) !== 1 &&
+      Number.isFinite(Number(courier.rate ?? courier.freight_charge)) &&
+      Number(courier.rate ?? courier.freight_charge) >= 0 &&
+      (!isDangerous || courier.is_surface === true || courier.is_surface === 1 || courier.is_surface === "1" || courier.is_surface === "true"),
+    );
+    if (!selectionExists) throw new Error("The selected courier is no longer available for this delivery address");
+  }
   const quote = selectShiprocketCourierQuote(serviceability, preferredCourierCompanyId, {
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
@@ -431,7 +443,9 @@ export const getShiprocketShippingQuote = async ({
     .filter((option) => !isDangerous || option.is_surface === true || option.is_surface === 1 || option.is_surface === "1" || option.is_surface === "true")
     .map((option) => {
       const baseRate = Number(option.rate ?? option.freight_charge);
-      const additionalCharges = ["other_charges", "coverage_charges", "entry_tax"]
+      // rate is Shiprocket's quoted shipment rate. coverage_charges is an
+      // insurance estimate and must not be added unless insurance is opted in.
+      const additionalCharges = ["other_charges", "entry_tax"]
         .reduce((total, field) => total + (Number(option[field]) || 0), 0);
       return {
         courierCompanyId: String(option.courier_company_id || ""),
@@ -443,7 +457,7 @@ export const getShiprocketShippingQuote = async ({
         isSurface: option.is_surface === true || option.is_surface === 1 || option.is_surface === "1" || option.is_surface === "true",
       };
     })
-    .filter((option) => /^\d+$/.test(option.courierCompanyId) && Number.isFinite(option.shippingAmount));
+    .filter((option) => /^\d+$/.test(option.courierCompanyId) && Number.isFinite(option.shippingAmount) && option.shippingAmount >= 0);
   const selectedCourier = courierOptions.find(
     (option) => option.courierCompanyId === quote.courierCompanyId,
   );
@@ -472,7 +486,7 @@ export const selectShiprocketCourierQuote = (
       courierCompanyId: String(option.courier_company_id || ""),
       shippingAmount:
         Number(option.rate ?? option.freight_charge) +
-        ["other_charges", "coverage_charges", "entry_tax"]
+        ["other_charges", "entry_tax"]
           .reduce((total, field) => total + (Number(option[field]) || 0), 0),
     }))
     .filter(

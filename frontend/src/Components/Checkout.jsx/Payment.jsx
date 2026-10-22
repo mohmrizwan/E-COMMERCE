@@ -8,17 +8,36 @@ import { API_ORIGIN } from "../../utils/productsApi";
 import { STORE_NAME } from "../../config/brand.js";
 import { useStorefront } from "../../hooks/useStorefront.js";
 
-const Payment = ({ setStep, orderData, onPlaceOrder }) => {
+const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourierSelectionChange }) => {
   const storefront = useStorefront();
   const [paymentState, setPaymentState] = useState("idle");
   const [paymentError, setPaymentError] = useState("");
   const [paymentVerified, setPaymentVerified] = useState(false);
+  const [selectedCouriers, setSelectedCouriers] = useState(() =>
+    Object.fromEntries((orderData?.vendorShippingQuotes || []).map((quote) => [String(quote.vendorId), quote.courierCompanyId])),
+  );
   const isBusy = paymentState === "initiating" || paymentState === "processing";
   const canPay = Boolean(
     orderData?.items?.length &&
-      orderData?.address &&
-      orderData?.razorpayOrder?.id,
+      orderData?.address,
   );
+  const selectCourier = (vendorQuote, courier) => {
+    const nextSelections = { ...selectedCouriers, [String(vendorQuote.vendorId)]: courier.courierCompanyId };
+    setSelectedCouriers(nextSelections);
+    const updatedQuotes = orderData.vendorShippingQuotes.map((quote) => {
+      if (String(quote.vendorId) !== String(vendorQuote.vendorId)) return quote;
+      return {
+        ...quote,
+        courierCompanyId: courier.courierCompanyId,
+        courierName: courier.courierName,
+        estimatedDelivery: courier.estimatedDelivery,
+        shippingAmount: courier.shippingAmount,
+        additionalCharges: courier.additionalCharges,
+      };
+    });
+    const shipping = updatedQuotes.reduce((total, quote) => total + Number(quote.shippingAmount || 0), 0);
+    onCourierSelectionChange?.(updatedQuotes, shipping, Number(orderData.subtotal || 0) + shipping);
+  };
   const createStoreOrder = async (razorpayOrderId) => {
     const orderResponse = await axios.post(
       `${API_ORIGIN}/order/createOrder`,
@@ -58,7 +77,21 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
       return;
     }
 
-    const data = orderData.razorpayOrder;
+    let paymentOrderData = orderData;
+    if (!paymentOrderData?.razorpayOrder?.id) {
+      try {
+        paymentOrderData = await onPreparePayment(selectedCouriers);
+        if (!paymentOrderData?.razorpayOrder?.id) {
+          throw new Error("Could not prepare payment for the selected courier. Please try again.");
+        }
+      } catch (error) {
+        setPaymentState("failed");
+        setPaymentError(error.message || "Could not prepare payment for the selected courier.");
+        return;
+      }
+    }
+
+    const data = paymentOrderData.razorpayOrder;
     if (!data?.id || !data.amount || !data.currency) {
       setPaymentState("failed");
       setPaymentError("The server did not return a valid Razorpay order.");
@@ -289,7 +322,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
                     Available courier partners
                   </h4>
                   <p className="mt-1 text-xs leading-5 text-[#6B7280]">
-                    Estimated prepaid delivery rates from Shiprocket. The selected checkout rate is included in your total; COD charges do not apply to this prepaid order.
+                    Choose a courier for each store. Its estimated prepaid delivery rate is included in your total; COD charges do not apply to this prepaid order.
                   </p>
                   <div className="mt-3 space-y-4">
                     {(orderData?.vendorShippingQuotes || []).map((vendorQuote) => (
@@ -300,18 +333,25 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
                         <div className="space-y-2">
                           {(vendorQuote.courierOptions || []).map((courier) => (
                             <div key={courier.courierCompanyId} className="flex items-center justify-between gap-3 rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm">
-                              <div>
+                              <label className="flex min-w-0 cursor-pointer items-start gap-3">
+                                <input
+                                  type="radio"
+                                  name={`courier-${vendorQuote.vendorId}`}
+                                  checked={String(selectedCouriers[String(vendorQuote.vendorId)] || "") === String(courier.courierCompanyId)}
+                                  onChange={() => selectCourier(vendorQuote, courier)}
+                                  disabled={isBusy || paymentVerified}
+                                  className="mt-1 accent-[#6C3BFF]"
+                                />
+                                <span className="min-w-0">
                                 <p className="font-semibold text-[#111827]">
                                   {courier.courierName}
-                                  {courier.courierCompanyId === vendorQuote.courierCompanyId && (
-                                    <span className="ml-2 rounded-full bg-[#EDE9FE] px-2 py-0.5 text-[10px] font-bold text-[#5B21B6]">Used for checkout</span>
-                                  )}
                                 </p>
                                 <p className="text-xs text-[#6B7280]">
                                   {courier.estimatedDelivery || "Delivery estimate unavailable"}{courier.isSurface ? " · Surface" : ""}
                                   {Number(courier.additionalCharges) > 0 ? ` · Includes ₹${Number(courier.additionalCharges).toLocaleString("en-IN", { maximumFractionDigits: 2 })} additional provider charges` : ""}
                                 </p>
-                              </div>
+                                </span>
+                              </label>
                               <span className="shrink-0 font-semibold">₹{Number(courier.shippingAmount).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
                             </div>
                           ))}

@@ -15,7 +15,7 @@ const Checkout = () => {
   const { cart: contextCart, removeFromCart } = useCart();
   const cart = Array.isArray(contextCart) ? contextCart : [];
 
-  const continueToPayment = async (address) => {
+  const requestCheckout = async (address, selectedCouriers = {}, createPayment = false) => {
     setIsContinuing(true);
     setCheckoutError("");
 
@@ -28,7 +28,7 @@ const Checkout = () => {
         quantity: item.quantity,
       })));
       const response = await axios.post(
-        `${API_ORIGIN}/payment/get-payment`,
+        `${API_ORIGIN}/payment/${createPayment ? "get-payment" : "quote"}`,
         {
           items: cart.map((item) => ({
             productId: item.productId,
@@ -37,6 +37,7 @@ const Checkout = () => {
             price: Number(item.price),
           })),
           shippingAddress: address,
+          selectedCouriers,
         },
         {
           headers: {
@@ -46,22 +47,18 @@ const Checkout = () => {
       );
 
       const checkout = response.data.checkout;
-      const razorpayOrder = {
-        ...response.data.data,
-        keyId: resolveRazorpayKeyId({
-          backendKeyId: response.data.data?.keyId,
-          frontendKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        }),
-      };
-      console.info("[checkout:server-response]", {
-        subtotal: checkout.subtotalAmount,
-        shipping: checkout.shippingAmount,
-        finalTotal: checkout.finalTotal,
-        razorpayAmount: razorpayOrder.amount,
-        razorpayAmountRupees: Number(razorpayOrder.amount) / 100,
-      });
-      if (Number(razorpayOrder.amount) !== Math.round(checkout.finalTotal * 100)) {
-        throw new Error("Checkout total does not match the Razorpay order amount. Please retry.");
+      let razorpayOrder = null;
+      if (createPayment) {
+        razorpayOrder = {
+          ...response.data.data,
+          keyId: resolveRazorpayKeyId({
+            backendKeyId: response.data.data?.keyId,
+            frontendKeyId: import.meta.env.VITE_RAZORPAY_KEY_ID,
+          }),
+        };
+        if (Number(razorpayOrder.amount) !== Math.round(checkout.finalTotal * 100)) {
+          throw new Error("Checkout total does not match the Razorpay order amount. Please retry.");
+        }
       }
       const items = checkout.items.map((item) => {
         const cartItem = cart.find(
@@ -74,7 +71,7 @@ const Checkout = () => {
         };
       });
 
-      setOrderData({
+      const preparedOrder = {
         items,
         storeName: checkout.storeName,
         address,
@@ -87,17 +84,27 @@ const Checkout = () => {
         estimatedDelivery: checkout.estimatedDelivery,
         vendorShippingQuotes: checkout.vendorShippingQuotes || [],
         razorpayOrder,
-      });
-      setStep(2);
+      };
+      setOrderData(preparedOrder);
+      return preparedOrder;
     } catch (error) {
-      setCheckoutError(
+      const message =
         error.response?.data?.message ||
-          "Could not calculate delivery charge. Please check the address and try again.",
-      );
+        "Could not calculate delivery charge. Please check the address and try again.";
+      setCheckoutError(message);
+      if (createPayment) throw new Error(message);
     } finally {
       setIsContinuing(false);
     }
   };
+
+  const continueToPayment = async (address) => {
+    const quote = await requestCheckout(address);
+    if (quote) setStep(2);
+  };
+
+  const preparePayment = (selectedCouriers) =>
+    requestCheckout(orderData?.address, selectedCouriers, true);
 
   const placeOrder = (createdOrder) => {
     setOrderData((current) => ({
@@ -126,6 +133,16 @@ const Checkout = () => {
           setStep={setStep}
           orderData={orderData}
           onPlaceOrder={placeOrder}
+          onPreparePayment={preparePayment}
+          onCourierSelectionChange={(quotes, shipping, total) => {
+            setOrderData((current) => ({
+              ...current,
+              vendorShippingQuotes: quotes,
+              shipping,
+              total,
+              razorpayOrder: null,
+            }));
+          }}
         />
       )}
 
