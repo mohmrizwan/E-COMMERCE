@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { AuthShell } from "./AuthShell";
+// import { AuthShell } from "./AuthShell";
 import { STORE_NAME } from "../config/brand.js";
+import { useStorefront } from "../hooks/useStorefront.js";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
@@ -10,6 +11,8 @@ import { API_ORIGIN } from "../utils/productsApi";
 
 
 const CreateAccount = () => {
+  const storefront = useStorefront();
+  const storeName = storefront?.businessName || STORE_NAME;
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -63,13 +66,13 @@ const CreateAccount = () => {
   };
 
   return (
-    <AuthShell>
+    <>
       <div className="auth-heading">
         <p className="auth-eyebrow">JOIN THE STORE</p>
 
         <h2>Create your account</h2>
 
-        <p>Join {STORE_NAME} and start shopping today.</p>
+        <p>Join {storeName} and start shopping today.</p>
       </div>
 
       {/* Success Snackbar */}
@@ -281,9 +284,8 @@ const CreateAccount = () => {
       <p className="auth-switch">
         Already have an account? <Link to="/login">Login</Link>
       </p>
-    </AuthShell>
+    </>
   );
 };
 
 export default CreateAccount;
-

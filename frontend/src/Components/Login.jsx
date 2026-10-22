@@ -2,12 +2,15 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthShell } from "./AuthShell";
 import { STORE_NAME } from "../config/brand.js";
+import { useStorefront } from "../hooks/useStorefront.js";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { API_ORIGIN } from "../utils/productsApi";
 const Login = () => {
+  const storefront = useStorefront();
+  const storeName = storefront?.businessName || STORE_NAME;
   const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -56,10 +59,11 @@ const Login = () => {
 
   return (
     <AuthShell>
+    
       <div className="auth-heading">
         <p className="auth-eyebrow">WELCOME BACK</p>
         <h2>Welcome back</h2>
-        <p>Login to your {STORE_NAME} account</p>
+        <p>Login to your {storeName} account</p>
       </div>
 
       <Snackbar
@@ -163,8 +167,10 @@ const Login = () => {
       <p className="auth-switch">
         Don't have an account? <Link to="/create">Create Account</Link>
       </p>
-    </AuthShell>
+     </AuthShell>
+    
   );
 };
+
 
 export default Login;

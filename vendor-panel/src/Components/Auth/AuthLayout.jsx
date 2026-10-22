@@ -1,15 +1,36 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import { STORE_NAME } from "../../config/brand.js";
+import { apiUrl } from "../../config/api.js";
 
-const AuthLayout = ({ eyebrow, title, description, children }) => (
+const defaultLogo = "/Copilot_20260831_214454.png";
+
+const AuthLayout = ({ eyebrow, title, description, children }) => {
+  const [storeLogo, setStoreLogo] = useState(defaultLogo);
+
+  useEffect(() => {
+    const handleSettingsUpdated = (event) => {
+      if (event.detail?.websiteLogo) setStoreLogo(event.detail.websiteLogo);
+    };
+    window.addEventListener("storefront:settings-updated", handleSettingsUpdated);
+    fetch(apiUrl("storefront"))
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        if (data?.storefront?.websiteLogo) setStoreLogo(data.storefront.websiteLogo);
+      })
+      .catch(() => {});
+    return () => window.removeEventListener("storefront:settings-updated", handleSettingsUpdated);
+  }, []);
+
+  return (
   <main className="grid min-h-dvh min-w-0 bg-[#F8FAFC] font-sans text-[#17112B] lg:grid-cols-[minmax(0,0.82fr)_minmax(0,1.18fr)]">
     <section className="relative hidden overflow-hidden flex-col bg-[#17112B] p-8 text-white sm:p-12 lg:flex lg:p-16 xl:p-20">
       <div className="pointer-events-none absolute -right-32 -top-32 size-96 rounded-full border border-violet-400/20 bg-violet-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 size-[28rem] rounded-full border border-fuchsia-300/10 bg-fuchsia-500/10 blur-3xl" />
 
       <Link to="/vendor/login" className="relative flex w-fit items-center gap-3 text-lg font-extrabold tracking-tight text-white no-underline">
-        <img src="/Copilot_20260831_214454.png" alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
+        <img src={storeLogo} alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
       </Link>
 
       <div className="relative my-auto max-w-xl py-16">
@@ -38,7 +59,7 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
       <div className="w-full min-w-0 max-w-xl">
         <div className="mb-7 lg:hidden">
           <Link to="/vendor/login" className="flex w-fit items-center text-lg font-extrabold tracking-tight text-[#17112B] no-underline">
-            <img src="/Copilot_20260831_214454.png" alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
+            <img src={storeLogo} alt={`${STORE_NAME} logo`} className="h-10 w-auto max-w-48 object-contain object-left" />
           </Link>
         </div>
 
@@ -53,7 +74,8 @@ const AuthLayout = ({ eyebrow, title, description, children }) => (
       </div>
     </section>
   </main>
-);
+  );
+};
 
 AuthLayout.propTypes = {
   eyebrow: PropTypes.string.isRequired,

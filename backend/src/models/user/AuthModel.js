@@ -81,6 +81,17 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    lockUntil: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,

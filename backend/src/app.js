@@ -19,6 +19,9 @@ import VendorCustomerRoutes from "./Routes/Vendor/CustomerRoutes.js";
 export default function createApp() {
   const app = express();
 
+  // Trust proxy (Render/Reverse proxy) so req.ip returns the real client IP
+  app.set("trust proxy", true);
+
   app.disable("x-powered-by");
   app.use((req, res, next) => {
     res.setHeader("X-Content-Type-Options", "nosniff");

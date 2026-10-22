@@ -156,7 +156,7 @@ const VerifyOtp = () => {
   };
 
   return (
-    <AuthShell>
+    <>
       <Snackbar
         open={Boolean(message)}
         autoHideDuration={3000}
@@ -339,7 +339,7 @@ const VerifyOtp = () => {
           ← Back to Create Account
         </Link>
       </div>
-    </AuthShell>
+    </>
   );
 };
 

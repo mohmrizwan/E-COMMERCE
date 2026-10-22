@@ -211,6 +211,10 @@ export const resendOtp = async (req, res) => {
     });
   }
 };
+const MAX_FAILED_ATTEMPTS = 3;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+const GENERIC_AUTH_ERROR = "Invalid email or password";
+
 // Login User
 export const LoginAccount = async (req, res) => {
   try {
@@ -222,43 +226,91 @@ export const LoginAccount = async (req, res) => {
         .json({ success: false, message: "Email and password are required" });
     }
 
-    let userFind = await UserModel.findOne({ email });
+    const normalizedEmail = String(email).trim().toLowerCase();
 
+    const userFind = await UserModel.findOne({ email: normalizedEmail });
+
+    // Generic error: do not reveal whether the email exists
     if (!userFind) {
-      return res.status(401).json({ message: "Invalid Email Address" });
+      return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
     }
 
+    // If account is currently locked, reject with generic error
+    if (userFind.lockUntil && userFind.lockUntil > new Date()) {
+      return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
+    }
+
+    // If lock has expired, reset counters so the user can try again
+    if (userFind.lockUntil && userFind.lockUntil <= new Date()) {
+      await UserModel.updateOne(
+        { _id: userFind._id },
+        { $set: { failedLoginAttempts: 0, lockUntil: null } }
+      );
+    }
+
+    // Google accounts do not have a local password
     if (!userFind.password) {
-      return res.status(401).json({
-        success: false,
-        message: "This account was created with Google. Please use Google login.",
-      });
+      return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
     }
 
     if (!userFind.isVerified) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Please verify your email first" });
+      return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
     }
 
     const comparePassword = await bcrypt.compare(password, userFind.password);
 
-    if (!comparePassword) {
-      return res.status(401).json({ message: "Enter Correct Password" });
+    if (comparePassword) {
+      // Correct password: reset failed attempts and clear any lock
+      await UserModel.updateOne(
+        { _id: userFind._id },
+        { $set: { failedLoginAttempts: 0, lockUntil: null } }
+      );
+
+      const token = generateToken(userFind);
+
+      return res.status(200).json({
+        success: true,
+        message: "Login successful",
+        token,
+        userFind: {
+          id: userFind._id,
+          name: userFind.name,
+          email: userFind.email,
+        },
+      });
     }
 
-    let token = generateToken(userFind);
-
-    return res.status(200).json({
-      success: true,
-      message: "Login successful",
-      token,
-      userFind: {
-        id: userFind._id,
-        name: userFind.name,
-        email: userFind.email,
+    // Wrong password: atomically increment failed attempts only if not locked
+    const updated = await UserModel.findOneAndUpdate(
+      {
+        email: normalizedEmail,
+        $or: [
+          { lockUntil: { $exists: false } },
+          { lockUntil: null },
+          { lockUntil: { $lte: new Date() } },
+        ],
       },
-    });
+      { $inc: { failedLoginAttempts: 1 } },
+      { new: true }
+    );
+
+    // If the account became locked between our check and this update, reject generically
+    if (!updated) {
+      return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
+    }
+
+    // If this attempt reached the limit and account is not already locked, lock it
+    if (
+      updated.failedLoginAttempts >= MAX_FAILED_ATTEMPTS &&
+      (!updated.lockUntil || updated.lockUntil <= new Date())
+    ) {
+      await UserModel.updateOne(
+        { _id: updated._id },
+        { $set: { lockUntil: new Date(Date.now() + LOCKOUT_DURATION_MS) } }
+      );
+    }
+
+    return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
   } catch (error) {
     return res.status(500).json({
       success: false,
