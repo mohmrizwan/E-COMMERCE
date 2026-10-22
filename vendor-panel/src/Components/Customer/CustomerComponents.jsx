@@ -4,7 +4,6 @@ import Dotter from "../../../../frontend/src/Components/Dotter"
 
 
 import {
-  CButton,
   CCard,
   CCardBody,
   CCardHeader,
@@ -20,7 +19,7 @@ import {
 } from "@coreui/react";
 
 import CIcon from "@coreui/icons-react";
-import { cilSearch, cilTrash } from "@coreui/icons";
+import { cilSearch } from "@coreui/icons";
 import { apiUrl } from "../../config/api.js";
 
 const CustomerComponents = () => {
@@ -36,6 +35,7 @@ const CustomerComponents = () => {
 
       if (!vendorToken) {
         console.error("Vendor token not found");
+        setCustomers([]);
         return;
       }
 
@@ -66,6 +66,8 @@ const CustomerComponents = () => {
       }
 
       setCustomers([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -182,7 +184,16 @@ const CustomerComponents = () => {
               </CTableHead>
 
               <CTableBody>
-                {filteredCustomers.length > 0 ? (
+                {loading ? (
+                  <CTableRow>
+                    <CTableDataCell colSpan={4} className="text-center py-5">
+                      <Dotter className="justify-center" />
+                      <div className="text-body-secondary mt-2">
+                        Loading customers...
+                      </div>
+                    </CTableDataCell>
+                  </CTableRow>
+                ) : filteredCustomers.length > 0 ? (
                   filteredCustomers.map((customer) => (
                     <CTableRow key={customer.userId}>
                       {/* Customer */}

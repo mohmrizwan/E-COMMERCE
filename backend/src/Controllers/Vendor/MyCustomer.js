@@ -23,11 +23,13 @@ export const myCustomer = async (req, res) => {
           userId: order.userId._id,
           name: order.userId.name,
           email: order.userId.email,
-          phone: order.userId.phone,
+          phone: order.userId.phone || order.shippingAddress?.phone || "",
           totalOrders: 1,
         });
       } else {
-        customerMap.get(userId).totalOrders += 1;
+        const customer = customerMap.get(userId);
+        customer.totalOrders += 1;
+        customer.phone ||= order.userId.phone || order.shippingAddress?.phone || "";
       }
     });
 
