@@ -205,6 +205,9 @@ export const order = async (req, res) => {
         ...parcel,
         cod: 0,
         declaredValue: vendorSubtotalPaise / 100,
+        isDangerous: vendorProducts.get(String(vendorId)).some(
+          ({ productId }) => productId.isDangerous,
+        ),
       });
       const vendorShippingPaise = Math.round(quote.shippingAmount * 100);
       shippingPaise += vendorShippingPaise;
@@ -214,10 +217,12 @@ export const order = async (req, res) => {
         pickupPostcode,
         deliveryPostcode,
         shippingAmount: vendorShippingPaise / 100,
+        additionalCharges: quote.additionalCharges || 0,
         estimatedShippingCost: vendorShippingPaise / 100,
         courierCompanyId: quote.courierCompanyId,
         courierName: quote.courierName,
         estimatedDelivery: quote.estimatedDelivery,
+        courierOptions: quote.courierOptions,
         weight: quote.weight,
         length: quote.length,
         breadth: quote.breadth,
@@ -292,6 +297,9 @@ export const order = async (req, res) => {
   } catch (error) {
     if (error instanceof RazorpayConfigurationError) {
       return res.status(error.status).json({ message: error.message, code: error.code });
+    }
+    if (error.message === "No surface courier is available for this dangerous-goods shipment") {
+      return res.status(422).json({ message: error.message });
     }
     console.error("Create Razorpay Order Error", {
       status: error.response?.status,

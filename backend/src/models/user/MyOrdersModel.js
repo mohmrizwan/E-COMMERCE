@@ -91,6 +91,8 @@ const OrderSchema = new mongoose.Schema(
         pickupPostcode: { type: String, required: true },
         deliveryPostcode: { type: String, required: true },
         shippingAmount: { type: Number, required: true },
+        additionalCharges: { type: Number, default: 0 },
+        courierOptions: { type: [mongoose.Schema.Types.Mixed], default: [] },
         estimatedShippingCost: Number,
         courierCompanyId: { type: String, required: true },
         courierName: String,

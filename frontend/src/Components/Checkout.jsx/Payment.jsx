@@ -284,6 +284,43 @@ const Payment = ({ setStep, orderData, onPlaceOrder }) => {
                   </div>
                 </section>
 
+                <section className="rounded-xl border border-[#E5E7EB] p-4 sm:p-5">
+                  <h4 className="font-[inter] text-sm font-bold text-[#111827]">
+                    Available courier partners
+                  </h4>
+                  <p className="mt-1 text-xs leading-5 text-[#6B7280]">
+                    Estimated prepaid delivery rates from Shiprocket. The selected checkout rate is included in your total; COD charges do not apply to this prepaid order.
+                  </p>
+                  <div className="mt-3 space-y-4">
+                    {(orderData?.vendorShippingQuotes || []).map((vendorQuote) => (
+                      <div key={vendorQuote.vendorId}>
+                        {(orderData.vendorShippingQuotes.length > 1) && (
+                          <p className="mb-2 text-xs font-semibold text-[#4B5563]">Store delivery options</p>
+                        )}
+                        <div className="space-y-2">
+                          {(vendorQuote.courierOptions || []).map((courier) => (
+                            <div key={courier.courierCompanyId} className="flex items-center justify-between gap-3 rounded-lg bg-[#F9FAFB] px-3 py-2 text-sm">
+                              <div>
+                                <p className="font-semibold text-[#111827]">
+                                  {courier.courierName}
+                                  {courier.courierCompanyId === vendorQuote.courierCompanyId && (
+                                    <span className="ml-2 rounded-full bg-[#EDE9FE] px-2 py-0.5 text-[10px] font-bold text-[#5B21B6]">Used for checkout</span>
+                                  )}
+                                </p>
+                                <p className="text-xs text-[#6B7280]">
+                                  {courier.estimatedDelivery || "Delivery estimate unavailable"}{courier.isSurface ? " · Surface" : ""}
+                                  {Number(courier.additionalCharges) > 0 ? ` · Includes ₹${Number(courier.additionalCharges).toLocaleString("en-IN", { maximumFractionDigits: 2 })} additional provider charges` : ""}
+                                </p>
+                              </div>
+                              <span className="shrink-0 font-semibold">₹{Number(courier.shippingAmount).toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+
                 <section className="rounded-xl border border-[#E5E7EB] p-4">
                   <h4 className="font-[inter] text-sm font-bold text-[#111827]">
                     Pay securely with Razorpay

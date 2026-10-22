@@ -347,6 +347,15 @@ const AddProduct = () => {
                       />
                     </div>
                   </CCol>
+                  <CCol xs={12}>
+                    <label className="d-flex align-items-start gap-2 mb-2">
+                      <input type="checkbox" name="isDangerous" value="true" className="mt-1" />
+                      <span>
+                        <span className="fw-semibold d-block">Dangerous goods (surface courier only)</span>
+                        <small className="text-body-secondary">Shiprocket prohibits some dangerous goods entirely. Check its prohibited items policy before listing.</small>
+                      </span>
+                    </label>
+                  </CCol>
                 </CRow>
               </CCardBody>
             </CCard>

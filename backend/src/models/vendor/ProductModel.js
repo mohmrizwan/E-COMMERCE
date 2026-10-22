@@ -49,6 +49,7 @@ const productSchema = new mongoose.Schema(
     length: { type: Number, min: 0.5001 },
     breadth: { type: Number, min: 0.5001 },
     height: { type: Number, min: 0.5001 },
+    isDangerous: { type: Boolean, default: false },
 
     status: {
       type: String,

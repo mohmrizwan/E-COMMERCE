@@ -34,6 +34,7 @@ export const createProduct = async (req, res) => {
       stockQuantity,
       status,
       weight, length, breadth, height,
+      isDangerous,
     } = req.body;
 
     if (
@@ -97,6 +98,7 @@ export const createProduct = async (req, res) => {
       discount: discountValue,
       stockQuantity,
       ...shippingDetails.values,
+      isDangerous: isDangerous === true || isDangerous === "true",
       status,
       image: result.secure_url,
     });
@@ -184,6 +186,7 @@ export const updateProduct = async (req, res) => {
       stockQuantity,
       status,
       weight, length, breadth, height,
+      isDangerous,
     } = req.body;
 
     if (!vendorId) {
@@ -227,6 +230,9 @@ export const updateProduct = async (req, res) => {
     product.stockQuantity = stockQuantity;
     product.status = status;
     Object.assign(product, shippingDetails.values);
+    if (isDangerous !== undefined) {
+      product.isDangerous = isDangerous === true || isDangerous === "true";
+    }
 
     await product.save();
 

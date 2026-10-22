@@ -45,6 +45,7 @@ const UpadteProduct = () => {
     length: "",
     breadth: "",
     height: "",
+    isDangerous: false,
     status: "",
   });
 
@@ -82,6 +83,7 @@ const UpadteProduct = () => {
           length: data.length ?? "",
           breadth: data.breadth ?? "",
           height: data.height ?? "",
+          isDangerous: Boolean(data.isDangerous),
           status: data.status || "",
         });
 
@@ -509,6 +511,19 @@ const UpadteProduct = () => {
                       </CCol>
                     ))}
                   </CRow>
+                  <label className="d-flex align-items-start gap-2 mt-2 mb-0">
+                    <input
+                      type="checkbox"
+                      name="isDangerous"
+                      checked={Boolean(product.isDangerous)}
+                      onChange={(event) => setProduct((current) => ({ ...current, isDangerous: event.target.checked }))}
+                      disabled={updating}
+                    />
+                    <span>
+                      <span className="fw-semibold d-block">Dangerous goods (surface courier only)</span>
+                      <small className="text-body-secondary">Shiprocket prohibits some dangerous goods entirely. Check its prohibited items policy before listing.</small>
+                    </span>
+                  </label>
                 </CCardBody>
               </CCard>
             </CCol>

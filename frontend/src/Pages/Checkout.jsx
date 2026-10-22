@@ -85,6 +85,7 @@ const Checkout = () => {
         shippingCourierCompanyId: checkout.shippingCourierCompanyId,
         shippingCourierName: checkout.shippingCourierName,
         estimatedDelivery: checkout.estimatedDelivery,
+        vendorShippingQuotes: checkout.vendorShippingQuotes || [],
         razorpayOrder,
       });
       setStep(2);

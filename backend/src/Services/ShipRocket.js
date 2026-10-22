@@ -281,6 +281,7 @@ export const getAvailableShiprocketCouriers = async ({
   height,
   cod,
   declaredValue,
+  mode,
 }) => {
   const normalizedPickupPostcode = String(pickupPostcode || "").trim();
   const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
@@ -311,6 +312,7 @@ export const getAvailableShiprocketCouriers = async ({
         ...serviceabilityParcel,
         cod,
         declared_value: declaredValue,
+        ...(mode ? { mode } : {}),
       },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -380,6 +382,7 @@ export const getShiprocketShippingQuote = async ({
   height,
   cod = 0,
   declaredValue,
+  isDangerous = false,
 }) => {
   const normalizedPickupPostcode = String(pickupPostcode || "").trim();
   const normalizedDeliveryPostcode = String(deliveryPostcode || "").trim();
@@ -409,15 +412,47 @@ export const getShiprocketShippingQuote = async ({
     height,
     cod,
     declaredValue,
+    ...(isDangerous ? { mode: "Surface" } : {}),
   });
-  return selectShiprocketCourierQuote(serviceability, preferredCourierCompanyId, {
+  const quote = selectShiprocketCourierQuote(serviceability, preferredCourierCompanyId, {
     pickupPostcode: normalizedPickupPostcode,
     deliveryPostcode: normalizedDeliveryPostcode,
     weight,
     length,
     breadth,
     height,
+    isDangerous,
   });
+  const courierOptions = (
+    serviceability?.data?.available_courier_companies ||
+    serviceability?.available_courier_companies || []
+  )
+    .filter((option) => Number(option.blocked) !== 1)
+    .filter((option) => !isDangerous || option.is_surface === true || option.is_surface === 1 || option.is_surface === "1" || option.is_surface === "true")
+    .map((option) => {
+      const baseRate = Number(option.rate ?? option.freight_charge);
+      const additionalCharges = ["other_charges", "coverage_charges", "entry_tax"]
+        .reduce((total, field) => total + (Number(option[field]) || 0), 0);
+      return {
+        courierCompanyId: String(option.courier_company_id || ""),
+        courierName: option.courier_name || "Courier partner",
+        shippingAmount: Math.round((baseRate + additionalCharges) * 100) / 100,
+        additionalCharges: Math.round(additionalCharges * 100) / 100,
+        estimatedDelivery: option.etd || option.estimated_delivery_days || null,
+        chargeWeight: Number(option.charge_weight) || null,
+        isSurface: option.is_surface === true || option.is_surface === 1 || option.is_surface === "1" || option.is_surface === "true",
+      };
+    })
+    .filter((option) => /^\d+$/.test(option.courierCompanyId) && Number.isFinite(option.shippingAmount));
+  const selectedCourier = courierOptions.find(
+    (option) => option.courierCompanyId === quote.courierCompanyId,
+  );
+  return {
+    ...quote,
+    shippingAmount: selectedCourier?.shippingAmount ?? quote.shippingAmount,
+    additionalCharges: selectedCourier?.additionalCharges ?? 0,
+    courierOptions,
+  };
 };
 
 export const selectShiprocketCourierQuote = (
@@ -430,10 +465,15 @@ export const selectShiprocketCourierQuote = (
     serviceability?.available_courier_companies ||
     [];
   const serviceableCouriers = couriers
+    .filter((option) => Number(option.blocked) !== 1)
+    .filter((option) => !route.isDangerous || option.is_surface === true || option.is_surface === 1 || option.is_surface === "1" || option.is_surface === "true")
     .map((option) => ({
       option,
       courierCompanyId: String(option.courier_company_id || ""),
-      shippingAmount: Number(option.rate ?? option.freight_charge),
+      shippingAmount:
+        Number(option.rate ?? option.freight_charge) +
+        ["other_charges", "coverage_charges", "entry_tax"]
+          .reduce((total, field) => total + (Number(option[field]) || 0), 0),
     }))
     .filter(
       ({ courierCompanyId, shippingAmount }) =>
@@ -451,7 +491,11 @@ export const selectShiprocketCourierQuote = (
     )[0];
 
   if (!courier) {
-    throw new Error("Shiprocket returned no serviceable couriers with valid rates for this route");
+    throw new Error(
+      route.isDangerous
+        ? "No surface courier is available for this dangerous-goods shipment"
+        : "Shiprocket returned no serviceable couriers with valid rates for this route",
+    );
   }
 
   return {
