@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import Dotter from "../../../../frontend/src/Components/Dotter"
+import ProductLoader from "../ProductLoader";
 
 
 import {
@@ -186,11 +186,8 @@ const CustomerComponents = () => {
               <CTableBody>
                 {loading ? (
                   <CTableRow>
-                    <CTableDataCell colSpan={4} className="text-center py-5">
-                      <Dotter className="justify-center" />
-                      <div className="text-body-secondary mt-2">
-                        Loading customers...
-                      </div>
+                    <CTableDataCell colSpan={4} className="w-full p-0">
+                      <ProductLoader />
                     </CTableDataCell>
                   </CTableRow>
                 ) : filteredCustomers.length > 0 ? (
