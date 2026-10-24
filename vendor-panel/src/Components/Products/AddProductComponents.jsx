@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   CButton,
   CCard,
@@ -19,6 +19,7 @@ import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { useNavigate } from "react-router-dom";
 import { API_URL, apiUrl } from "../../config/api.js";
+import { getCategories } from "../../api/categories.js";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -26,6 +27,20 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [image, setImage] = useState(null);
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const list = await getCategories();
+        setCategories(list);
+      } catch (error) {
+        console.error("Could not load categories.", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -169,6 +184,17 @@ const AddProduct = () => {
                     required
                   />
                 </div>
+                <div className="mb-4">
+                  <CFormLabel className="fw-semibold">Brand</CFormLabel>
+
+                  <CFormInput
+                    name="description"
+                    rows={5}
+                    placeholder="Write a brand for your product..."
+                    className="py-2"
+                    required
+                  />
+                </div>
 
                 <CRow>
                   {/* Category */}
@@ -178,10 +204,11 @@ const AddProduct = () => {
 
                       <CFormSelect name="category" className="py-2" required>
                         <option value="">Select category</option>
-                        <option value="electronics">Electronics</option>
-                        <option value="fashion">Fashion</option>
-                        <option value="shoes">Shoes</option>
-                        <option value="accessories">Accessories</option>
+                        {categories.map((category) => (
+                          <option key={category.id} value={category.name}>
+                            {category.name}
+                          </option>
+                        ))}
                       </CFormSelect>
                     </div>
                   </CCol>

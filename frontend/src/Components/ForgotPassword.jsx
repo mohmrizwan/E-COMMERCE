@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-// import { AuthShell } from "./AuthShell";
+import { AuthShell } from "./AuthShell";
 import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
@@ -117,7 +117,7 @@ const ForgotPassword = () => {
   }[step];
 
   return (
-    <>
+    <AuthShell>
       <Snackbar
         open={Boolean(message)}
         autoHideDuration={3000}
@@ -255,7 +255,7 @@ const ForgotPassword = () => {
           <Link to="/login">Back to login</Link>
         </p>
       )}
-    </>
+    </AuthShell>
   );
 };
 

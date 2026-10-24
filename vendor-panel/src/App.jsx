@@ -25,7 +25,7 @@ import VendorResetVerify from "./Pages/Auth/VendorResetVerify";
 import VendorNewPassword from "./Pages/Auth/VendorNewPassword";
 import ProtectedRoute from "./Components/ProtectedRoute";
 import Banner from "./Components/Banner/Banner";
-
+import BrandAndCategory from "./Components/Brand and Category/BrandAndCategory";
 function App() {
   return (
     <Routes>
@@ -50,7 +50,7 @@ function App() {
           <Route path="products/add" element={<AddProduct />} />
           <Route path="products/inventory" element={<Inventory />} />
           <Route path="products/update/:id" element={<Update />} />
-
+          <Route path="brandAndCategory" element={<BrandAndCategory />} />
           <Route path="orders" element={<AllOrders />} />
           <Route path="orders/processing" element={<Processing />} />
           <Route path="orders/shipped" element={<Shipped />} />
@@ -63,7 +63,7 @@ function App() {
           <Route path="transactions" element={<Transaction />} />
           <Route path="messages" element={<Message />} />
           <Route path="profile" element={<Profile />} />
-          <Route path="banner" element={<Banner/>}/>
+          <Route path="banner" element={<Banner />} />
           <Route path="settings" element={<Setting />} />
         </Route>
       </Route>

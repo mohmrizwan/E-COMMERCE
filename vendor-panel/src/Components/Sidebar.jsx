@@ -223,7 +223,13 @@ function Sidebar({ visible, setVisible }) {
 
 
 
-      
+      <CNavItem
+          href="/brandAndCategory"
+          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+        >
+          <CIcon icon={cilUser} customClassName="nav-icon !text-violet-400" />
+          Brand & Category
+        </CNavItem>
 
         {/* Notifications */}
 

@@ -11,10 +11,14 @@ const parseShippingDetails = (values) => {
     }
     const number = Number(value);
     if (!Number.isFinite(number) || number <= 0) {
-      return { error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than zero` };
+      return {
+        error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than zero`,
+      };
     }
     if (field !== "weight" && number <= 0.5) {
-      return { error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than 0.5 cm for Shiprocket` };
+      return {
+        error: `${field[0].toUpperCase()}${field.slice(1)} must be greater than 0.5 cm for Shiprocket`,
+      };
     }
     parsed[field] = number;
   }
@@ -32,8 +36,12 @@ export const createProduct = async (req, res) => {
       pricing,
       discount = 0,
       stockQuantity,
+      brand,
       status,
-      weight, length, breadth, height,
+      weight,
+      length,
+      breadth,
+      height,
       isDangerous,
     } = req.body;
 
@@ -43,6 +51,7 @@ export const createProduct = async (req, res) => {
       !category ||
       pricing === undefined ||
       pricing === "" ||
+      !brand ||
       stockQuantity === undefined ||
       stockQuantity === "" ||
       !status
@@ -53,11 +62,23 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    const shippingDetails = parseShippingDetails({ weight, length, breadth, height });
-    if (shippingDetails.error) return res.status(400).json({ success: false, message: shippingDetails.error });
+    const shippingDetails = parseShippingDetails({
+      weight,
+      length,
+      breadth,
+      height,
+    });
+    if (shippingDetails.error)
+      return res
+        .status(400)
+        .json({ success: false, message: shippingDetails.error });
 
     const discountValue = Number(discount);
-    if (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 99) {
+    if (
+      !Number.isFinite(discountValue) ||
+      discountValue < 0 ||
+      discountValue > 99
+    ) {
       return res.status(400).json({
         success: false,
         message: "Discount must be between 0 and 99 percent",
@@ -95,6 +116,7 @@ export const createProduct = async (req, res) => {
       description,
       category,
       pricing,
+      brand,
       discount: discountValue,
       stockQuantity,
       ...shippingDetails.values,
@@ -185,7 +207,11 @@ export const updateProduct = async (req, res) => {
       discount,
       stockQuantity,
       status,
-      weight, length, breadth, height,
+      weight,
+      length,
+      brand,
+      breadth,
+      height,
       isDangerous,
     } = req.body;
 
@@ -211,7 +237,11 @@ export const updateProduct = async (req, res) => {
 
     if (discount !== undefined) {
       const discountValue = Number(discount);
-      if (!Number.isFinite(discountValue) || discountValue < 0 || discountValue > 99) {
+      if (
+        !Number.isFinite(discountValue) ||
+        discountValue < 0 ||
+        discountValue > 99
+      ) {
         return res.status(400).json({
           success: false,
           message: "Discount must be between 0 and 99 percent",
@@ -220,8 +250,16 @@ export const updateProduct = async (req, res) => {
       product.discount = discountValue;
     }
 
-    const shippingDetails = parseShippingDetails({ weight, length, breadth, height });
-    if (shippingDetails.error) return res.status(400).json({ success: false, message: shippingDetails.error });
+    const shippingDetails = parseShippingDetails({
+      weight,
+      length,
+      breadth,
+      height,
+    });
+    if (shippingDetails.error)
+      return res
+        .status(400)
+        .json({ success: false, message: shippingDetails.error });
 
     product.name = name;
     product.description = description;
@@ -229,6 +267,7 @@ export const updateProduct = async (req, res) => {
     product.pricing = pricing;
     product.stockQuantity = stockQuantity;
     product.status = status;
+    product.brand = brand;
     Object.assign(product, shippingDetails.values);
     if (isDangerous !== undefined) {
       product.isDangerous = isDangerous === true || isDangerous === "true";

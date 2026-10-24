@@ -16,6 +16,7 @@ import StorefrontRoutes from "./Routes/Users/StorefrontRoutes.js";
 import RazorpayWebhookRoutes from "./Routes/Users/RazorpayWebhookRoutes.js";
 import VendorBannerRoutes from "./Routes/Vendor/BannerRoutes.js";
 import VendorCustomerRoutes from "./Routes/Vendor/CustomerRoutes.js";
+import brandAuth from "../src/Routes/Vendor/BrandAndCatRoutes.js";
 export default function createApp() {
   const app = express();
 
@@ -27,15 +28,21 @@ export default function createApp() {
     res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("X-Frame-Options", "DENY");
     res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=()",
+    );
     next();
   });
   app.use(cors());
-  app.use(express.json({
-    verify(req, _res, buffer) {
-      if (req.path === "/webhooks/razorpay") req.rawBody = Buffer.from(buffer);
-    },
-  }));
+  app.use(
+    express.json({
+      verify(req, _res, buffer) {
+        if (req.path === "/webhooks/razorpay")
+          req.rawBody = Buffer.from(buffer);
+      },
+    }),
+  );
 
   app.use("/user", AuthUser);
   app.use("/profile", profileRoutes);
@@ -55,6 +62,6 @@ export default function createApp() {
   app.use("/vendor/customers", VendorCustomerRoutes);
   app.use("/vendor/transactions", TransactionRoutes);
   app.use("/dashboard", Dashboard);
-
+  app.use("/brand", brandAuth);
   return app;
 }
