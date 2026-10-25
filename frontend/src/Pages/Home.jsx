@@ -10,6 +10,7 @@ import Product from "../Components/Product";
 // import Vendors from "../Components/Vendors";
 // import Subscribe from "../Components/Subscribe";
 import { Link } from "react-router-dom";
+import Brand from "../Components/Brand";
 
 const Home = () => {
   return (
@@ -39,6 +40,7 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <Brand/>
       <Product />
      
       <Footer />

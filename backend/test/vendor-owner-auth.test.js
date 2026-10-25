@@ -268,7 +268,7 @@ test("product creation ignores client vendorId and associates product with req.v
       vendor: { _id: ownerId }, file: { mimetype: "image/png", buffer: Buffer.from("test") },
       body: {
         vendorId: otherId, name: "Cup", description: "A cup", category: "Kitchen",
-        pricing: "12", discount: "0", stockQuantity: "4", status: "active",
+        pricing: "12", discount: "0", stockQuantity: "4", status: "active", brand: "Acme",
         weight: "1", length: "1", breadth: "1", height: "1",
       },
     }, res);

@@ -36,20 +36,28 @@ function Sidebar({ visible, setVisible }) {
     const handleSettingsUpdated = (event) => {
       if (event.detail?.websiteLogo) setStoreLogo(event.detail.websiteLogo);
     };
-    window.addEventListener("storefront:settings-updated", handleSettingsUpdated);
+    window.addEventListener(
+      "storefront:settings-updated",
+      handleSettingsUpdated,
+    );
     fetch(apiUrl("storefront"))
-      .then((response) => response.ok ? response.json() : null)
+      .then((response) => (response.ok ? response.json() : null))
       .then((data) => {
-        if (data?.storefront?.websiteLogo) setStoreLogo(data.storefront.websiteLogo);
+        if (data?.storefront?.websiteLogo)
+          setStoreLogo(data.storefront.websiteLogo);
       })
       .catch(() => {});
-    return () => window.removeEventListener("storefront:settings-updated", handleSettingsUpdated);
+    return () =>
+      window.removeEventListener(
+        "storefront:settings-updated",
+        handleSettingsUpdated,
+      );
   }, []);
   return (
     <CSidebar
       position="fixed"
       visible={visible}
-      onVisibleChange={setVisible} 
+      onVisibleChange={setVisible}
       className="vendor-sidebar !bg-[#17112B] !border-r !border-[#2D2545]"
     >
       {/* ================= LOGO ================= */}
@@ -86,8 +94,6 @@ function Sidebar({ visible, setVisible }) {
           Dashboard
         </CNavItem>
 
-      
-
         {/* ---------- STORE ---------- */}
 
         <div className="px-3 mt-5 mb-2">
@@ -122,11 +128,6 @@ function Sidebar({ visible, setVisible }) {
           >
             Add Product
           </CNavItem>
-
-
-
-       
-       
         </CNavGroup>
 
         {/* Orders */}
@@ -149,8 +150,6 @@ function Sidebar({ visible, setVisible }) {
           >
             All Orders
           </CNavItem>
-
-      
 
           <CNavItem
             href="/orders/processing"
@@ -197,8 +196,13 @@ function Sidebar({ visible, setVisible }) {
           <CIcon icon={cilPeople} customClassName="nav-icon !text-violet-400" />
           banner
         </CNavItem>
-
-
+        <CNavItem
+          href="/brandAndCategory"
+          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+        >
+          <CIcon icon={cilTags} customClassName="nav-icon !text-violet-400" />
+          Brand & Category
+        </CNavItem>
 
         {/* ---------- FINANCE ---------- */}
 
@@ -207,7 +211,6 @@ function Sidebar({ visible, setVisible }) {
             Finance
           </span>
         </div>
-
 
         {/* Transactions */}
 
@@ -221,19 +224,7 @@ function Sidebar({ visible, setVisible }) {
 
         {/* Withdrawals */}
 
-
-
-      <CNavItem
-          href="/brandAndCategory"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
-        >
-          <CIcon icon={cilUser} customClassName="nav-icon !text-violet-400" />
-          Brand & Category
-        </CNavItem>
-
         {/* Notifications */}
-
-  
 
         {/* ---------- SYSTEM ---------- */}
 

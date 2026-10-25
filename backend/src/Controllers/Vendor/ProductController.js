@@ -267,7 +267,9 @@ export const updateProduct = async (req, res) => {
     product.pricing = pricing;
     product.stockQuantity = stockQuantity;
     product.status = status;
-    product.brand = brand;
+    if (brand !== undefined) {
+      product.brand = brand;
+    }
     Object.assign(product, shippingDetails.values);
     if (isDangerous !== undefined) {
       product.isDangerous = isDangerous === true || isDangerous === "true";

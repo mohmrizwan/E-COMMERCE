@@ -78,7 +78,7 @@ export const updateBrand = async (req, res) => {
     const brandUpdate = await brand.findOneAndUpdate(
       { _id: id, type: "Brand" },
       { name, logo },
-      { new: true, runValidators: true },
+      { new: true},
     );
 
     if (!brand) {

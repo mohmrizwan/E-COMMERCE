@@ -210,7 +210,7 @@ const ProductTable = ({ search, category, status }) => {
 
                   {/* Price */}
                   <CTableDataCell>
-                    <span className="fw-semibold">${product.pricing}</span>
+                    <span className="fw-semibold">{product.pricing}</span>
                   </CTableDataCell>
 
                   {/* Stock */}

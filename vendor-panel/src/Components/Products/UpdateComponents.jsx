@@ -17,6 +17,8 @@ import { cilArrowLeft, cilCloudUpload, cilPlus } from "@coreui/icons";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import ProductLoader from "../../Components/ProductLoader";
+import { getBrands } from "../../api/brands.js";
+import { getCategories } from "../../api/categories.js";
 
 // MUI
 import Snackbar from "@mui/material/Snackbar";
@@ -41,6 +43,7 @@ const UpadteProduct = () => {
     pricing: "",
     discount: 0,
     stockQuantity: "",
+    brand: "",
     weight: "",
     length: "",
     breadth: "",
@@ -48,6 +51,7 @@ const UpadteProduct = () => {
     isDangerous: false,
     status: "",
   });
+  const [brands, setBrands] = useState([]);
 
   // ================= GET PRODUCT =================
 
@@ -68,9 +72,7 @@ const UpadteProduct = () => {
         );
 
         const data =
-          response.data.product ||
-          response.data.products ||
-          response.data;
+          response.data.product || response.data.products || response.data;
 
         setProduct({
           name: data.name || "",
@@ -80,6 +82,7 @@ const UpadteProduct = () => {
           discount: data.discount ?? 0,
           stockQuantity: data.stockQuantity ?? "",
           weight: data.weight ?? "",
+          brand: data.brand ?? "",
           length: data.length ?? "",
           breadth: data.breadth ?? "",
           height: data.height ?? "",
@@ -93,8 +96,7 @@ const UpadteProduct = () => {
         }
       } catch (error) {
         setErrorMessage(
-          error.response?.data?.message ||
-            "Unable to load product",
+          error.response?.data?.message || "Unable to load product",
         );
       } finally {
         setLoading(false);
@@ -106,7 +108,18 @@ const UpadteProduct = () => {
     }
   }, [id]);
 
-  // ================= INPUT CHANGE =================
+  useEffect(() => {
+    const loadBrands = async () => {
+      try {
+        const list = await getBrands();
+        setBrands(list);
+      } catch (error) {
+        console.error("Could not load brands.", error);
+      }
+    };
+
+    loadBrands();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -124,25 +137,17 @@ const UpadteProduct = () => {
 
     if (!file) return;
 
-    const allowedTypes = [
-      "image/png",
-      "image/jpeg",
-      "image/webp",
-    ];
+    const allowedTypes = ["image/png", "image/jpeg", "image/webp"];
 
     if (!allowedTypes.includes(file.type)) {
-      setErrorMessage(
-        "Only PNG, JPG or WEBP images are allowed",
-      );
+      setErrorMessage("Only PNG, JPG or WEBP images are allowed");
 
       e.target.value = "";
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setErrorMessage(
-        "Image size must be less than 5MB",
-      );
+      setErrorMessage("Image size must be less than 5MB");
 
       e.target.value = "";
       return;
@@ -163,30 +168,29 @@ const UpadteProduct = () => {
     }
 
     if (product.name.trim().length < 3) {
-      setErrorMessage(
-        "Product name must be at least 3 characters",
-      );
+      setErrorMessage("Product name must be at least 3 characters");
       return;
     }
 
     // Description validation
     if (!product.description.trim()) {
-      setErrorMessage(
-        "Product description is required",
-      );
+      setErrorMessage("Product description is required");
       return;
     }
 
     if (product.description.trim().length < 10) {
-      setErrorMessage(
-        "Description must be at least 10 characters",
-      );
+      setErrorMessage("Description must be at least 10 characters");
       return;
     }
 
     // Category validation
     if (!product.category) {
       setErrorMessage("Please select a category");
+      return;
+    }
+    // Category validation
+    if (!product.brand) {
+      setErrorMessage("Please select a brand");
       return;
     }
 
@@ -208,22 +212,28 @@ const UpadteProduct = () => {
 
     // Stock validation
     if (product.stockQuantity === "") {
-      setErrorMessage(
-        "Stock quantity is required",
-      );
+      setErrorMessage("Stock quantity is required");
       return;
     }
 
     if (Number(product.stockQuantity) < 0) {
-      setErrorMessage(
-        "Stock quantity cannot be negative",
-      );
+      setErrorMessage("Stock quantity cannot be negative");
       return;
     }
 
-    for (const [field, label, minimum] of [["weight", "Weight", 0], ["length", "Length", 0.5], ["breadth", "Breadth / Width", 0.5], ["height", "Height", 0.5]]) {
-      if (!Number.isFinite(Number(product[field])) || Number(product[field]) <= minimum) {
-        setErrorMessage(`${label} must be greater than ${minimum}${field === "weight" ? " kg" : " cm"}`);
+    for (const [field, label, minimum] of [
+      ["weight", "Weight", 0],
+      ["length", "Length", 0.5],
+      ["breadth", "Breadth / Width", 0.5],
+      ["height", "Height", 0.5],
+    ]) {
+      if (
+        !Number.isFinite(Number(product[field])) ||
+        Number(product[field]) <= minimum
+      ) {
+        setErrorMessage(
+          `${label} must be greater than ${minimum}${field === "weight" ? " kg" : " cm"}`,
+        );
         return;
       }
     }
@@ -251,10 +261,7 @@ const UpadteProduct = () => {
         },
       );
 
-      setMessage(
-        response.data.message ||
-          "Product updated successfully",
-      );
+      setMessage(response.data.message || "Product updated successfully");
     } catch (error) {
       setErrorMessage(
         error.response?.data?.message ||
@@ -271,9 +278,7 @@ const UpadteProduct = () => {
 
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h3 className="fw-bold mb-1">
-            Update Product
-          </h3>
+          <h3 className="fw-bold mb-1">Update Product</h3>
 
           <p className="text-body-secondary mb-0">
             Update and publish a new product to your store
@@ -305,9 +310,7 @@ const UpadteProduct = () => {
 
               <CCard className="border-0 shadow-sm mb-4">
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
-                  <h5 className="fw-bold mb-1">
-                    Basic Information
-                  </h5>
+                  <h5 className="fw-bold mb-1">Basic Information</h5>
 
                   <small className="text-body-secondary">
                     Update the details of your product
@@ -337,9 +340,7 @@ const UpadteProduct = () => {
                   {/* Description */}
 
                   <div className="mb-4">
-                    <CFormLabel className="fw-semibold">
-                      Description
-                    </CFormLabel>
+                    <CFormLabel className="fw-semibold">Description</CFormLabel>
 
                     <CFormTextarea
                       rows={5}
@@ -369,25 +370,43 @@ const UpadteProduct = () => {
                           required
                           disabled={updating}
                         >
-                          <option value="">
-                            Select category
-                          </option>
+                          <option value="">Select category</option>
 
-                          <option value="electronics">
-                            Electronics
-                          </option>
+                          <option value="electronics">Electronics</option>
 
-                          <option value="fashion">
-                            Fashion
-                          </option>
+                          <option value="fashion">Fashion</option>
 
-                          <option value="shoes">
-                            Shoes
-                          </option>
+                          <option value="shoes">Shoes</option>
 
-                          <option value="accessories">
-                            Accessories
-                          </option>
+                          <option value="accessories">Accessories</option>
+                        </CFormSelect>
+                      </div>
+                    </CCol>
+
+                    {/* Brand */}
+
+                    <CCol md={6}>
+                      <div className="mb-3">
+                        <CFormLabel className="fw-semibold">Brand</CFormLabel>
+
+                        <CFormSelect
+                          name="brand"
+                          value={product.brand}
+                          onChange={handleChange}
+                          className="py-2"
+                          required
+                          disabled={updating}
+                        >
+                          <option value="">Select brand</option>
+                          {product.brand &&
+                            !brands.some((item) => item.name === product.brand) && (
+                              <option value={product.brand}>{product.brand}</option>
+                            )}
+                          {brands.map((brand) => (
+                            <option key={brand.id} value={brand.name}>
+                              {brand.name}
+                            </option>
+                          ))}
                         </CFormSelect>
                       </div>
                     </CCol>
@@ -396,9 +415,7 @@ const UpadteProduct = () => {
 
                     <CCol md={6}>
                       <div className="mb-3">
-                        <CFormLabel className="fw-semibold">
-                          SKU
-                        </CFormLabel>
+                        <CFormLabel className="fw-semibold">SKU</CFormLabel>
 
                         <CFormInput
                           type="text"
@@ -416,9 +433,7 @@ const UpadteProduct = () => {
 
               <CCard className="border-0 shadow-sm">
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
-                  <h5 className="fw-bold mb-1">
-                    Pricing & Inventory
-                  </h5>
+                  <h5 className="fw-bold mb-1">Pricing & Inventory</h5>
 
                   <small className="text-body-secondary">
                     Set the original price, discount and available stock
@@ -498,15 +513,34 @@ const UpadteProduct = () => {
               <CCard className="border-0 shadow-sm mt-4">
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
                   <h5 className="fw-bold mb-1">Shipping Details</h5>
-                  <small className="text-body-secondary">Enter packed product measurements for accurate Shiprocket rates.</small>
+                  <small className="text-body-secondary">
+                    Enter packed product measurements for accurate Shiprocket
+                    rates.
+                  </small>
                 </CCardHeader>
                 <CCardBody className="px-4 pb-4">
                   <CRow>
-                    {[["weight", "Weight (kg)", "0.01", "0.001"], ["length", "Length (cm)", "0.01", "0.51"], ["breadth", "Breadth / Width (cm)", "0.01", "0.51"], ["height", "Height (cm)", "0.01", "0.51"]].map(([field, label, step, min]) => (
+                    {[
+                      ["weight", "Weight (kg)", "0.01", "0.001"],
+                      ["length", "Length (cm)", "0.01", "0.51"],
+                      ["breadth", "Breadth / Width (cm)", "0.01", "0.51"],
+                      ["height", "Height (cm)", "0.01", "0.51"],
+                    ].map(([field, label, step, min]) => (
                       <CCol md={6} key={field}>
                         <div className="mb-3">
-                          <CFormLabel className="fw-semibold">{label}</CFormLabel>
-                          <CFormInput type="number" name={field} value={product[field]} onChange={handleChange} min={min} step={step} required disabled={updating} />
+                          <CFormLabel className="fw-semibold">
+                            {label}
+                          </CFormLabel>
+                          <CFormInput
+                            type="number"
+                            name={field}
+                            value={product[field]}
+                            onChange={handleChange}
+                            min={min}
+                            step={step}
+                            required
+                            disabled={updating}
+                          />
                         </div>
                       </CCol>
                     ))}
@@ -516,12 +550,22 @@ const UpadteProduct = () => {
                       type="checkbox"
                       name="isDangerous"
                       checked={Boolean(product.isDangerous)}
-                      onChange={(event) => setProduct((current) => ({ ...current, isDangerous: event.target.checked }))}
+                      onChange={(event) =>
+                        setProduct((current) => ({
+                          ...current,
+                          isDangerous: event.target.checked,
+                        }))
+                      }
                       disabled={updating}
                     />
                     <span>
-                      <span className="fw-semibold d-block">Dangerous goods (surface courier only)</span>
-                      <small className="text-body-secondary">Shiprocket prohibits some dangerous goods entirely. Check its prohibited items policy before listing.</small>
+                      <span className="fw-semibold d-block">
+                        Dangerous goods (surface courier only)
+                      </span>
+                      <small className="text-body-secondary">
+                        Shiprocket prohibits some dangerous goods entirely.
+                        Check its prohibited items policy before listing.
+                      </small>
                     </span>
                   </label>
                 </CCardBody>
@@ -535,9 +579,7 @@ const UpadteProduct = () => {
 
               <CCard className="border-0 shadow-sm mb-4">
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
-                  <h5 className="fw-bold mb-1">
-                    Product Image
-                  </h5>
+                  <h5 className="fw-bold mb-1">Product Image</h5>
 
                   <small className="text-body-secondary">
                     Upload the main product image
@@ -550,9 +592,7 @@ const UpadteProduct = () => {
                     className="border border-2 rounded-4 d-flex flex-column align-items-center justify-content-center text-center"
                     style={{
                       minHeight: "260px",
-                      cursor: updating
-                        ? "not-allowed"
-                        : "pointer",
+                      cursor: updating ? "not-allowed" : "pointer",
                       borderStyle: "dashed",
                     }}
                   >
@@ -621,9 +661,7 @@ const UpadteProduct = () => {
 
               <CCard className="border-0 shadow-sm">
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
-                  <h5 className="fw-bold mb-1">
-                    Product Status
-                  </h5>
+                  <h5 className="fw-bold mb-1">Product Status</h5>
 
                   <small className="text-body-secondary">
                     Choose whether the product is visible
@@ -638,13 +676,9 @@ const UpadteProduct = () => {
                     className="py-2"
                     disabled={updating}
                   >
-                    <option value="active">
-                      Active
-                    </option>
+                    <option value="active">Active</option>
 
-                    <option value="inactive">
-                      Inactive
-                    </option>
+                    <option value="inactive">Inactive</option>
                   </CFormSelect>
                 </CCardBody>
               </CCard>
@@ -670,14 +704,9 @@ const UpadteProduct = () => {
               className="px-4"
               disabled={updating}
             >
-              <CIcon
-                icon={cilPlus}
-                className="me-2"
-              />
+              <CIcon icon={cilPlus} className="me-2" />
 
-              {updating
-                ? "Updating..."
-                : "Update Product"}
+              {updating ? "Updating..." : "Update Product"}
             </CButton>
           </div>
         </CForm>

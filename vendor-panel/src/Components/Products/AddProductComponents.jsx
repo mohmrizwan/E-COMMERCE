@@ -20,6 +20,7 @@ import Snackbar from "@mui/material/Snackbar";
 import { useNavigate } from "react-router-dom";
 import { API_URL, apiUrl } from "../../config/api.js";
 import { getCategories } from "../../api/categories.js";
+import { getBrands } from "../../api/brands.js";
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ const AddProduct = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [image, setImage] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -39,7 +41,17 @@ const AddProduct = () => {
       }
     };
 
+    const loadBrands = async () => {
+      try {
+        const list = await getBrands();
+        setBrands(list);
+      } catch (error) {
+        console.error("Could not load brands.", error);
+      }
+    };
+
     loadCategories();
+    loadBrands();
   }, []);
 
   const handleImageChange = (e) => {
@@ -62,7 +74,9 @@ const AddProduct = () => {
         throw new Error("VITE_API_URL is not configured for this deployment.");
       }
       if (!token) {
-        throw new Error("Your vendor session has expired. Please sign in again.");
+        throw new Error(
+          "Your vendor session has expired. Please sign in again.",
+        );
       }
       const response = await axios.post(
         apiUrl("vendor/products/create"),
@@ -81,7 +95,11 @@ const AddProduct = () => {
       console.log(error.response?.data);
 
       // Error message
-      setErrorMessage(error.response?.data?.message || error.message || "Something went wrong");
+      setErrorMessage(
+        error.response?.data?.message ||
+          error.message ||
+          "Something went wrong",
+      );
 
       setMessage("");
     } finally {
@@ -187,13 +205,14 @@ const AddProduct = () => {
                 <div className="mb-4">
                   <CFormLabel className="fw-semibold">Brand</CFormLabel>
 
-                  <CFormInput
-                    name="description"
-                    rows={5}
-                    placeholder="Write a brand for your product..."
-                    className="py-2"
-                    required
-                  />
+                  <CFormSelect name="brand" className="py-2" required>
+                    <option value="">Select brand</option>
+                    {brands.map((brand) => (
+                      <option key={brand.id} value={brand.name}>
+                        {brand.name}
+                      </option>
+                    ))}
+                  </CFormSelect>
                 </div>
 
                 <CRow>
@@ -288,7 +307,7 @@ const AddProduct = () => {
 
             <CCard className="border-0 shadow-sm">
               <CCardHeader className="bg-transparent border-0 px-4 pt-4">
-                  <h5 className="fw-bold mb-1">Shipping Details</h5>
+                <h5 className="fw-bold mb-1">Shipping Details</h5>
 
                 <small className="text-body-secondary">
                   Enter packed product measurements for accurate shipping rates
@@ -297,8 +316,6 @@ const AddProduct = () => {
 
               <CCardBody className="px-4 pb-4">
                 <CRow>
-
-
                   {/* Weight */}
                   <CCol md={6}>
                     <div className="mb-3">
@@ -376,17 +393,26 @@ const AddProduct = () => {
                   </CCol>
                   <CCol xs={12}>
                     <label className="d-flex align-items-start gap-2 mb-2">
-                      <input type="checkbox" name="isDangerous" value="true" className="mt-1" />
+                      <input
+                        type="checkbox"
+                        name="isDangerous"
+                        value="true"
+                        className="mt-1"
+                      />
                       <span>
-                        <span className="fw-semibold d-block">Dangerous goods (surface courier only)</span>
-                        <small className="text-body-secondary">Shiprocket prohibits some dangerous goods entirely. Check its prohibited items policy before listing.</small>
+                        <span className="fw-semibold d-block">
+                          Dangerous goods (surface courier only)
+                        </span>
+                        <small className="text-body-secondary">
+                          Shiprocket prohibits some dangerous goods entirely.
+                          Check its prohibited items policy before listing.
+                        </small>
                       </span>
                     </label>
                   </CCol>
                 </CRow>
               </CCardBody>
             </CCard>
-
           </CCol>
 
           {/* RIGHT */}
@@ -487,8 +513,9 @@ const AddProduct = () => {
                 <CFormSelect
                   name="status"
                   className="py-2"
-                  defaultValue="active"
+                  defaultValue="select status"
                 >
+                  <option value="select status">Select Status</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
                 </CFormSelect>

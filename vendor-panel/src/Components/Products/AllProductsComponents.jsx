@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getCategories } from "../../api/categories.js";
 import {
   CButton,
   CCard,
@@ -16,6 +17,20 @@ const AllProducts = () => {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
+  const [categories, setCategories] = useState([]);
+
+  useEffect(() => {
+    const loadCategories = async () => {
+      try {
+        const list = await getCategories();
+        setCategories(list);
+      } catch (error) {
+        console.error("Could not load categories.", error);
+      }
+    };
+
+    loadCategories();
+  }, []);
 
   return (
     <div>
@@ -62,10 +77,11 @@ const AllProducts = () => {
                 onChange={(e) => setCategory(e.target.value)}
               >
                 <option value="">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="fashion">Fashion</option>
-                <option value="shoes">Shoes</option>
-                <option value="accessories">Accessories</option>
+                {categories.map((item) => (
+                  <option key={item.id} value={item.name}>
+                    {item.name}
+                  </option>
+                ))}
               </CFormSelect>
             </CCol>
 
