@@ -1,6 +1,10 @@
 import Product from "../../models/vendor/ProductModel.js";
 import Banner from "../../models/user/Banner.js";
-import { findStoreOwner, storeOwnerProductFilter } from "../../Services/StoreOwner.js";
+import Brand from "../../models/vendor/BrandModel.js";
+import {
+  findStoreOwner,
+  storeOwnerProductFilter,
+} from "../../Services/StoreOwner.js";
 
 const resolveStorefront = () => findStoreOwner().lean();
 
@@ -8,7 +12,9 @@ export const getStorefront = async (req, res) => {
   try {
     const vendor = await resolveStorefront();
     if (!vendor) {
-      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+      return res
+        .status(503)
+        .json({ success: false, message: "Store owner is not configured" });
     }
 
     return res.status(200).json({
@@ -17,7 +23,9 @@ export const getStorefront = async (req, res) => {
         vendorId: vendor._id,
         businessName: vendor.businessName,
         websiteLogo: vendor.websiteLogo || "",
-        footerText: vendor.footerText || `© ${new Date().getFullYear()} ${vendor.businessName}. All rights reserved.`,
+        footerText:
+          vendor.footerText ||
+          `© ${new Date().getFullYear()} ${vendor.businessName}. All rights reserved.`,
         contactEmail: vendor.email || "",
         contactPhone: vendor.phone || "",
         contactAddress: [
@@ -25,11 +33,15 @@ export const getStorefront = async (req, res) => {
           vendor.pickupAddress?.city,
           vendor.pickupAddress?.state,
           vendor.pickupAddress?.pincode,
-        ].filter(Boolean).join(", "),
+        ]
+          .filter(Boolean)
+          .join(", "),
       },
     });
   } catch {
-    return res.status(500).json({ success: false, message: "Could not load storefront" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Could not load storefront" });
   }
 };
 
@@ -37,7 +49,9 @@ export const getStorefrontProducts = async (req, res) => {
   try {
     const vendor = await resolveStorefront();
     if (!vendor) {
-      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+      return res
+        .status(503)
+        .json({ success: false, message: "Store owner is not configured" });
     }
 
     const products = await Product.find(storeOwnerProductFilter(vendor._id))
@@ -50,9 +64,10 @@ export const getStorefrontProducts = async (req, res) => {
         return {
           ...product,
           discount,
-          price: discount > 0
-            ? Math.round(product.pricing * (1 - discount / 100))
-            : product.pricing,
+          price:
+            discount > 0
+              ? Math.round(product.pricing * (1 - discount / 100))
+              : product.pricing,
           oldPrice: discount > 0 ? product.pricing : null,
           store: vendor.businessName,
           inStock: product.stockQuantity > 0,
@@ -60,7 +75,9 @@ export const getStorefrontProducts = async (req, res) => {
       }),
     });
   } catch {
-    return res.status(500).json({ success: false, message: "Could not load storefront products" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Could not load storefront products" });
   }
 };
 
@@ -68,7 +85,9 @@ export const getStorefrontBanners = async (req, res) => {
   try {
     const vendor = await resolveStorefront();
     if (!vendor) {
-      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+      return res
+        .status(503)
+        .json({ success: false, message: "Store owner is not configured" });
     }
     const banners = await Banner.find({ vendorId: vendor._id })
       .populate({
@@ -98,9 +117,10 @@ export const getStorefrontBanners = async (req, res) => {
               image: product.image,
               pricing: product.pricing,
               discount,
-              price: discount > 0
-                ? Math.round(product.pricing * (1 - discount / 100))
-                : product.pricing,
+              price:
+                discount > 0
+                  ? Math.round(product.pricing * (1 - discount / 100))
+                  : product.pricing,
               oldPrice: discount > 0 ? product.pricing : null,
               stockQuantity: product.stockQuantity,
               status: product.status,
@@ -111,7 +131,32 @@ export const getStorefrontBanners = async (req, res) => {
         }),
     });
   } catch (error) {
-    console.error("Get storefront banners error:", error);
-    return res.status(500).json({ success: false, message: "Could not load storefront banners" });
+    return res.json({ message: "Internal server error" });
+  }
+};
+
+export const getStorefrontBrands = async (req, res) => {
+  try {
+    const vendor = await resolveStorefront();
+    if (!vendor) {
+      return res
+        .status(503)
+        .json({ success: false, message: "Store owner is not configured" });
+    }
+
+    const brands = await Brand.find({}).lean();
+    return res.status(200).json({
+      success: true,
+      brands: brands.map((brand) => ({
+        id: brand._id,
+        name: brand.name,
+        logo: brand.logo || "",
+      })),
+    });
+  } catch (error) {
+    console.error("Get storefront brands error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Could not load brands" });
   }
 };

@@ -19,6 +19,7 @@ const Home = () => {
       <Banner />
       {/* <Category /> */}
       <Features />
+      <Brand />
       <div className="product-wrapper my-8 sm:my-12 md:my-15">
         <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
           <div className="product-head flex items-end justify-between gap-3">
@@ -40,9 +41,9 @@ const Home = () => {
           </div>
         </div>
       </div>
-      <Brand/>
+
       <Product />
-     
+
       <Footer />
     </>
   );
@@ -50,8 +51,11 @@ const Home = () => {
 
 export default Home;
 
- {/* <Sesssion /> */}
-       {/* <div className="product-wrapper my-8 sm:my-12 md:my-15">
+{
+  /* <Sesssion /> */
+}
+{
+  /* <div className="product-wrapper my-8 sm:my-12 md:my-15">
         <div className="mx-auto w-full px-3 sm:px-6 md:px-10 lg:px-15">
           <div className="product-head flex items-end justify-between gap-3">
             <div>
@@ -72,6 +76,11 @@ export default Home;
           </div>
         </div>
       </div>
-      <Trending /> */}
-      {/* <Vendors /> */}
-      {/* <Subscribe /> */}
+      <Trending /> */
+}
+{
+  /* <Vendors /> */
+}
+{
+  /* <Subscribe /> */
+}

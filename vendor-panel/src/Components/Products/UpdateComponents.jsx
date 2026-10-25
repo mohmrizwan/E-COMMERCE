@@ -52,6 +52,7 @@ const UpadteProduct = () => {
     status: "",
   });
   const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   // ================= GET PRODUCT =================
 
@@ -118,7 +119,17 @@ const UpadteProduct = () => {
       }
     };
 
+    const loadCategories = async () => {
+      try {
+        const list = await getCategories();
+        setCategories(list);
+      } catch (error) {
+        console.error("Could not load categories.", error);
+      }
+    };
+
     loadBrands();
+    loadCategories();
   }, []);
 
   const handleChange = (e) => {
@@ -371,14 +382,15 @@ const UpadteProduct = () => {
                           disabled={updating}
                         >
                           <option value="">Select category</option>
-
-                          <option value="electronics">Electronics</option>
-
-                          <option value="fashion">Fashion</option>
-
-                          <option value="shoes">Shoes</option>
-
-                          <option value="accessories">Accessories</option>
+                          {product.category &&
+                            !categories.some((item) => item.name === product.category) && (
+                              <option value={product.category}>{product.category}</option>
+                            )}
+                          {categories.map((category) => (
+                            <option key={category.id} value={category.name}>
+                              {category.name}
+                            </option>
+                          ))}
                         </CFormSelect>
                       </div>
                     </CCol>

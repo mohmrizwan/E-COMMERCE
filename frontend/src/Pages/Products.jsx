@@ -13,6 +13,7 @@ import { getProductsForCurrentStorefront } from "../utils/productsApi";
 const defaultFilters = {
   search: "",
   category: "",
+  brand: "",
   minPrice: "",
   maxPrice: "",
   inStock: null,
@@ -22,6 +23,7 @@ const defaultFilters = {
 const readFilters = (params) => ({
   search: params.get("search") || "",
   category: params.get("category") || "",
+  brand: params.get("brand") || "",
   minPrice: params.get("min") || "",
   maxPrice: params.get("max") || "",
   inStock:
@@ -37,6 +39,7 @@ const writeFilters = (filters) => {
   const params = new URLSearchParams();
   if (filters.search) params.set("search", filters.search);
   if (filters.category) params.set("category", filters.category);
+  if (filters.brand) params.set("brand", filters.brand);
   if (filters.minPrice) params.set("min", filters.minPrice);
   if (filters.maxPrice) params.set("max", filters.maxPrice);
   if (filters.inStock !== null)
@@ -94,15 +97,19 @@ const Products = () => {
         .join(" ")
         .toLocaleLowerCase();
       const matchesSearch = searchText.includes(filters.search.trim().toLocaleLowerCase());
-      const matchesCategory =
-        !filters.category || product.category === filters.category;
-      const matchesMin =
+    const matchesCategory =
+      !filters.category || product.category === filters.category;
+    const matchesBrand =
+      !filters.brand ||
+      String(product.brand || "").toLowerCase() ===
+        filters.brand.trim().toLowerCase();
+    const matchesMin =
         !filters.minPrice || Number(product.price) >= Number(filters.minPrice);
       const matchesMax =
         !filters.maxPrice || Number(product.price) <= Number(filters.maxPrice);
       const matchesStock =
         filters.inStock === null || product.inStock === filters.inStock;
-      return matchesSearch && matchesCategory && matchesMin && matchesMax && matchesStock;
+      return matchesSearch && matchesCategory && matchesBrand && matchesMin && matchesMax && matchesStock;
     });
 
     return [...filtered].sort((a, b) => {

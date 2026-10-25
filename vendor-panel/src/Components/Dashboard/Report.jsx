@@ -29,6 +29,7 @@ function Report() {
   const [monthlyProducts, setMonthlyProducts] = useState([]);
   const [customersCount, setCustomersCount] = useState(0);
   const [monthlyCustomers, setMonthlyCustomers] = useState([]);
+  const [selectedMetric, setSelectedMetric] = useState("");
   const getIncome = async () => {
     try {
       const vendorToken = localStorage.getItem("vendorToken");
@@ -175,6 +176,10 @@ function Report() {
                   ],
                 }}
                 options={{
+                  onClick: function () {
+                    const label = this?.data?.datasets?.[0]?.label;
+                    if (label) setSelectedMetric(String(label).toLowerCase());
+                  },
                   maintainAspectRatio: false,
 
                   plugins: {
@@ -245,6 +250,10 @@ function Report() {
                   ],
                 }}
                 options={{
+                  onClick: function () {
+                    const label = this?.data?.datasets?.[0]?.label;
+                    if (label) setSelectedMetric(String(label).toLowerCase());
+                  },
                   maintainAspectRatio: false,
 
                   plugins: {
@@ -312,6 +321,10 @@ function Report() {
                   ],
                 }}
                 options={{
+                  onClick: function () {
+                    const label = this?.data?.datasets?.[0]?.label;
+                    if (label) setSelectedMetric(String(label).toLowerCase());
+                  },
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
@@ -376,6 +389,10 @@ function Report() {
                   ],
                 }}
                 options={{
+                  onClick: function () {
+                    const label = this?.data?.datasets?.[0]?.label;
+                    if (label) setSelectedMetric(String(label).toLowerCase());
+                  },
                   maintainAspectRatio: false,
                   plugins: {
                     legend: {
@@ -411,6 +428,44 @@ function Report() {
           />
         </CCol>
       </CRow>
+
+      {selectedMetric && (
+        <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-bold text-slate-800">
+              {selectedMetric.charAt(0).toUpperCase() + selectedMetric.slice(1)} monthly report
+            </p>
+            <button
+              type="button"
+              className="text-sm font-bold text-slate-500 hover:text-slate-800"
+              onClick={() => setSelectedMetric("")}
+            >
+              Close
+            </button>
+          </div>
+          <ul className="space-y-1 text-sm text-slate-600">
+            {(selectedMetric === "income"
+              ? monthlyIncome
+              : selectedMetric === "orders"
+                ? monthlyOrders
+                : selectedMetric === "products"
+                  ? monthlyProducts
+                  : monthlyCustomers
+            ).map((item, index) => (
+              <li key={index}>
+                {item.month}:{" "}
+                {selectedMetric === "income"
+                  ? item.income
+                  : selectedMetric === "orders"
+                    ? item.orders
+                    : selectedMetric === "products"
+                      ? item.products
+                      : item.customers}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </>
   );
 }

@@ -84,6 +84,7 @@ const Product = () => {
             ))
           ) : products.length > 0 ? (
             products.map((product) => (
+              
               <div
                 key={product._id}
                 className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
@@ -93,7 +94,7 @@ const Product = () => {
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72"
+                    className="h-40 w-full object-contain  object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72"
                   />
 
                   {/* Badges */}

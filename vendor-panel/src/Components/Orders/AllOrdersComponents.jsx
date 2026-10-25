@@ -86,6 +86,10 @@ const Orders = () => {
 
             total: `₹${order.finalTotal ?? order.totalAmount ?? 0}`,
 
+            productPrice: `₹${order.subtotalAmount ?? order.totalAmount ?? 0}`,
+
+            deliveryCharge: `₹${order.shippingAmount ?? 0}`,
+
             status:
               order.status === "Cancelled"
                 ? "Cancelled"
@@ -499,6 +503,9 @@ const Orders = () => {
 
                         <CTableDataCell>
                           <span className="fw-bold">{order.total}</span>
+                          <small className="d-block text-body-secondary">
+                            Product: {order.productPrice} + Delivery: {order.deliveryCharge}
+                          </small>
                         </CTableDataCell>
 
                         {/* ===== Status Cell ===== */}
@@ -589,9 +596,17 @@ const Orders = () => {
                                     Items: {order.items}
                                   </p>
 
-                                  <p className="mb-1 text-body-secondary">
-                                    Total: {order.total}
-                                  </p>
+                                    <p className="mb-1 text-body-secondary">
+                                      Product price: {order.productPrice}
+                                    </p>
+
+                                    <p className="mb-1 text-body-secondary">
+                                      Delivery charge: {order.deliveryCharge}
+                                    </p>
+
+                                    <p className="mb-1 text-body-secondary">
+                                      Total: {order.total}
+                                    </p>
 
                                   <p className="mb-0 text-body-secondary">
                                     Payment: {order.payment}

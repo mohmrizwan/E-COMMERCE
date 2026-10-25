@@ -25,7 +25,13 @@ function VendorLayout() {
         />
       )}
 
-      <div className="vendor-panel-main">
+      <div
+        className="vendor-panel-main"
+        style={{
+          marginLeft:
+            sidebarShow && window.innerWidth >= 992 ? 256 : 0,
+        }}
+      >
         <Header onMenuClick={() => setSidebarShow(!sidebarShow)} />
 
         <main className="vendor-page-content">

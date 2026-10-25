@@ -73,8 +73,10 @@ const MyOrders = () => {
                 (total, item) => total + (item.quantity || 0),
                 0,
               ),
-              price: firstItem?.price || 0,
-              total: order.finalTotal ?? order.totalAmount ?? 0,
+               price: firstItem?.price || 0,
+               total: order.finalTotal ?? order.totalAmount ?? 0,
+               productPrice: order.subtotalAmount ?? order.totalAmount ?? 0,
+               deliveryCharge: order.shippingAmount ?? 0,
             };
           }),
         );
@@ -193,7 +195,7 @@ const MyOrders = () => {
                     <p className="mt-2 text-xs font-semibold text-slate-500"><i className="fa-solid fa-truck mr-2 text-[#6C3BFF]" />{order.delivery}</p>
                   </div>
                   <div className="flex items-center justify-between gap-5 border-t border-slate-100 pt-3 sm:block sm:border-0 sm:pt-0 sm:text-right">
-                    <div><p className="text-xs text-slate-400">Total amount</p><p className="mt-1 font-bold text-slate-900">{money(order.total)}</p></div>
+                    <div><p className="text-xs text-slate-400">Total amount</p><p className="mt-1 font-bold text-slate-900">{money(order.total)}</p><p className="mt-1 text-xs text-slate-500">Product: {money(order.productPrice)} + Delivery: {money(order.deliveryCharge)}</p></div>
                     <div className="mt-3 flex gap-2 sm:justify-end">
                       <button type="button" onClick={() => setSelectedOrder(order)} className="min-h-9 rounded-lg border border-slate-200 px-3 text-xs font-bold text-slate-700 hover:border-[#6C3BFF] hover:text-[#6C3BFF]">Details</button>
                       {order.status !== "Cancelled" && <button type="button" onClick={() => trackOrder(order)} disabled={trackingOrderId === order.id} className="min-h-9 rounded-lg bg-[#6C3BFF] px-3 text-xs font-bold text-white hover:bg-[#5527d8] disabled:cursor-wait disabled:opacity-60">{trackingOrderId === order.id ? "Loading..." : "Track"}</button>}
