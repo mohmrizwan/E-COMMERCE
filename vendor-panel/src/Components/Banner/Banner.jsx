@@ -12,7 +12,7 @@ const imageTypes = ["image/png", "image/jpeg", "image/webp"];
 const VendorBannerForm = () => {
   const [form, setForm] = useState(initialForm);
   const [products, setProducts] = useState([]);
-  const [banner, setBanner] = useState(null);
+  const [banners, setBanners] = useState([]);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
   const [loading, setLoading] = useState(true);
@@ -29,11 +29,10 @@ const VendorBannerForm = () => {
       axios.get(apiUrl("vendor/banner"), { headers }),
     ]).then(([productResponse, bannerResponse]) => {
       const list = (productResponse.data.products || []).filter((product) => product.status === "active");
-      const saved = bannerResponse.data.banner;
+      const savedBanners = bannerResponse.data.banners || [];
       setProducts(list);
-      setBanner(saved || null);
-      if (saved) setForm({ title: saved.title || "", highlighted: saved.highlighted || "", productId: saved.productId?._id || saved.productId || "", buttonText: saved.buttonText || "Shop Now" });
-      setPreview(saved?.image || "");
+      setBanners(savedBanners);
+      setPreview("");
     }).catch((requestError) => {
       setError(requestError.response?.data?.message || "Could not load banner details and products.");
     }).finally(() => setLoading(false));
@@ -71,13 +70,25 @@ const VendorBannerForm = () => {
     setSuccess("");
   };
 
+  const deleteBanner = async (bannerId) => {
+    try {
+      const token = localStorage.getItem("vendorToken");
+      await axios.delete(apiUrl(`vendor/banner/${bannerId}`), {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setBanners((current) => current.filter((item) => item._id !== bannerId));
+      setSuccess("Banner deleted successfully.");
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || "Could not delete banner.");
+    }
+  };
   const submit = async (event) => {
     event.preventDefault();
     const nextErrors = {};
     if (!form.title.trim()) nextErrors.title = "Banner title is required.";
     if (!form.highlighted.trim()) nextErrors.highlighted = "Highlighted text is required.";
     if (!form.productId) nextErrors.productId = "Select a product.";
-    if (!file && !banner?.image) nextErrors.image = "Choose a banner image.";
+    if (!file) nextErrors.image = "Choose a banner image.";
     if (!form.buttonText.trim()) nextErrors.buttonText = "Button text is required.";
     setFieldErrors(nextErrors);
     if (Object.keys(nextErrors).length) return;
@@ -94,9 +105,10 @@ const VendorBannerForm = () => {
       const response = await axios.post(apiUrl("vendor/banner"), payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      setBanner(response.data.banner);
+      setBanners((current) => [response.data.banner, ...current]);
+      setForm(initialForm);
       setFile(null);
-      setPreview(response.data.banner.image);
+      setPreview("");
       setSuccess(response.data.message || "Banner saved successfully.");
     } catch (requestError) {
       setError(requestError.response?.data?.message || "Could not save banner. Please try again.");
@@ -120,13 +132,33 @@ const VendorBannerForm = () => {
             <div className="mb-3"><CFormLabel htmlFor="banner-product">Product *</CFormLabel><CFormSelect id="banner-product" name="productId" value={form.productId} onChange={update} invalid={Boolean(fieldErrors.productId)} disabled={!products.length}><option value="">Select one of your products</option>{products.map((product) => <option key={product._id} value={product._id}>{product.name}</option>)}</CFormSelect>{fieldErrors.productId && <div className="text-danger small mt-1">{fieldErrors.productId}</div>}</div>
             {selectedProduct && <div className="mb-3"><CFormLabel>Product page</CFormLabel><div className="form-control bg-light text-body-secondary">/product/{selectedProduct._id}</div></div>}
             <div className="mb-4"><CFormLabel htmlFor="banner-button-text">Button Text *</CFormLabel><CFormInput id="banner-button-text" name="buttonText" value={form.buttonText} onChange={update} invalid={Boolean(fieldErrors.buttonText)} />{fieldErrors.buttonText && <div className="text-danger small mt-1">{fieldErrors.buttonText}</div>}</div>
-            <CButton type="submit" color="primary" disabled={saving || !products.length}>{saving && <CSpinner size="sm" className="me-2" />}{saving ? "Saving…" : banner ? "Update Banner" : "Save Banner"}</CButton>
+            <CButton type="submit" color="primary" disabled={saving || !products.length}>{saving && <CSpinner size="sm" className="me-2" />}{saving ? "Saving…" : "Save Banner"}</CButton>
           </CForm>
         </CCardBody>
       </CCard>
     </CCol>
-    <CCol xs={12} lg={5}><h5 className="fw-bold mb-3">Banner Preview</h5><CCard className="overflow-hidden border-0 shadow-sm">{preview ? <CImage src={preview} alt="Banner preview" className="w-100" style={{ height: 220, objectFit: "cover" }} /> : <div className="d-flex align-items-center justify-content-center bg-light text-body-secondary" style={{ height: 220 }}>Choose an image to preview your banner</div>}<CCardBody className="p-4"><h4 className="fw-bold">{form.title || "Your Banner Title"}</h4><p className="text-body-secondary">{form.highlighted || "Your highlighted message will appear here."}</p><CButton color="primary" disabled={!selectedProduct}>{form.buttonText || "Shop Now"}</CButton></CCardBody></CCard></CCol>
-  </CRow>;
+     <CCol xs={12} lg={5}><h5 className="fw-bold mb-3">Banner Preview</h5><CCard className="overflow-hidden border-0 shadow-sm">{preview ? <CImage src={preview} alt="Banner preview" className="w-100" style={{ height: 220, objectFit: "cover" }} /> : <div className="d-flex align-items-center justify-content-center bg-light text-body-secondary" style={{ height: 220 }}>Choose an image to preview your banner</div>}<CCardBody className="p-4"><h4 className="fw-bold">{form.title || "Your Banner Title"}</h4><p className="text-body-secondary">{form.highlighted || "Your highlighted message will appear here."}</p><CButton color="primary" disabled={!selectedProduct}>{form.buttonText || "Shop Now"}</CButton></CCardBody></CCard></CCol>
+     <CCol xs={12}>
+       <CCard className="border-0 shadow-sm">
+         <CCardHeader className="bg-transparent border-0 px-4 pt-4"><h5 className="fw-bold mb-1">Saved Banners</h5><p className="text-body-secondary mb-0">All banners shown in your storefront swiper.</p></CCardHeader>
+         <CCardBody className="p-4">
+           {!banners.length && <p className="text-body-secondary mb-0">No banners saved yet.</p>}
+           <div className="d-flex flex-column gap-3">
+             {banners.map((savedBanner) => (
+               <div key={savedBanner._id} className="d-flex align-items-center gap-3 border rounded p-2">
+                 <CImage src={savedBanner.image} alt={savedBanner.title} style={{ width: 96, height: 64, objectFit: "cover" }} />
+                 <div className="flex-grow-1">
+                   <div className="fw-bold">{savedBanner.title}</div>
+                   <div className="text-body-secondary small">{savedBanner.highlighted}</div>
+                 </div>
+                 <CButton color="danger" variant="outline" size="sm" onClick={() => deleteBanner(savedBanner._id)}>Delete</CButton>
+               </div>
+             ))}
+           </div>
+         </CCardBody>
+       </CCard>
+     </CCol>
+   </CRow>;
 };
 
 export default VendorBannerForm;

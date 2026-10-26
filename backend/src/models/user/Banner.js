@@ -43,8 +43,6 @@ const bannerSchema = new mongoose.Schema(
   }
 );
 
-bannerSchema.index({ vendorId: 1 }, { unique: true });
-
 const Banner = mongoose.model("Banner", bannerSchema);
 
 export default Banner;

@@ -18,7 +18,7 @@ const Product = () => {
 
       setProducts(
         Array.isArray(response.data.products)
-          ? response.data.products.slice(0, 4)
+          ? response.data.products
           : [],
       );
     } catch (error) {
@@ -89,30 +89,32 @@ const Product = () => {
                 key={product._id}
                 className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
               >
-                {/* PRODUCT IMAGE */}
-                <div className="relative overflow-hidden">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="h-40 w-full object-contain  object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72"
-                  />
+                 {/* PRODUCT IMAGE */}
+                 <Link to={`/product/${product._id}`} className="block">
+                   <div className="relative overflow-hidden">
+                     <img
+                       src={product.image}
+                       alt={product.name}
+                       className="h-40 w-full object-contain  object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72"
+                     />
 
-                  {/* Badges */}
-                  <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
-                    <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
-                      {product.status}
-                    </span>
+                     {/* Badges */}
+                     <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
+                       <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
+                         {product.status}
+                       </span>
 
-                    {Number(product.discount) > 0 && (
-                      <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
-                        {product.discount}% OFF
-                      </span>
-                    )}
-                  </div>
+                     {Number(product.discount) > 0 && (
+                       <span className="rounded-full bg-[#FFB020] px-2 py-1 font-[inter] text-[8px] font-semibold text-black sm:px-3 sm:text-xs">
+                         {product.discount}% OFF
+                       </span>
+                     )}
+                     </div>
 
-                  {/* Wishlist */}
-                  <FavoriteButton product={product} />
-                </div>
+                     {/* Wishlist */}
+                     <FavoriteButton product={product} />
+                   </div>
+                 </Link>
 
                 {/* PRODUCT CONTENT */}
                 <div className="flex flex-1 flex-col p-2.5 sm:p-3 md:p-4">
@@ -120,9 +122,9 @@ const Product = () => {
                     {product.store || "Store"}
                   </span>
 
-                  <h4 className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-[40px] sm:text-sm sm:leading-5">
-                    {product.name}
-                  </h4>
+                   <Link to={`/product/${product._id}`} className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-[40px] sm:text-sm sm:leading-5">
+                     {product.name}
+                   </Link>
 
                   <div className="mt-1.5 text-[9px] text-[#6B7280] sm:mt-2 sm:text-xs">
                     No reviews yet
@@ -145,7 +147,7 @@ const Product = () => {
                     <button
                       type="button"
                       onClick={() => addToCart(product)}
-                      disabled={!product.inStock}
+                      disabled={!product.inStock} 
                       aria-label={`Add ${product.name} to cart`}
                       className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#6C3BFF] text-white transition duration-200 hover:bg-[#421db3] disabled:cursor-not-allowed disabled:bg-gray-400 sm:h-9 sm:w-9 sm:rounded-xl"
                     >

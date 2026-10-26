@@ -17,6 +17,7 @@ import ForgotPassword from "./Components/ForgotPassword";
 import { FavoritesProvider } from "./Components/FavoritesContext";
 import { CartProvider } from "./Components/CartContext";
 import ProductDetails from "./Pages/ProductDetails";
+import NotFound from "./Pages/NotFound";
 const App = () => {
   return (
     <>
@@ -40,8 +41,9 @@ const App = () => {
               <Route path="/track-order" element={<MyOrders />} />
               <Route path="/term&condition" element={<TermsAndConditions />} />
             </Route>
-          </Route>
-        </Routes>
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
       </CartProvider>
     </>
   );

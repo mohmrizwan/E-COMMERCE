@@ -28,6 +28,7 @@ const AddProduct = () => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [image, setImage] = useState(null);
+  const [selectedImages, setSelectedImages] = useState([]);
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
 
@@ -55,10 +56,10 @@ const AddProduct = () => {
   }, []);
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-
-    if (file) {
-      setImage(URL.createObjectURL(file));
+    const files = Array.from(e.target.files || []);
+    if (files.length) {
+      setSelectedImages(files.map((file) => URL.createObjectURL(file)));
+      setImage(URL.createObjectURL(files[0]));
     }
   };
 
@@ -422,9 +423,9 @@ const AddProduct = () => {
               <CCardHeader className="bg-transparent border-0 px-4 pt-4">
                 <h5 className="fw-bold mb-1">Product Image</h5>
 
-                <small className="text-body-secondary">
-                  Upload the main product image
-                </small>
+                  <small className="text-body-secondary">
+                    Upload one or more product images
+                  </small>
               </CCardHeader>
 
               <CCardBody className="px-4 pb-4">
@@ -485,17 +486,31 @@ const AddProduct = () => {
                       </div>
                     </div>
                   )}
-                </label>
+                  </label>
 
-                <CFormInput
-                  id="productImage"
-                  name="image"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="d-none"
-                  onChange={handleImageChange}
-                  required
-                />
+                  {selectedImages.length > 1 && (
+                    <div className="d-flex flex-wrap gap-2 mt-3">
+                      {selectedImages.map((src, index) => (
+                        <img
+                          key={index}
+                          src={src}
+                          alt={`Preview ${index + 1}`}
+                          style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8 }}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <CFormInput
+                    id="productImage"
+                    name="images"
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="d-none"
+                    onChange={handleImageChange}
+                    multiple
+                    required
+                  />
               </CCardBody>
             </CCard>
 

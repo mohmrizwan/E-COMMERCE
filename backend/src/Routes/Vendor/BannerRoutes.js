@@ -1,10 +1,10 @@
 import express from "express";
 import VendorAuthMiddleware from "../../middlewares/VendorAuthMiddleware.js";
 import upload from "../../middlewares/multer.js";
-import { getBanner, saveBanner } from "../../Controllers/Vendor/Banner.js";
+import { getBanners, saveBanner, deleteBanner } from "../../Controllers/Vendor/Banner.js";
 
 const router = express.Router();
-router.get("/", VendorAuthMiddleware, getBanner);
+router.get("/", VendorAuthMiddleware, getBanners);
 router.post("/", VendorAuthMiddleware, (req, res, next) => {
   upload.single("image")(req, res, (error) => {
     if (error) {
@@ -14,5 +14,6 @@ router.post("/", VendorAuthMiddleware, (req, res, next) => {
     next();
   });
 }, saveBanner);
+router.delete("/:id", VendorAuthMiddleware, deleteBanner);
 
 export default router;

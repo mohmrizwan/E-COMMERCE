@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import { Autoplay, Navigation } from "swiper/modules";
 import { API_ORIGIN } from "../utils/productsApi";
 import { STORE_NAME } from "../config/brand.js";
 import { useCart } from "./CartContext";
@@ -45,11 +45,10 @@ export default function StorefrontSwiper() {
     <Swiper
       spaceBetween={24}
       centeredSlides
-      autoplay={slides.length > 1 ? { delay: 4500, disableOnInteraction: false } : false}
-      pagination={{ clickable: true }}
-      navigation={slides.length > 1}
+      autoplay={{ delay: 4000, disableOnInteraction: false }}
       loop={slides.length > 1}
-      modules={[Autoplay, Pagination, Navigation]}
+      navigation={slides.length > 1}
+      modules={[Autoplay, Navigation]}
       className="mySwiper"
     >
       {slides.map((banner) => (
@@ -62,9 +61,20 @@ export default function StorefrontSwiper() {
               <h1 className="font-inter text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl md:text-5xl">
                 {banner.title}
               </h1>
-              <p className="my-5 max-w-xl text-sm leading-6 text-[#6B7280] sm:text-base">
-                <span className="font-semibold text-[#6C3BFF]">{banner.highlighted}</span>
-              </p>
+               <p className="my-5 max-w-xl text-sm leading-6 text-[#6B7280] sm:text-base">
+                 <i className="fa-solid fa-check mr-2 text-amber-500" aria-hidden="true" />
+                 <span className="text-xs font-semibold text-amber-500">{banner.highlighted}</span>
+               </p>
+               {banner.cartProduct?.name && (
+                 <h2 className="mb-2 text-xl font-bold text-slate-900 sm:text-2xl">
+                   {banner.cartProduct.name}
+                 </h2>
+               )}
+               {banner.cartProduct?.description && (
+                 <p className="mb-5 max-w-xl text-sm leading-6 text-[#6B7280]">
+                   {banner.cartProduct.description}
+                 </p>
+               )}
               {banner.cartProduct ? (
                 <button
                   type="button"
@@ -93,14 +103,14 @@ export default function StorefrontSwiper() {
                 </Link>
               )}
             </div>
-            <div className="h-[230px] w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-[320px] lg:h-[420px] lg:w-1/2">
-              <img
-                src={banner.image}
-                alt={banner.title}
-                className="h-full w-full object-cover"
-                loading="lazy"
-              />
-            </div>
+             <div className="h-[230px] w-full overflow-hidden rounded-2xl bg-slate-100 sm:h-[320px] lg:h-[420px] lg:w-1/2">
+               <img
+                 src={banner.image}
+                 alt={banner.title}
+                 className="h-full w-full object-contain"
+                 loading="lazy"
+               />
+             </div>
           </article>
         </SwiperSlide>
       ))}

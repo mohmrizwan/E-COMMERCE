@@ -85,7 +85,7 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    if (!req.file) {
+    if (!req.files || !req.files.length) {
       return res.status(400).json({
         success: false,
         message: "Product image is required",
@@ -99,15 +99,16 @@ export const createProduct = async (req, res) => {
       });
     }
 
-    // Upload image to Cloudinary
-    let result;
-
-    result = await Cloudinary.uploader.upload(
-      `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-      {
-        folder: "products",
-      },
+    // Upload images to Cloudinary
+    const uploadedImages = await Promise.all(
+      req.files.map((file) =>
+        Cloudinary.uploader.upload(
+          `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+          { folder: "products" },
+        ),
+      ),
     );
+    const imageUrls = uploadedImages.map((result) => result.secure_url);
 
     // Create product
     const newProduct = await productModel.create({
@@ -122,7 +123,8 @@ export const createProduct = async (req, res) => {
       ...shippingDetails.values,
       isDangerous: isDangerous === true || isDangerous === "true",
       status,
-      image: result.secure_url,
+      image: imageUrls[0],
+      images: imageUrls,
     });
 
     return res.status(201).json({
@@ -233,6 +235,22 @@ export const updateProduct = async (req, res) => {
       return res.status(403).json({
         message: "Unauthorized",
       });
+    }
+
+    if (req.files && req.files.length) {
+      const uploadedImages = await Promise.all(
+        req.files.map((file) =>
+          Cloudinary.uploader.upload(
+            `data:${file.mimetype};base64,${file.buffer.toString("base64")}`,
+            { folder: "products" },
+          ),
+        ),
+      );
+      const imageUrls = uploadedImages.map((result) => result.secure_url);
+      product.images = [...(product.images || []), ...imageUrls];
+      if (!product.image) {
+        product.image = imageUrls[0];
+      }
     }
 
     if (discount !== undefined) {

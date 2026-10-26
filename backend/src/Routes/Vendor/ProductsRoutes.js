@@ -14,13 +14,13 @@ const router = express.Router();
 router.post(
   "/create",
   VendorAuthMiddleware,
-  upload.single("image"),
+  upload.array("images", 10),
   createProduct,
 );
 
 router.get("/getAllProducts", VendorAuthMiddleware, getAllProducts);
 router.delete("/delete/:id", VendorAuthMiddleware, deleteproduct);
-router.put("/update/:id", VendorAuthMiddleware, updateProduct);
+router.put("/update/:id", VendorAuthMiddleware, upload.array("images", 10), updateProduct);
 router.get("/products/:id", VendorAuthMiddleware, getProductById);
 
 export default router;

@@ -37,6 +37,24 @@ const Footer = () => {
                 </p>
               </div>
 
+              <div className="mt-5">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Follow us</p>
+                <div className="flex items-center gap-3">
+                  <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                    <i className="fa-brands fa-facebook-f" />
+                  </a>
+                  <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                    <i className="fa-brands fa-instagram" />
+                  </a>
+                  <a href="#" aria-label="X" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                    <i className="fa-brands fa-x-twitter" />
+                  </a>
+                  <a href="#" aria-label="YouTube" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                    <i className="fa-brands fa-youtube" />
+                  </a>
+                </div>
+              </div>
+
               {/* Payment Methods */}
             
             </div>

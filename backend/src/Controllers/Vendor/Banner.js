@@ -11,15 +11,15 @@ const hasValidImageSignature = ({ mimetype, buffer }) => {
   return false;
 };
 
-export const getBanner = async (req, res) => {
+export const getBanners = async (req, res) => {
   try {
     const vendorId = req.vendor?._id;
     if (!vendorId) return res.status(401).json({ message: "Please login as a vendor first" });
-    const banner = await Banner.findOne({ vendorId });
-    return res.status(200).json({ banner });
+    const banners = await Banner.find({ vendorId }).sort({ createdAt: -1 });
+    return res.status(200).json({ banners });
   } catch (error) {
-    console.error("Get banner error:", error);
-    return res.status(500).json({ message: "Failed to load banner" });
+    console.error("Get banners error:", error);
+    return res.status(500).json({ message: "Failed to load banners" });
   }
 };
 
@@ -54,41 +54,30 @@ export const saveBanner = async (req, res) => {
       });
     }
 
-    // Generate the URL using your actual frontend product route.
-    const existing = await Banner.findOne({ vendorId }).select("image");
-    if (!req.file && !existing?.image) return res.status(400).json({ message: "Banner image is required" });
-    let image = existing?.image;
-    if (req.file) {
-      const result = await Cloudinary.uploader.upload(
-        `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
-        { folder: "banners", resource_type: "image" },
-      );
-      image = result.secure_url;
+    try {
+      await Banner.collection.dropIndex("vendorId_1");
+    } catch (error) {
+      // Index may already be removed.
     }
+    const result = await Cloudinary.uploader.upload(
+      `data:${req.file.mimetype};base64,${req.file.buffer.toString("base64")}`,
+      { folder: "banners", resource_type: "image" },
+    );
+    const image = result.secure_url;
     const generatedProductUrl = `/product/${product._id}`;
 
-    const banner = await Banner.findOneAndUpdate(
-      { vendorId },
-      {
-        $set: {
-          title: title.trim(),
-          highlighted: highlighted.trim(),
-          image,
-          buttonText: buttonText.trim(),
-          productId: product._id,
-          productUrl: generatedProductUrl,
-        },
-      },
-      {
-        new: true,
-        upsert: true,
-        runValidators: true,
-        setDefaultsOnInsert: true,
-      }
-    );
+    const banner = await Banner.create({
+      vendorId,
+      title: title.trim(),
+      highlighted: highlighted.trim(),
+      image,
+      buttonText: buttonText.trim(),
+      productId: product._id,
+      productUrl: generatedProductUrl,
+    });
 
-    return res.status(existing ? 200 : 201).json({
-      message: existing ? "Banner updated successfully" : "Banner saved successfully",
+    return res.status(201).json({
+      message: "Banner saved successfully",
       banner,
     });
   } catch (error) {
@@ -97,5 +86,20 @@ export const saveBanner = async (req, res) => {
     if (error.name === "ValidationError") return res.status(400).json({ message: error.message });
     if (error.name === "MulterError" && error.code === "LIMIT_FILE_SIZE") return res.status(400).json({ message: "Image must be 5 MB or smaller" });
     return res.status(500).json({ message: "Failed to save banner" });
+  }
+};
+
+export const deleteBanner = async (req, res) => {
+  try {
+    const vendorId = req.vendor?._id;
+    if (!vendorId) return res.status(401).json({ message: "Please login as a vendor first" });
+
+    const banner = await Banner.findOneAndDelete({ _id: req.params.id, vendorId });
+    if (!banner) return res.status(404).json({ message: "Banner not found" });
+
+    return res.status(200).json({ message: "Banner deleted successfully" });
+  } catch (error) {
+    console.error("Delete banner error:", error);
+    return res.status(500).json({ message: "Failed to delete banner" });
   }
 };

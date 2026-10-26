@@ -265,7 +265,7 @@ test("product creation ignores client vendorId and associates product with req.v
   const res = response();
   try {
     await createProduct({
-      vendor: { _id: ownerId }, file: { mimetype: "image/png", buffer: Buffer.from("test") },
+      vendor: { _id: ownerId }, files: [{ mimetype: "image/png", buffer: Buffer.from("test") }],
       body: {
         vendorId: otherId, name: "Cup", description: "A cup", category: "Kitchen",
         pricing: "12", discount: "0", stockQuantity: "4", status: "active", brand: "Acme",

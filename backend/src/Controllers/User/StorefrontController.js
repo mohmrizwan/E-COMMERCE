@@ -114,6 +114,7 @@ export const getStorefrontBanners = async (req, res) => {
             cartProduct: {
               _id: product._id,
               name: product.name,
+              description: product.description,
               image: product.image,
               pricing: product.pricing,
               discount,
