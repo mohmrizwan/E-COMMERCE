@@ -41,7 +41,6 @@ export const myCustomer = async (req, res) => {
       customers,
     });
   } catch (error) {
-    // console.log("My Customer Error:", error);
 
     return res.status(500).json({
       success: false,

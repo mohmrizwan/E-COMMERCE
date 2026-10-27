@@ -188,7 +188,7 @@ const MyOrders = () => {
                 </div>
 
                 <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-center">
-                  {order.image && <img src={order.image} alt={order.product} className="h-20 w-20 rounded-lg border border-slate-100 object-cover" />}
+                  {order.image && <img src={order.image} alt={order.product} className="h-20 w-20 rounded-lg border border-slate-100 object-contain" />}
                   <div className="min-w-0 flex-1">
                     <h2 className="font-bold text-slate-800">{order.product}</h2>
                     <p className="mt-1 text-sm text-slate-500">Quantity: {order.quantity} <span className="mx-2 text-slate-300">|</span> {money(order.price)} each</p>

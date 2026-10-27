@@ -45,7 +45,6 @@ const Login = () => {
       setErrorMessage("");
       navigate("/", { replace: true });
     } catch (error) {
-      console.log(error);
       setErrorMessage(
         error.response?.data?.message ||
           error.message ||

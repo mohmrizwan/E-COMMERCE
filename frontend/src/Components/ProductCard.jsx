@@ -11,7 +11,7 @@ const ProductCard = ({ product, onRemoveFavorite }) => {
     <article className="group relative overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white transition duration-150 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg hover:shadow-[#6c3bff]/10">
       <Link to={`/product/${product._id || product.id}`} className="block">
         <div className="relative overflow-hidden bg-[#f5f5f5]">
-          <img src={product.image} alt={product.name} className="h-56 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-64" />
+          <img src={product.image} alt={product.name} className="h-56 w-full object-contain transition duration-500 group-hover:scale-105 sm:h-64" />
           <div className="absolute left-3 top-3 flex flex-col gap-2">
           <span className="w-fit rounded-full bg-[#6c3bff] px-3 py-1 text-[11px] font-semibold text-white">{product.status}</span>
           {discount > 0 && <span className="w-fit rounded-full bg-[#ffb020] px-3 py-1 text-[11px] font-semibold text-black">{discount}% OFF</span>}

@@ -511,7 +511,7 @@ function OrdersPage({ orders, selectedOrder, tracking, isTracking, onTrack, onCl
               <img
                 src={order.image}
                 alt=""
-                className="h-20 w-20 rounded-lg border border-slate-100 object-cover"
+                className="h-20 w-20 rounded-lg border border-slate-100 object-contain"
               />
               <div className="min-w-0 flex-1">
                 <h2 className="font-bold text-slate-800">{order.product}</h2>
@@ -650,7 +650,6 @@ function Account() {
           `${API_ORIGIN}/profile/myOrder`,
           getAuthConfig(),
         );
-        console.log("ORDER API RESPONSE:", orderRes.data);
         const formattedOrders = (orderRes.data?.getOrder || []).map((order) => {
           const firstItem = order?.items?.[0];
 
@@ -673,7 +672,6 @@ function Account() {
         });
         setOrders(formattedOrders);
       } catch (error) {
-        console.log(error);
         if (error.response && error.response.status === 401) {
           localStorage.removeItem("userToken");
           window.location.replace("/login");
@@ -727,7 +725,6 @@ function Account() {
       setEditingAddress(null);
       setAddressFormOpen(false);
     } catch (error) {
-      console.log(error);
       showNotice(
         (error.response &&
           error.response.data &&
@@ -759,7 +756,6 @@ function Account() {
       setAddresses(addresses.filter((item) => item._id !== id));
       showNotice("Address removed");
     } catch (error) {
-      console.log(error);
       showNotice(
         (error.response &&
           error.response.data &&
@@ -827,7 +823,6 @@ function Account() {
       setEditingProfile(false);
       showNotice(response.data.message || "Profile details updated");
     } catch (error) {
-      console.log(error);
       showNotice(
         (error.response &&
           error.response.data &&

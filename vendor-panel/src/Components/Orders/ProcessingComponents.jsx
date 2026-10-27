@@ -88,8 +88,6 @@ const Orders = () => {
     );
 
     // Backend API baad mein yahan connect karenge
-    console.log("Order:", orderId);
-    console.log("New Status:", newStatus);
   };
 
   // Status color

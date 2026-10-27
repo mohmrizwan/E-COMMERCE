@@ -80,11 +80,6 @@ export const getCustomerShipmentTracking = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(
-      "Get Customer Shipment Tracking Error:",
-      error.response?.data || error.message
-    );
-
     return res.status(error.response ? 502 : 500).json({
       message: "Could not get shipment tracking",
       error: error.response?.data || error.message,

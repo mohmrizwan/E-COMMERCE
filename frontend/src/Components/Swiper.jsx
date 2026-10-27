@@ -107,7 +107,7 @@ export default function StorefrontSwiper() {
                <img
                  src={banner.image}
                  alt={banner.title}
-                 className="h-full w-full object-contain"
+                 className="h-full w-full  object-contain"
                  loading="lazy"
                />
              </div>

@@ -71,7 +71,6 @@ export const createOrder = async (req, res) => {
 //       order: orderData,
 //     });
 //   } catch (error) {
-//     console.log("Get Order Error:", error);
 
 //     return res.status(500).json({
 //       message: "Something went wrong",
@@ -116,7 +115,6 @@ export const createOrder = async (req, res) => {
 //       order: orderData,
 //     });
 //   } catch (error) {
-//     console.log("Cancel Order Error:", error);
 
 //     return res.status(500).json({
 //       message: "Something went wrong",

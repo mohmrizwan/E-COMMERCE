@@ -70,7 +70,7 @@ export default function ProductDetails() {
               <div className="grid grid-cols-4 gap-2 border-t border-slate-200 p-3 sm:grid-cols-5">
                 {images.map((image, index) => (
                   <button key={index} type="button" onClick={() => setSelectedImage(image)} className={`overflow-hidden rounded-xl border-2 ${selectedImage === image ? "border-violet-700" : "border-slate-200"}`}>
-                    <img src={image} alt={`${product.name} ${index + 1}`} className="h-20 w-full object-cover" />
+                    <img src={image} alt={`${product.name} ${index + 1}`} className="h-20 w-full object-contain" />
                   </button>
                 ))}
               </div>

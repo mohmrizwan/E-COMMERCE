@@ -33,7 +33,6 @@ export const addBrand = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };
 
@@ -48,7 +47,6 @@ export const getBrands = async (req, res) => {
         .json({ message: "Vendor id required for this task" });
     }
     const brands = await brand.find({});
-    console.log(brands, " = brands");
     res.status(200).json({
       success: true,
       brands,
@@ -58,7 +56,6 @@ export const getBrands = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };
 
@@ -168,7 +165,6 @@ export const addCategory = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };
 
@@ -193,7 +189,6 @@ export const getCategories = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };
 
@@ -257,7 +252,6 @@ export const updateCategory = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };
 
@@ -299,6 +293,5 @@ export const deleteCategory = async (req, res) => {
       success: false,
       message: error.message,
     });
-    console.log(error);
   }
 };

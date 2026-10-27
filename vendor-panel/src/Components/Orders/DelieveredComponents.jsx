@@ -73,8 +73,6 @@ const DeliveredOrders = () => {
     );
 
     // Backend API baad mein yahan connect karenge
-    console.log("Order:", orderId);
-    console.log("Payment Status:", newPaymentStatus);
   };
 
   const getPaymentColor = (status) => {

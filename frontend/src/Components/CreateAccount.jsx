@@ -33,7 +33,6 @@ const CreateAccount = () => {
     setIsLoading(true);
 
     try {
-      console.log("Form Data:", data);
 
       const response = await axios.post(
         `${API_ORIGIN}/user/create`,
@@ -52,8 +51,6 @@ const CreateAccount = () => {
         });
       }, 1500);
     } catch (error) {
-      console.log("Registration Error:", error);
-      console.log("Backend Response:", error.response?.data);
 
       setErrorMessage(
         error.response?.data?.message || "Something went wrong"

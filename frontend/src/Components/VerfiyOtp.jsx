@@ -116,7 +116,6 @@ const VerifyOtp = () => {
       setErrorMessage("");
       navigate("/login", { replace: true });
     } catch (error) {
-      console.log("OTP Verification Error:", error);
 
       setErrorMessage(error.response?.data?.message || "Something went wrong");
 
@@ -145,7 +144,6 @@ const VerifyOtp = () => {
       setMessage(response.data.message);
       setErrorMessage("");
     } catch (error) {
-      console.log("Resend OTP Error:", error);
 
       setErrorMessage(error.response?.data?.message || "Something went wrong");
 

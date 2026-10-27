@@ -93,7 +93,6 @@ const AddProduct = () => {
 
       navigate("/products");
     } catch (error) {
-      console.log(error.response?.data);
 
       // Error message
       setErrorMessage(

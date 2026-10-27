@@ -56,7 +56,6 @@ const Transactions = () => {
         setErrorMessage("");
       }
     } catch (error) {
-      console.log("Fetch Transactions Error:", error);
 
       setErrorMessage(
         error.response?.data?.message || "Failed to fetch transactions",

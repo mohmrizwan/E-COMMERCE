@@ -58,7 +58,6 @@ const VendorSignup = () => {
         });
       }, 1500);
     } catch (error) {
-      console.log(error.response?.data);
 
       // Error message
       setErrorMessage(error.response?.data?.message || "Something went wrong");

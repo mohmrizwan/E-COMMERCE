@@ -77,7 +77,7 @@
 //                 <img
 //                   src={product.image}
 //                   alt={product.name}
-//                   className="h-40 w-full object-cover object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
+//                   className="h-40 w-full object-contain object-center transition-transform duration-500 group-hover:scale-105 sm:h-60 md:h-64 lg:h-72 xl:h-80"
 //                 />
 
 //                 {/* Badges */}

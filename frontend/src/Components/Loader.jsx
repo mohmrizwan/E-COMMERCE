@@ -27,7 +27,6 @@ export default Loader;
 
 //         setProducts(res.data);
 //       } catch (error) {
-//         console.log(error);
 //       } finally {
 //         setLoading(false);
 //       }
@@ -68,7 +67,7 @@ export default Loader;
 //             <img
 //               src={product.image}
 //               alt={product.name}
-//               className="h-32 w-full rounded-md object-cover"
+//               className="h-32 w-full rounded-md object-contain"
 //             />
 
 //             <h2 className="mt-3 font-semibold">

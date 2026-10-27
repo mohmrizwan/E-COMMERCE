@@ -109,7 +109,6 @@ export const getOrder = async (req, res) => {
       getOrder,
     });
   } catch (error) {
-    console.log(error)
     res.status(500).json({ message: "Internal server error" });
   }
 };

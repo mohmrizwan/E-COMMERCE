@@ -103,7 +103,6 @@ export const getVendorIncome = async (req, res) => {
       monthlyIncome: monthlyIncomeArray,
     });
   } catch (error) {
-    console.log(error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -141,7 +140,6 @@ export const getVendorOrdersCount = async (req, res) => {
       monthlyOrders,
     });
   } catch (error) {
-    console.log("Get Vendor Orders Count Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -177,7 +175,6 @@ export const getVendorProductsCount = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.log("Get Vendor Products Count Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -220,7 +217,6 @@ export const getVendorCustomersCount = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.log("Get Vendor Customers Count Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -262,7 +258,6 @@ export const getVendorOrderStatusSummary = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.log("Get Vendor Order Status Summary Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -316,7 +311,6 @@ export const getVendorRecentOrders = async (req, res) => {
 
     return res.status(200).json({ recentOrders });
   } catch (error) {
-    console.log("Get Vendor Recent Orders Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -382,7 +376,6 @@ export const getVendorRecentCustomers = async (req, res) => {
 
     return res.status(200).json({ recentCustomers });
   } catch (error) {
-    console.log("Get Vendor Recent Customers Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -412,7 +405,6 @@ export const getVendorProductCategories = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.log("Get Vendor Product Categories Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",

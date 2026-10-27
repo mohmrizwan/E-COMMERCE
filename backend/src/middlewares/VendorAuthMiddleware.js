@@ -60,7 +60,6 @@ export const createVendorAuthMiddleware = ({
 
     next();
   } catch (error) {
-    console.log("Vendor Auth Middleware Error:", error);
 
     if (error.name === "TokenExpiredError") {
       return res.status(401).json({

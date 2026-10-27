@@ -48,7 +48,6 @@ const CustomerComponents = () => {
         },
       );
 
-      console.log("Customers:", response.data);
 
       setCustomers(response.data.customers || []);
 

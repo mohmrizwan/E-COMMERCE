@@ -11,14 +11,8 @@ const Cart = () => {
   } = useCart();
   const cart = Array.isArray(contextCart) ? contextCart : [];
 
-  // Subtotal
+  // Original price total (shown as subtotal)
   const subtotal = cart.reduce(
-    (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
-    0
-  );
-
-  // Original price total
-  const originalTotal = cart.reduce(
     (total, item) =>
       total +
       Number(item.originalPrice || item.price || 0) *
@@ -26,15 +20,21 @@ const Cart = () => {
     0
   );
 
+  // Discounted price total
+  const discountedSubtotal = cart.reduce(
+    (total, item) => total + Number(item.price || 0) * Number(item.quantity || 1),
+    0
+  );
+
   // Discount
-  const discount = originalTotal - subtotal;
+  const discount = subtotal - discountedSubtotal;
 
   // Shipping
   // Abhi free shipping rakha hai
   const shipping = 0;
 
   // Final total
-  const total = subtotal + shipping;
+  const total = discountedSubtotal + shipping;
 
   return (
     <div className="cart-wrapper my-5">
@@ -92,14 +92,10 @@ const Cart = () => {
                     >
                       {/* Vendor Header */}
                       <div className="flex items-center justify-between gap-3 p-5">
-                        <p className="font-[inter] text-sm font-bold">
-                          {item.vendorName || "Vendor"}
-                        </p>
-
-                        <p className="rounded-2xl bg-[#E3F4E9] px-3 py-1 text-xs font-bold text-green-600">
-                          Free Shipping
-                        </p>
-                      </div>
+                          <p className="font-[inter] text-sm font-bold">
+                            {item.vendorName || "Vendor"}
+                          </p>
+                        </div>
 
                       <div className="h-[1px] w-full bg-gray-200"></div>
 
@@ -112,7 +108,7 @@ const Cart = () => {
                               <img
                                 src={item.image}
                                 alt={item.name || "Product"}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-contain"
                               />
                             ) : (
                               <i className="fa-regular fa-image text-2xl text-[#9CA3AF]"></i>
@@ -215,17 +211,7 @@ const Cart = () => {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between">
-                    <span className="font-[inter] text-sm text-[#6B7280]">
-                      Shipping
-                    </span>
-
-                    <span className="font-[inter] text-sm font-semibold text-green-600">
-                      {shipping === 0
-                        ? "Free"
-                        : `₹${shipping.toLocaleString("en-IN")}`}
-                    </span>
-                  </div>
+                
 
                   <div className="flex items-center justify-between">
                     <span className="font-[inter] text-sm text-[#6B7280]">
@@ -254,7 +240,7 @@ const Cart = () => {
                 {/* Checkout */}
                 <Link
                   to="/checkout"
-                  className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#6C3BFF] py-3 font-[inter] text-sm font-semibold text-white transition duration-150 hover:bg-[#5427d6]"
+                  className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#6C3BFF] py-3 font-[inter] text-sm font-semibold !text-white transition duration-150 hover:bg-[#5427d6]"
                 >
                   Proceed to Checkout
                   <i className="fa-solid fa-arrow-right ml-2"></i>

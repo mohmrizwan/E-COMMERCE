@@ -77,7 +77,6 @@ export const CreateAccount = async (req, res) => {
       userId: userCreated._id,
     });
   } catch (error) {
-    console.log("Create Account Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -203,7 +202,6 @@ export const resendOtp = async (req, res) => {
       message: "OTP resent successfully",
     });
   } catch (error) {
-    console.log("Resend OTP Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -505,7 +503,6 @@ export const resetPassword = async (req, res) => {
       .status(200)
       .json({ success: true, message: "Password reset successfully" });
   } catch (error) {
-    console.log("Reset Password Error:", error);
     return res.status(500).json({ success: false, message: "Server error" });
   }
 };

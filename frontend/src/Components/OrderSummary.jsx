@@ -12,18 +12,20 @@ const OrderSummary = ({ orderData }) => {
     orderData?.subtotal ??
     cart.reduce(
       (sum, item) =>
-        sum + Number(item.price || 0) * Number(item.quantity || 1),
+        sum +
+        Number(item.originalPrice ?? item.price ?? 0) *
+          Number(item.quantity || 1),
       0,
     );
+  const discountedSubtotal = cart.reduce(
+    (sum, item) => sum + Number(item.price || 0) * Number(item.quantity || 1),
+    0,
+  );
   const discount =
     orderData?.discount ??
-    cart.reduce((sum, item) => {
-      const price = Number(item.price || 0);
-      const originalPrice = Number(item.originalPrice ?? price);
-      return sum + Math.max(originalPrice - price, 0) * Number(item.quantity || 1);
-    }, 0);
+    Math.max(subtotal - discountedSubtotal, 0);
   const shipping = orderData?.shipping ?? 0;
-  const total = orderData?.total ?? subtotal + shipping;
+  const total = orderData?.total ?? discountedSubtotal + shipping;
 
   return (
     <div className="address-right mt-0 w-full lg:mt-28 lg:w-[35%]">
@@ -55,7 +57,7 @@ const OrderSummary = ({ orderData }) => {
                     <img
                       src={item.image}
                       alt={item.name || "Product"}
-                      className="h-full w-full object-cover"
+                      className="h-full w-full object-contain"
                     />
                   ) : (
                     <i className="fa-regular fa-image text-xl text-[#9CA3AF]"></i>
@@ -96,6 +98,16 @@ const OrderSummary = ({ orderData }) => {
 
             <span className="font-[inter] text-sm font-medium text-[#111827]">
               ₹{subtotal.toLocaleString("en-IN")}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="font-[inter] text-sm text-[#6B7280]">
+              Discount
+            </span>
+
+            <span className="font-[inter] text-sm font-medium text-green-600">
+              -₹{discount.toLocaleString("en-IN")}
             </span>
           </div>
 

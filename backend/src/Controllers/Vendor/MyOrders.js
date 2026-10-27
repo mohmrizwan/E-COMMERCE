@@ -129,7 +129,6 @@ export const getMyOrders = async (req, res) => {
       orders: ordersWithShipments,
     });
   } catch (error) {
-    console.log("Get Vendor Orders Error:", error);
 
     return res.status(500).json({
       message: "Internal Server Error",
@@ -302,11 +301,6 @@ export const acceptOrder = async (req, res) => {
             ? JSON.stringify(shiprocketError)
             : "";
 
-      console.log("Shiprocket create-order response is missing required IDs", {
-        hasOrderId: Boolean(shiprocketOrderId),
-        hasShipmentId: Boolean(shiprocketShipmentId),
-        responseData: rawResponse,
-      });
       shipmentReservation.status = "CREATION_UNKNOWN";
       await shipmentReservation.save();
       return res.status(502).json({
@@ -397,10 +391,6 @@ export const acceptOrder = async (req, res) => {
       shipmentReservation.status = "CREATION_UNKNOWN";
       await shipmentReservation.save().catch(() => {});
     }
-    console.log(
-      `Accept Order Error during ${shiprocketStep}:`,
-      error.response?.data || error.message,
-    );
 
     return res.status(error.response ? 502 : 500).json({
       success: false,
@@ -571,11 +561,6 @@ export const getAvailableCouriers = async (req, res) => {
       })),
     });
   } catch (error) {
-    console.log(
-      "Get Available Couriers Error:",
-      error.response?.data || error.message,
-    );
-
     return res.status(error.response ? 502 : 500).json({
       message: "Could not get available couriers",
       error: error.response?.data || error.message,
@@ -698,12 +683,6 @@ export const assignCourier = async (req, res) => {
           ? JSON.stringify(shiprocketDetails)
           : error.message;
 
-    console.log("Assign Courier Error", {
-      httpStatus: error.response?.status,
-      responseBody: shiprocketResponse,
-      message: error.message,
-    });
-
     return res.status(error.response ? 502 : 500).json({
       message: error.response
         ? `Shiprocket AWB assignment failed: ${errorMessage}`
@@ -756,7 +735,6 @@ export const markOrderProcessing = async (req, res) => {
       order: serializeOrderForVendor(order, req.vendor._id),
     });
   } catch (error) {
-    console.log("Mark Order Processing Error:", error.message);
 
     return res.status(500).json({
       message: "Could not update order status",
@@ -830,7 +808,6 @@ export const shipVendorOrder = async (req, res) => {
       shiprocket: pickupResponse,
     });
   } catch (error) {
-    console.log("Ship Order Error:", error.response?.data || error.message);
 
     return res.status(error.response ? 502 : 500).json({
       message: "Could not ship order",
@@ -900,11 +877,6 @@ export const getVendorShipmentTracking = async (req, res) => {
       },
     });
   } catch (error) {
-    console.log(
-      "Get Vendor Shipment Tracking Error:",
-      error.response?.data || error.message,
-    );
-
     return res.status(error.response ? 502 : 500).json({
       message: "Could not get shipment tracking",
       error: error.response?.data || error.message,

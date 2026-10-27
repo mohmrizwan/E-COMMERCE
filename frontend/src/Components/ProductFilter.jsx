@@ -1,10 +1,9 @@
 import React from "react";
-import { categories } from "../data/products";
 
 const FilterSection = ({ title, children }) => <section className="border-b border-[#edf0f5] py-5 first:pt-0 last:border-0"><h3 className="mb-3 text-sm font-bold">{title}</h3>{children}</section>;
 const CheckOption = ({ label, checked, onChange }) => <label className="flex cursor-pointer items-center gap-3 py-1.5 text-sm text-[#4b5563]"><input type="checkbox" checked={checked} onChange={onChange} className="h-4 w-4 accent-[#6c3bff]" />{label}</label>;
 
-const ProductFilter = ({ filters, onChange, onClear }) => (
+const ProductFilter = ({ filters, onChange, onClear, categories = [] }) => (
   <aside className="rounded-[20px] border border-[#dde3f0] bg-white p-5">
     <div className="mb-1 flex items-center justify-between"><h2 className="text-lg font-bold">Filters</h2><button type="button" onClick={onClear} className="text-xs font-semibold text-[#6c3bff] hover:text-[#5427d6]">Clear all</button></div>
     <FilterSection title="Category"><div className="space-y-1"><label className="flex cursor-pointer items-center gap-3 py-1.5 text-sm"><input type="radio" name="category" checked={!filters.category} onChange={() => onChange("category", "")} className="h-4 w-4 accent-[#6c3bff]" />All Categories</label>{categories.map((category) => <label key={category.value} className="flex cursor-pointer items-center gap-3 py-1.5 text-sm text-[#4b5563]"><input type="radio" name="category" checked={filters.category === category.value} onChange={() => onChange("category", category.value)} className="h-4 w-4 accent-[#6c3bff]" />{category.label}</label>)}</div></FilterSection>

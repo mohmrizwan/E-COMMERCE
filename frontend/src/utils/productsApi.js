@@ -12,6 +12,10 @@ export const getProductsForCurrentStorefront = async () => {
   return axios.get(`${API_ORIGIN}/storefront/products`);
 };
 
+export const getCategoriesForCurrentStorefront = async () => {
+  return axios.get(`${API_ORIGIN}/storefront/categories`);
+};
+
 export const getBrandsForCurrentStorefront = async () => {
   return axios.get(`${API_ORIGIN}/storefront/brands`);
 };

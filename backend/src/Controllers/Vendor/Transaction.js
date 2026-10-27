@@ -47,7 +47,6 @@ export const getVendorTransactions = async (req, res) => {
       transactions,
     });
   } catch (error) {
-    console.log("Get Vendor Transactions Error:", error);
 
     return res.status(500).json({
       success: false,

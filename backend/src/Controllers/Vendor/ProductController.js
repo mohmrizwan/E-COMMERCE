@@ -133,7 +133,6 @@ export const createProduct = async (req, res) => {
       product: newProduct,
     });
   } catch (error) {
-    console.log("Create Product Error:", error);
 
     return res.status(500).json({
       success: false,
@@ -300,7 +299,6 @@ export const updateProduct = async (req, res) => {
       product,
     });
   } catch (error) {
-    console.log("UPDATE PRODUCT ERROR:", error);
 
     return res.status(500).json({
       message: "Internal server error",
@@ -337,7 +335,6 @@ export const getProductById = async (req, res) => {
       product,
     });
   } catch (error) {
-    console.log("GET PRODUCT ERROR:", error);
 
     return res.status(500).json({
       message: "Internal server error",

@@ -5,10 +5,9 @@ import Footer from "../Components/Footer";
 import ProductFilter from "../Components/ProductFilter";
 import ProductGrid from "../Components/ProductGrid";
 import ProductSort from "../Components/ProductSort";
-import { getCategoryLabel } from "../data/products";
 import { STORE_NAME } from "../config/brand.js";
 import Loader from "../Components/Loader";
-import { getProductsForCurrentStorefront } from "../utils/productsApi";
+import { getProductsForCurrentStorefront, getCategoriesForCurrentStorefront } from "../utils/productsApi";
 
 const defaultFilters = {
   search: "",
@@ -56,16 +55,37 @@ const Products = () => {
   }));
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const categoryOptions = useMemo(
+    () =>
+      categories
+        .map((category) => ({
+          value: category.name,
+          label: category.name,
+        }))
+        .filter((category) => category.value),
+    [categories],
+  );
 
   useEffect(() => {
     setLoading(true);
     const getProducts = async () => {
       try {
-        const response = await getProductsForCurrentStorefront();
+        const [productResponse, categoryResponse] = await Promise.all([
+          getProductsForCurrentStorefront(),
+          getCategoriesForCurrentStorefront(),
+        ]);
         setProducts(
-          Array.isArray(response.data.products) ? response.data.products : [],
+          Array.isArray(productResponse.data.products)
+            ? productResponse.data.products
+            : [],
+        );
+        setCategories(
+          Array.isArray(categoryResponse.data.categories)
+            ? categoryResponse.data.categories
+            : [],
         );
       } catch (error) {
         setErrorMessage(
@@ -145,7 +165,7 @@ const Products = () => {
               Shop {STORE_NAME}
             </p>
             <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
-              {getCategoryLabel(filters.category)}
+              {filters.category || "All Products"}
             </h1>
             <p className="mt-2 text-sm text-[#6b7280]">
               Browse products from {STORE_NAME}.
@@ -166,6 +186,7 @@ const Products = () => {
               filters={filters}
               onChange={updateFilter}
               onClear={clearFilters}
+              categories={categoryOptions}
             />
           </div>
           <section className="min-w-0">

@@ -1,6 +1,7 @@
 import Product from "../../models/vendor/ProductModel.js";
 import Banner from "../../models/user/Banner.js";
 import Brand from "../../models/vendor/BrandModel.js";
+import Category from "../../models/vendor/CategoryModel.js";
 import {
   findStoreOwner,
   storeOwnerProductFilter,
@@ -159,5 +160,25 @@ export const getStorefrontBrands = async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Could not load brands" });
+  }
+};
+export const getStorefrontCategories = async (req, res) => {
+  try {
+    const vendor = await resolveStorefront();
+    if (!vendor) {
+      return res.status(503).json({ success: false, message: "Store owner is not configured" });
+    }
+
+    const categories = await Category.find({}).lean();
+    return res.status(200).json({
+      success: true,
+      categories: categories.map((category) => ({
+        id: category._id,
+        name: category.name,
+      })),
+    });
+  } catch (error) {
+    console.error("Get storefront categories error:", error);
+    return res.status(500).json({ success: false, message: "Could not load categories" });
   }
 };
