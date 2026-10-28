@@ -143,15 +143,17 @@ const VendorBannerForm = () => {
          <CCardHeader className="bg-transparent border-0 px-4 pt-4"><h5 className="fw-bold mb-1">Saved Banners</h5><p className="text-body-secondary mb-0">All banners shown in your storefront swiper.</p></CCardHeader>
          <CCardBody className="p-4">
            {!banners.length && <p className="text-body-secondary mb-0">No banners saved yet.</p>}
-           <div className="d-flex flex-column gap-3">
+           <div className="row g-3">
              {banners.map((savedBanner) => (
-               <div key={savedBanner._id} className="d-flex align-items-center gap-3 border rounded p-2">
-                 <CImage src={savedBanner.image} alt={savedBanner.title} style={{ width: 96, height: 64, objectFit: "cover" }} />
-                 <div className="flex-grow-1">
-                   <div className="fw-bold">{savedBanner.title}</div>
-                   <div className="text-body-secondary small">{savedBanner.highlighted}</div>
-                 </div>
-                 <CButton color="danger" variant="outline" size="sm" onClick={() => deleteBanner(savedBanner._id)}>Delete</CButton>
+               <div className="col-12 col-md-6 col-xl-4" key={savedBanner._id}>
+                 <CCard className="h-100 border-0 shadow-sm overflow-hidden">
+                   <CImage src={savedBanner.image} alt={savedBanner.title} className="w-100" style={{ height: 160, objectFit: "cover" }} />
+                   <CCardBody className="p-3">
+                     <h6 className="fw-bold mb-1">{savedBanner.title}</h6>
+                     <p className="text-body-secondary small mb-3">{savedBanner.highlighted}</p>
+                     <CButton color="danger" variant="outline" size="sm" onClick={() => deleteBanner(savedBanner._id)}>Delete</CButton>
+                   </CCardBody>
+                 </CCard>
                </div>
              ))}
            </div>

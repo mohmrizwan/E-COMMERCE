@@ -69,16 +69,74 @@ const AddProduct = () => {
 
     const formData = new FormData(e.target);
 
+    const name = formData.get("name")?.toString().trim() || "";
+    const description = formData.get("description")?.toString().trim() || "";
+    const category = formData.get("category")?.toString().trim() || "";
+    const brand = formData.get("brand")?.toString().trim() || "";
+    const pricing = formData.get("pricing")?.toString().trim() || "";
+    const stockQuantity = formData.get("stockQuantity")?.toString().trim() || "";
+    const status = formData.get("status")?.toString().trim() || "";
+    const weight = formData.get("weight")?.toString().trim() || "";
+    const length = formData.get("length")?.toString().trim() || "";
+    const breadth = formData.get("breadth")?.toString().trim() || "";
+    const height = formData.get("height")?.toString().trim() || "";
+
+    if (name.length < 3) {
+      setErrorMessage("Product name must be at least 3 characters");
+      return;
+    }
+    if (description.length < 10) {
+      setErrorMessage("Description must be at least 10 characters");
+      return;
+    }
+    if (!category) {
+      setErrorMessage("Please select a category");
+      return;
+    }
+    if (!brand) {
+      setErrorMessage("Please select a brand");
+      return;
+    }
+    if (pricing === "" || Number(pricing) < 0) {
+      setErrorMessage("Please enter a valid price");
+      return;
+    }
+    if (stockQuantity === "" || Number(stockQuantity) < 0) {
+      setErrorMessage("Please enter a valid stock quantity");
+      return;
+    }
+    if (!status) {
+      setErrorMessage("Please select product status");
+      return;
+    }
+    if (!weight || Number(weight) <= 0) {
+      setErrorMessage("Weight must be greater than 0 kg");
+      return;
+    }
+    if (!length || Number(length) <= 0.5) {
+      setErrorMessage("Length must be greater than 0.5 cm");
+      return;
+    }
+    if (!breadth || Number(breadth) <= 0.5) {
+      setErrorMessage("Breadth must be greater than 0.5 cm");
+      return;
+    }
+    if (!height || Number(height) <= 0.5) {
+      setErrorMessage("Height must be greater than 0.5 cm");
+      return;
+    }
+
+    if (!API_URL) {
+      throw new Error("VITE_API_URL is not configured for this deployment.");
+    }
+    if (!token) {
+      throw new Error(
+        "Your vendor session has expired. Please sign in again.",
+      );
+    }
+
     try {
       setLoading(true);
-      if (!API_URL) {
-        throw new Error("VITE_API_URL is not configured for this deployment.");
-      }
-      if (!token) {
-        throw new Error(
-          "Your vendor session has expired. Please sign in again.",
-        );
-      }
       const response = await axios.post(
         apiUrl("vendor/products/create"),
         formData,
@@ -129,7 +187,6 @@ const AddProduct = () => {
       {/* Error Snackbar */}
       <Snackbar
         open={Boolean(errorMessage)}
-        autoHideDuration={3000}
         onClose={() => setErrorMessage("")}
         anchorOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -162,7 +219,7 @@ const AddProduct = () => {
       </div>
 
       {/* Form */}
-      <CForm onSubmit={handleSubmit}>
+      <CForm onSubmit={handleSubmit} noValidate>
         <CRow className="g-4">
           {/* LEFT */}
           <CCol lg={8}>

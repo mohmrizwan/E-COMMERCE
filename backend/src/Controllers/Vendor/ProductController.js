@@ -85,6 +85,27 @@ export const createProduct = async (req, res) => {
       });
     }
 
+    if (!name?.trim()) {
+      return res.status(400).json({ success: false, message: "Product name is required" });
+    }
+    if (!description?.trim()) {
+      return res.status(400).json({ success: false, message: "Product description is required" });
+    }
+    if (!category?.trim()) {
+      return res.status(400).json({ success: false, message: "Product category is required" });
+    }
+    if (!brand?.trim()) {
+      return res.status(400).json({ success: false, message: "Product brand is required" });
+    }
+    if (pricing === undefined || pricing === "" || Number(pricing) < 0) {
+      return res.status(400).json({ success: false, message: "Valid product price is required" });
+    }
+    if (stockQuantity === undefined || stockQuantity === "" || Number(stockQuantity) < 0) {
+      return res.status(400).json({ success: false, message: "Valid stock quantity is required" });
+    }
+    if (!status?.trim()) {
+      return res.status(400).json({ success: false, message: "Product status is required" });
+    }
     if (!req.files || !req.files.length) {
       return res.status(400).json({
         success: false,
@@ -252,6 +273,27 @@ export const updateProduct = async (req, res) => {
       }
     }
 
+    if (name !== undefined && !String(name).trim()) {
+      return res.status(400).json({ success: false, message: "Product name is required" });
+    }
+    if (description !== undefined && !String(description).trim()) {
+      return res.status(400).json({ success: false, message: "Product description is required" });
+    }
+    if (category !== undefined && !String(category).trim()) {
+      return res.status(400).json({ success: false, message: "Product category is required" });
+    }
+    if (brand !== undefined && !String(brand).trim()) {
+      return res.status(400).json({ success: false, message: "Product brand is required" });
+    }
+    if (pricing !== undefined && (pricing === "" || Number(pricing) < 0)) {
+      return res.status(400).json({ success: false, message: "Valid product price is required" });
+    }
+    if (stockQuantity !== undefined && (stockQuantity === "" || Number(stockQuantity) < 0)) {
+      return res.status(400).json({ success: false, message: "Valid stock quantity is required" });
+    }
+    if (status !== undefined && !String(status).trim()) {
+      return res.status(400).json({ success: false, message: "Product status is required" });
+    }
     if (discount !== undefined) {
       const discountValue = Number(discount);
       if (

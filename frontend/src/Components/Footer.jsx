@@ -21,7 +21,7 @@ const Footer = () => {
                   <img
                     src={storefront.websiteLogo}
                     alt={storeName}
-                    className="h-10 max-w-48 object-contain object-left"
+                    className="h-10 w-auto max-w-[160px] object-contain object-left"
                   />
                 ) : (
                   <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">

@@ -433,20 +433,6 @@ const UpadteProduct = () => {
                       </div>
                     </CCol>
 
-                    {/* SKU */}
-
-                    <CCol md={6}>
-                      <div className="mb-3">
-                        <CFormLabel className="fw-semibold">SKU</CFormLabel>
-
-                        <CFormInput
-                          type="text"
-                          placeholder="e.g. PROD-001"
-                          className="py-2"
-                          disabled={updating}
-                        />
-                      </div>
-                    </CCol>
                   </CRow>
                 </CCardBody>
               </CCard>
@@ -544,9 +530,9 @@ const UpadteProduct = () => {
                   <CRow>
                     {[
                       ["weight", "Weight (kg)", "0.01", "0.001"],
-                      ["length", "Length (cm)", "0.01", "0.51"],
-                      ["breadth", "Breadth / Width (cm)", "0.01", "0.51"],
-                      ["height", "Height (cm)", "0.01", "0.51"],
+                      ["length", "Length (cm)", "0.01", "0.01"],
+                      ["breadth", "Breadth / Width (cm)", "0.01", "0.01"],
+                      ["height", "Height (cm)", "0.01", "0.01"],
                     ].map(([field, label, step, min]) => (
                       <CCol md={6} key={field}>
                         <div className="mb-3">
@@ -753,7 +739,7 @@ const UpadteProduct = () => {
 
       <Snackbar
         open={!!message}
-        autoHideDuration={3000}
+
         onClose={() => setMessage("")}
         anchorOrigin={{
           vertical: "top",
@@ -774,7 +760,7 @@ const UpadteProduct = () => {
 
       <Snackbar
         open={!!errorMessage}
-        autoHideDuration={3000}
+
         onClose={() => setErrorMessage("")}
         anchorOrigin={{
           vertical: "top",
