@@ -35,7 +35,7 @@ const Confirmation = ({ orderData }) => {
               
               {/* Address */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#6C3BFF] bg-[#6C3BFF] text-xs font-bold text-white sm:h-9 sm:w-9">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#173D35] bg-[#173D35] text-xs font-bold text-white sm:h-9 sm:w-9">
                   <i className="fa-solid fa-check"></i>
                 </div>
 
@@ -49,7 +49,7 @@ const Confirmation = ({ orderData }) => {
 
               {/* Payment */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#6C3BFF] bg-[#6C3BFF] text-xs font-bold text-white sm:h-9 sm:w-9">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#173D35] bg-[#173D35] text-xs font-bold text-white sm:h-9 sm:w-9">
                   <i className="fa-solid fa-check"></i>
                 </div>
 
@@ -63,7 +63,7 @@ const Confirmation = ({ orderData }) => {
 
               {/* Confirmation */}
               <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#6C3BFF] bg-[#6C3BFF] text-xs font-bold text-white sm:h-9 sm:w-9">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#173D35] bg-[#173D35] text-xs font-bold text-white sm:h-9 sm:w-9">
                   <i className="fa-solid fa-check"></i>
                 </div>
 
@@ -96,7 +96,7 @@ const Confirmation = ({ orderData }) => {
               </div>
 
               {/* Order Status */}
-              <div className="order-status w-full max-w-lg rounded-2xl border border-[#E5E7EB] bg-[#F8F9FB] p-4 sm:p-5">
+              <div className="order-status w-full max-w-lg rounded-2xl border border-[#E5E7EB] bg-[#e8f0ee] p-4 sm:p-5">
                 
                 {/* Delivery */}
                 <div className="flex flex-col gap-1 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
@@ -137,7 +137,7 @@ const Confirmation = ({ orderData }) => {
               {/* Track Button */}
               <Link
                 to="/products"
-                className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:w-auto sm:min-w-40 sm:px-6"
+                className="w-full rounded-2xl bg-[#173D35] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#173D35] sm:w-auto sm:min-w-40 sm:px-6"
               >
                 Continue Shopping
               </Link>

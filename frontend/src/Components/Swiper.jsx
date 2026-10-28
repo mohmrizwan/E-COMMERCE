@@ -53,17 +53,17 @@ export default function StorefrontSwiper() {
     >
       {slides.map((banner) => (
         <SwiperSlide key={banner._id}>
-          <article className="flex min-h-[420px] flex-col-reverse gap-7 rounded-2xl border border-[#e4e6ec] bg-white p-5 sm:p-8 lg:min-h-[520px] lg:flex-row lg:items-center lg:gap-10 lg:px-15 lg:py-12">
+          <article className="flex min-h-[420px] flex-col-reverse gap-7 rounded-2xl border border-[#e8f0ee] bg-white p-5 sm:p-8 lg:min-h-[520px] lg:flex-row lg:items-center lg:gap-10 lg:px-15 lg:py-12">
             <div className="w-full lg:w-1/2">
-              <p className="mb-5 inline-flex rounded-full bg-[#F0EBFF] px-3 py-1 text-xs font-bold text-[#6C5CFF]">
+              <p className="mb-5 inline-flex rounded-full bg-[#e8f0ee] px-3 py-1 text-xs font-bold text-[#173D35]">
                 {banner.vendorName || "Featured product"}
               </p>
               <h1 className="font-inter text-3xl font-extrabold leading-tight text-slate-900 sm:text-4xl md:text-5xl">
                 {banner.title}
               </h1>
                <p className="my-5 max-w-xl text-sm leading-6 text-[#6B7280] sm:text-base">
-                 <i className="fa-solid fa-check mr-2 text-amber-500" aria-hidden="true" />
-                 <span className="text-xs font-semibold text-amber-500">{banner.highlighted}</span>
+                 <i className="fa-solid fa-check mr-2 text-[#D6B56D]" aria-hidden="true" />
+                 <span className="text-xs font-semibold text-[#D6B56D]">{banner.highlighted}</span>
                </p>
                {banner.cartProduct?.name && (
                  <h2 className="mb-2 text-xl font-bold text-slate-900 sm:text-2xl">
@@ -84,7 +84,7 @@ export default function StorefrontSwiper() {
                     setAddedProductId(String(banner.cartProduct._id));
                   }}
                   disabled={!banner.cartProduct.inStock}
-                  className="inline-flex items-center rounded-2xl bg-[#6C3BFF] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] disabled:cursor-not-allowed disabled:bg-gray-400 sm:px-6"
+                  className="inline-flex items-center rounded-2xl bg-[#173D35] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#173D35] disabled:cursor-not-allowed disabled:bg-gray-400 sm:px-6"
                 >
                   {!banner.cartProduct.inStock
                     ? "Out of Stock"
@@ -96,7 +96,7 @@ export default function StorefrontSwiper() {
               ) : (
                 <Link
                   to={banner.productUrl}
-                  className="inline-flex items-center rounded-2xl bg-[#6C3BFF] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] sm:px-6"
+                  className="inline-flex items-center rounded-2xl bg-[#173D35] px-5 py-3 text-sm font-bold text-white transition duration-300 hover:bg-[#173D35] sm:px-6"
                 >
                   {banner.buttonText || "Start Shopping"}
                   <i className="fa-solid fa-arrow-right ms-2" aria-hidden="true" />

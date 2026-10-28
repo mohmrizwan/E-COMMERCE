@@ -10,7 +10,7 @@ const Footer = () => {
     storefront?.footerText ||
     `© ${new Date().getFullYear()} ${storeName}. All rights reserved.`;
   return (
-    <footer className="footer-wrapper border-t-2 border-gray-200 bg-[#FFFFFF]">
+    <footer className="footer-wrapper border-t border-[#D6B56D]/40 bg-[#173D35]">
       <div className="mx-auto w-full px-4 py-12 sm:px-6 lg:px-10">
         <div className="flex flex-col gap-12 lg:flex-row lg:justify-between lg:gap-16">
           {/* Left Section */}
@@ -24,13 +24,13 @@ const Footer = () => {
                     className="h-10 w-auto max-w-[160px] object-contain object-left"
                   />
                 ) : (
-                  <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight text-[#171717] sm:text-2xl">
+                  <p className="whitespace-nowrap font-[Inter] text-xl font-bold tracking-tight !text-white sm:text-2xl">
                     {storeName}
                   </p>
                 )}
               </Link>
 
-              <div className="mt-4 font-[Inter] text-sm leading-6 text-[#6B7280]">
+              <div className="mt-4 font-[Inter] text-sm leading-6 text-gray-200">
                 <p>
                   Discover quality products and enjoy a smarter shopping
                   experience with {storeName}.
@@ -38,18 +38,18 @@ const Footer = () => {
               </div>
 
               <div className="mt-5">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">Follow us</p>
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#D6B56D]">Follow us</p>
                 <div className="flex items-center gap-3">
-                  <a href="#" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                  <a href="https://www.facebook.com/share/19jvptk8wZ/?mibextid=wwXIfr" target="_blank" aria-label="Facebook" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D6B56D]/40 !text-white transition hover:border-[#D6B56D] hover:text-[#D6B56D]">
                     <i className="fa-brands fa-facebook-f" />
                   </a>
-                  <a href="#" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                  <a href="https://www.instagram.com/newmeeraplasticandcrockery?srtk=MWVjN2EwdzFrMnJ3MA%3D%3D&utm_source=qr" target="_blank" aria-label="Instagram" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D6B56D]/40 !text-white transition hover:border-[#D6B56D] hover:text-[#D6B56D]">
                     <i className="fa-brands fa-instagram" />
                   </a>
-                  <a href="#" aria-label="X" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                  <a href="#" aria-label="X" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D6B56D]/40 !text-white transition hover:border-[#D6B56D] hover:text-[#D6B56D]">
                     <i className="fa-brands fa-x-twitter" />
                   </a>
-                  <a href="#" aria-label="YouTube" className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:border-violet-600 hover:text-violet-600">
+                  <a href="#" aria-label="YouTube" className="flex h-9 w-9 items-center justify-center rounded-full border border-[#D6B56D]/40 !text-white transition hover:border-[#D6B56D] hover:text-[#D6B56D]">
                     <i className="fa-brands fa-youtube" />
                   </a>
                 </div>
@@ -62,7 +62,7 @@ const Footer = () => {
           {/* Footer Links */}
           <div className="grid w-full grid-cols-2 gap-x-8 gap-y-8 lg:max-w-3xl lg:grid-cols-3">
             <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">Pages</h3>
+              <h3 className="font-[Inter] text-sm font-semibold !text-white">Pages</h3>
               <div className="mt-4 flex flex-col gap-3">
                 <Link className="footer-link" to="/">Home</Link>
                 <Link className="footer-link" to="/orders">Orders</Link>
@@ -71,7 +71,7 @@ const Footer = () => {
               </div>
             </div>
             <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">
+              <h3 className="font-[Inter] text-sm font-semibold !text-white">
                 Support
               </h3>
 
@@ -91,7 +91,7 @@ const Footer = () => {
               </div>
             </div>
             <div className="footer-links">
-              <h3 className="font-[Inter] text-sm font-semibold text-[#171717]">Contact Details</h3>
+              <h3 className="font-[Inter] text-sm font-semibold !text-white">Contact Details</h3>
               <div className="mt-4 flex flex-col gap-3">
                 {storefront?.contactEmail && <a className="footer-link break-words" href={`mailto:${storefront.contactEmail}`}>{storefront.contactEmail}</a>}
                 {storefront?.contactPhone && <a className="footer-link" href={`tel:${storefront.contactPhone}`}>{storefront.contactPhone}</a>}
@@ -103,16 +103,16 @@ const Footer = () => {
         </div>
 
         {/* Footer Bottom */}
-        <div className="mt-12 border-t border-gray-200 pt-6">
+        <div className="mt-12 border-t border-[#D6B56D]/30 pt-6">
           <div className="flex flex-col items-center justify-between gap-3 text-center sm:flex-row sm:text-left">
-            <p className="font-[Inter] text-xs text-[#9CA3AF]">
+            <p className="font-[Inter] text-xs text-gray-300">
              ©{copyright} | all rights reserved
             </p>
 
             <div className="flex gap-5">
               <Link
                 to="/term&condition"
-                className="font-[Inter] text-xs text-[#9CA3AF] transition-colors duration-300 hover:text-[#6c3bff]"
+                className="font-[Inter] text-xs text-gray-300 transition-colors duration-300 hover:text-[#D6B56D]"
               >
                 Terms & Conditions
               </Link>
@@ -126,12 +126,12 @@ const Footer = () => {
           .footer-link {
             font-family: Inter, sans-serif;
             font-size: 0.875rem;
-            color: #6B7280;
+            color: #e5e7eb;
             transition: color 300ms ease;
           }
 
           .footer-link:hover {
-            color: #6c3bff;
+            color: #D6B56D;
           }
         `}
       </style>

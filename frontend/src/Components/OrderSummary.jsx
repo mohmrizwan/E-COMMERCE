@@ -132,7 +132,7 @@ const OrderSummary = ({ orderData }) => {
             Final Total
           </span>
 
-          <span className="font-[inter] text-xl font-bold text-[#6C3BFF]">
+          <span className="font-[inter] text-xl font-bold text-[#173D35]">
             ₹{total.toLocaleString("en-IN")}
           </span>
         </div>

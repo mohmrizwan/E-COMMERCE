@@ -59,18 +59,18 @@
 //                   aria-hidden="true"
 //                   className="flex min-w-0 animate-pulse flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white sm:rounded-[20px]"
 //                 >
-//                   <div className="h-40 w-full bg-[#E9E5FC] sm:h-60 md:h-64 lg:h-72 xl:h-80" />
+//                   <div className="h-40 w-full bg-[#e8f0ee] sm:h-60 md:h-64 lg:h-72 xl:h-80" />
 //                   <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
-//                     <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
-//                     <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
-//                     <div className="mt-auto h-4 w-1/2 rounded bg-[#E9E5FC]" />
+//                     <div className="h-3 w-1/3 rounded bg-[#e8f0ee]" />
+//                     <div className="h-4 w-4/5 rounded bg-[#e8f0ee]" />
+//                     <div className="mt-auto h-4 w-1/2 rounded bg-[#e8f0ee]" />
 //                   </div>
 //                 </div>
 //               ))
 //             : products.map((product) => (
 //             <div
 //               key={product._id}
-//               className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg sm:rounded-[20px]"
+//               className="product-card group relative flex w-full flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white transition duration-200 hover:-translate-y-1 hover:border-[#D6B56D] hover:shadow-lg sm:rounded-[20px]"
 //             >
 //               {/* ================= PRODUCT IMAGE ================= */}
 //               <div className="relative overflow-hidden">
@@ -82,7 +82,7 @@
 
 //                 {/* Badges */}
 //                 <div className="absolute left-2 top-2 z-10 flex flex-col items-start gap-1 sm:left-3 sm:top-3 sm:gap-2">
-//                   <span className="rounded-full bg-[#6C3BFF] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
+//                   <span className="rounded-full bg-[#173D35] px-2 py-1 font-[inter] text-[8px] font-semibold text-white sm:px-3 sm:text-xs">
 //                     {product.status}
 //                   </span>
 
@@ -105,7 +105,7 @@
 //                 </span>
 
 //                 {/* Product Name */}
-//                 <h4 className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#6C3BFF] sm:min-h-[40px] sm:text-sm sm:leading-5">
+//                 <h4 className="mt-1 line-clamp-2 min-h-[30px] font-[inter] text-[11px] font-bold leading-4 text-[#111827] transition duration-200 group-hover:text-[#173D35] sm:min-h-[40px] sm:text-sm sm:leading-5">
 //                   {product.name}
 //                 </h4>
 
@@ -129,7 +129,7 @@
 
 //                   <Link
 //                     onClick={() => addToCart(product)}
-//                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#6C3BFF] text-white transition duration-200 hover:bg-[#421db3] sm:h-9 sm:w-9 sm:rounded-xl"
+//                     className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#173D35] text-white transition duration-200 hover:bg-[#0f2a24] sm:h-9 sm:w-9 sm:rounded-xl"
 //                   >
 //                     <i className="fa-solid fa-bag-shopping text-[10px] sm:text-sm"></i>
 //                   </Link>

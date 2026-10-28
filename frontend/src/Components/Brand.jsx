@@ -27,9 +27,9 @@ const BrandsSection = () => {
       <div className="mx-auto w-full max-w-screen-2xl">
         {/* Heading */}
         <div className="mb-10">
-          <h2 className="text-2xl font-bold text-gray-900 sm:text-3xl">
-            Shop by Brands
-          </h2>
+            <h2 className="text-2xl font-bold text-[#173D35] sm:text-3xl">
+              Shop by Brands
+            </h2>
 
           <p className="mt-2 text-sm text-gray-500 sm:text-base">
             Explore your favourite brands.

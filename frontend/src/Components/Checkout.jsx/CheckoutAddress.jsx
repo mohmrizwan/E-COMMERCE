@@ -18,7 +18,7 @@ const emptyAddress = {
   pincode: "",
 };
 const inputClass =
-  "w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[#6c3bff] focus:bg-white focus:ring-4 focus:ring-[#6c3bff]/10";
+  "w-full rounded-2xl border border-gray-300 bg-gray-50 px-4 py-2.5 text-sm text-gray-700 outline-none transition focus:border-[#173D35] focus:bg-white focus:ring-4 focus:ring-[#173D35]/10";
 
 const getAuthConfig = () => ({
   headers: {
@@ -182,21 +182,21 @@ const CheckoutAddress = ({
           <div className="addrss-left w-full lg:w-[60%]">
             <div className="status my-6 hidden w-full items-center justify-between gap-1 sm:my-10 sm:flex sm:gap-2">
               <div className="flex items-center gap-3">
-                <span className="rounded-full border-2 border-[#6C3BFF] bg-[#E9E5FC] px-3 py-2 text-xs font-bold text-[#6C3BFF]">
+                <span className="rounded-full border-2 border-[#173D35] bg-[#e8f0ee] px-3 py-2 text-xs font-bold text-[#173D35]">
                   1
                 </span>
                 <p className="text-sm font-bold text-[#6B7280]">Address</p>
               </div>
               <div className="h-px min-w-2 flex-1 bg-gray-300 sm:mx-2 md:mx-4" />
               <div className="flex items-center gap-3">
-                <span className="rounded-full bg-[#E9E5FC] px-3 py-2 text-xs font-bold text-[#6B7280]">
+                <span className="rounded-full bg-[#e8f0ee] px-3 py-2 text-xs font-bold text-[#6B7280]">
                   2
                 </span>
                 <p className="text-sm font-bold text-[#6B7280]">Payment</p>
               </div>
               <div className="h-px min-w-2 flex-1 bg-gray-300 sm:mx-2 md:mx-4" />
               <div className="flex items-center gap-3">
-                <span className="rounded-full bg-[#E9E5FC] px-3 py-2 text-xs font-bold text-[#6B7280]">
+                <span className="rounded-full bg-[#e8f0ee] px-3 py-2 text-xs font-bold text-[#6B7280]">
                   3
                 </span>
                 <p className="text-sm font-bold text-[#6B7280]">Confirmation</p>
@@ -216,7 +216,7 @@ const CheckoutAddress = ({
                 <button
                   type="button"
                   onClick={openAddForm}
-                  className="shrink-0 text-sm font-bold text-[#6C3BFF]"
+                  className="shrink-0 text-sm font-bold text-[#173D35]"
                 >
                   <i className="fa-solid fa-plus mr-1" /> Add address
                 </button>
@@ -230,7 +230,7 @@ const CheckoutAddress = ({
                   </p>
                   <Link
                     to="/products"
-                    className="mt-5 inline-flex rounded-xl bg-[#6C3BFF] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#5427d6]"
+                    className="mt-5 inline-flex rounded-xl bg-[#173D35] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#0f2a24]"
                   >
                     Continue Shopping
                   </Link>
@@ -253,8 +253,8 @@ const CheckoutAddress = ({
                             key={address._id}
                             className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
                               selectedAddressId === addressId
-                                ? "border-[#6C3BFF] bg-[#F7F5FF]"
-                                : "border-[#dde3f0] hover:border-[#b6a5e7]"
+                                ? "border-[#173D35] bg-[#e8f0ee]"
+                                : "border-[#dde3f0] hover:border-[#D6B56D]"
                             }`}
                           >
                             <input
@@ -264,7 +264,7 @@ const CheckoutAddress = ({
                               value={addressId}
                               checked={selectedAddressId === addressId}
                               onChange={() => setSelectedAddressId(addressId)}
-                              className="mt-1 accent-[#6C3BFF]"
+                              className="mt-1 accent-[#173D35]"
                             />
                             <div className="min-w-0 flex-1">
                               <label
@@ -273,7 +273,7 @@ const CheckoutAddress = ({
                               >
                                 {address.name} · {address.type}
                                 {isDefault && (
-                                  <span className="rounded-full bg-[#E9E5FC] px-2 py-1 text-[10px] font-bold text-[#6C3BFF]">
+                                  <span className="rounded-full bg-[#e8f0ee] px-2 py-1 text-[10px] font-bold text-[#173D35]">
                                     Default
                                   </span>
                                 )}
@@ -292,7 +292,7 @@ const CheckoutAddress = ({
                                 event.preventDefault();
                                 openEditForm(address);
                               }}
-                              className="shrink-0 text-sm font-semibold text-[#6C3BFF]"
+                              className="shrink-0 text-sm font-semibold text-[#173D35]"
                             >
                               Edit
                             </button>
@@ -309,7 +309,7 @@ const CheckoutAddress = ({
                   {isFormOpen && !isLoading && (
                     <form
                       onSubmit={saveAddress}
-                      className="mt-5 rounded-xl border border-[#d9ceff] bg-[#faf9ff] p-4 sm:p-5"
+                      className="mt-5 rounded-xl border border-[#e8f0ee] bg-[#e8f0ee] p-4 sm:p-5"
                     >
                       <h2 className="font-bold text-[#171717]">
                         {editingAddress ? "Edit address" : "Add new address"}
@@ -369,7 +369,7 @@ const CheckoutAddress = ({
                         <button
                           type="submit"
                           disabled={isSaving}
-                          className="rounded-xl bg-[#6C3BFF] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
+                          className="rounded-xl bg-[#173D35] px-4 py-2.5 text-sm font-bold text-white disabled:opacity-60"
                         >
                           {isSaving
                             ? "Saving..."
@@ -414,7 +414,7 @@ const CheckoutAddress = ({
                         isLoading ||
                         isContinuing
                       }
-                      className="w-full rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6"
+                      className="w-full rounded-2xl bg-[#173D35] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#173D35] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-6"
                     >
                       {isContinuing
                         ? "Calculating delivery..."

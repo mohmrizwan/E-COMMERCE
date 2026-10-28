@@ -161,7 +161,7 @@ const Products = () => {
       <main className="mx-auto max-w-375 px-4 py-8 sm:px-6 md:px-10 lg:px-15">
         <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6c3bff]">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#173D35]">
               Shop {STORE_NAME}
             </p>
             <h1 className="mt-2 text-3xl font-bold sm:text-4xl">
@@ -212,19 +212,19 @@ const Products = () => {
                     className="flex animate-pulse flex-col overflow-hidden rounded-2xl border border-[#dde3f0] bg-white"
                   >
                     {/* Product Image Skeleton */}
-                    <div className="h-36 w-full bg-[#E9E5FC] sm:h-48 md:h-56" />
+                    <div className="h-36 w-full bg-[#e8f0ee] sm:h-48 md:h-56" />
 
                     {/* Product Details Skeleton */}
                     <div className="flex flex-1 flex-col gap-3 p-3 sm:p-4">
-                      <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
+                      <div className="h-3 w-1/3 rounded bg-[#e8f0ee]" />
 
-                      <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
+                      <div className="h-4 w-4/5 rounded bg-[#e8f0ee]" />
 
-                      <div className="h-3 w-1/2 rounded bg-[#E9E5FC]" />
+                      <div className="h-3 w-1/2 rounded bg-[#e8f0ee]" />
 
-                      <div className="mt-2 h-5 w-2/5 rounded bg-[#E9E5FC]" />
+                      <div className="mt-2 h-5 w-2/5 rounded bg-[#e8f0ee]" />
 
-                      <div className="mt-1 h-9 w-full rounded-lg bg-[#E9E5FC]" />
+                      <div className="mt-1 h-9 w-full rounded-lg bg-[#e8f0ee]" />
                     </div>
                   </div>
                 ))}

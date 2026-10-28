@@ -68,7 +68,7 @@ const Cart = () => {
 
             <Link
               to="/products"
-              className="mt-6 rounded-xl bg-[#6C3BFF] px-6 py-3 font-[inter] text-sm font-semibold text-white transition duration-150 hover:bg-[#5427d6]"
+              className="mt-6 rounded-xl bg-[#173D35] px-6 py-3 font-[inter] text-sm font-semibold text-white transition duration-150 hover:bg-[#0f2a24]"
             >
               Continue Shopping
             </Link>
@@ -88,7 +88,7 @@ const Cart = () => {
                   return (
                     <div
                       key={item.productId}
-                      className="cart w-full overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white transition duration-150 hover:border-[#b6a5e7]"
+                      className="cart w-full overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white transition duration-150 hover:border-[#D6B56D]"
                     >
                       {/* Vendor Header */}
                       <div className="flex items-center justify-between gap-3 p-5">
@@ -117,7 +117,7 @@ const Cart = () => {
 
                           {/* Product Info */}
                           <div className="min-w-0">
-                            <h1 className="cursor-pointer font-[inter] text-sm font-semibold transition duration-150 hover:text-[#6C3BFF] sm:text-base">
+                            <h1 className="cursor-pointer font-[inter] text-sm font-semibold transition duration-150 hover:text-[#173D35] sm:text-base">
                               {item.name || "Unnamed product"}
                             </h1>
 
@@ -191,7 +191,7 @@ const Cart = () => {
 
             {/* RIGHT - BILL */}
             <div className="cart-right w-full lg:w-[30%]">
-              <div className="cart-bill my-5 overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white p-5 transition duration-150 hover:border-[#b6a5e7]">
+              <div className="cart-bill my-5 overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white p-5 transition duration-150 hover:border-[#D6B56D]">
                 {/* Heading */}
                 <h2 className="font-[inter] text-lg font-bold">
                   Order Summary
@@ -232,7 +232,7 @@ const Cart = () => {
                     Total
                   </span>
 
-                  <span className="font-[inter] text-xl font-bold text-[#6C3BFF]">
+                  <span className="font-[inter] text-xl font-bold text-[#173D35]">
                     ₹{total.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -240,7 +240,7 @@ const Cart = () => {
                 {/* Checkout */}
                 <Link
                   to="/checkout"
-                  className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#6C3BFF] py-3 font-[inter] text-sm font-semibold !text-white transition duration-150 hover:bg-[#5427d6]"
+                  className="mt-5 flex w-full items-center justify-center rounded-xl bg-[#173D35] py-3 font-[inter] text-sm font-semibold !text-white transition duration-150 hover:bg-[#0f2a24]"
                 >
                   Proceed to Checkout
                   <i className="fa-solid fa-arrow-right ml-2"></i>

@@ -58,11 +58,11 @@ function Sidebar({ visible, setVisible }) {
       position="fixed"
       visible={visible}
       onVisibleChange={setVisible}
-      className="vendor-sidebar !bg-[#17112B] !border-r !border-[#2D2545]"
+      className="vendor-sidebar !bg-[#173D35] !border-r !border-[#D6B56D]/30"
     >
       {/* ================= LOGO ================= */}
 
-      <CSidebarBrand className="!bg-[#17112B] !border-b !border-[#2D2545] px-4 py-4">
+      <CSidebarBrand className="!bg-[#173D35] !border-b !border-[#D6B56D]/30 px-4 py-4">
         <img
           src={storeLogo}
           alt={`${STORE_NAME} logo`}
@@ -72,7 +72,7 @@ function Sidebar({ visible, setVisible }) {
 
       {/* ================= SIDEBAR ================= */}
 
-      <CSidebarNav className="!bg-[#17112B] px-3 py-4">
+      <CSidebarNav className="!bg-[#173D35] px-3 py-4">
         {/* ---------- MAIN ---------- */}
 
         <div className="px-3 mb-2">
@@ -85,11 +85,11 @@ function Sidebar({ visible, setVisible }) {
 
         <CNavItem
           href="/dashboard"
-          className="!text-white font-medium text-base rounded-lg hover:!bg-[#241A42] transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
           <CIcon
             icon={cilSpeedometer}
-            customClassName="nav-icon !text-violet-400"
+            customClassName="nav-icon !text-[#D6B56D]"
           />
           Dashboard
         </CNavItem>
@@ -102,32 +102,31 @@ function Sidebar({ visible, setVisible }) {
           </span>
         </div>
 
-        {/* Products */}
-
-        {/* Products */}
-
         <CNavGroup
           className="products-menu"
           toggler={
             <>
-              <CIcon icon={cilBasket} customClassName="nav-icon" />
-              Products
+              <CIcon
+                icon={cilBasket}
+                customClassName="nav-icon !text-[#D6B56D]"
+              />
+              <span className="!text-white !font-medium">Products</span>
             </>
           }
         >
-          <CNavItem
-            href="/products"
-            className="!text-[#6B7280] hover:!text-[#6D28D9]"
-          >
-            All Products
-          </CNavItem>
+        <CNavItem
+          href="/products"
+          className="!text-gray-200 hover:!text-[#D6B56D]"
+        >
+          All Products
+        </CNavItem>
 
-          <CNavItem
-            href="/products/add"
-            className="!text-[#6B7280] hover:!text-[#6D28D9]"
-          >
-            Add Product
-          </CNavItem>
+        <CNavItem
+          href="/products/add"
+          className="!text-gray-200 hover:!text-[#D6B56D]"
+        >
+          Add Product
+        </CNavItem>
         </CNavGroup>
 
         {/* Orders */}
@@ -138,43 +137,43 @@ function Sidebar({ visible, setVisible }) {
             <>
               <CIcon
                 icon={cilCart}
-                customClassName="nav-icon !text-violet-400"
+                customClassName="nav-icon !text-[#D6B56D]"
               />
-              Orders
+              <span className="!text-white !font-medium">Orders</span>
             </>
           }
         >
           <CNavItem
             href="/orders"
-            className="!text-slate-400 hover:!text-white"
+            className="!text-gray-200 hover:!text-[#D6B56D]"
           >
             All Orders
           </CNavItem>
 
           <CNavItem
             href="/orders/processing"
-            className="!text-slate-400 hover:!text-white"
+            className="!text-gray-200 hover:!text-[#D6B56D]"
           >
             Processing
           </CNavItem>
 
           <CNavItem
             href="/orders/shipped"
-            className="!text-slate-400 hover:!text-white"
+            className="!text-gray-200 hover:!text-[#D6B56D]"
           >
             Shipped
           </CNavItem>
 
           <CNavItem
             href="/orders/delivered"
-            className="!text-slate-400 hover:!text-white"
+            className="!text-gray-200 hover:!text-[#D6B56D]"
           >
             Delivered
           </CNavItem>
 
           <CNavItem
             href="/orders/cancelled"
-            className="!text-slate-400 hover:!text-white"
+            className="!text-gray-200 hover:!text-[#D6B56D]"
           >
             Cancelled
           </CNavItem>
@@ -184,24 +183,24 @@ function Sidebar({ visible, setVisible }) {
 
         <CNavItem
           href="/customers"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
-          <CIcon icon={cilPeople} customClassName="nav-icon !text-violet-400" />
-          Customers
+          <CIcon icon={cilPeople} customClassName="nav-icon !text-[#D6B56D]" />
+          <span className="!text-white group-hover:!text-[#D6B56D]">Customers</span>
         </CNavItem>
         <CNavItem
           href="/banner"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
-          <CIcon icon={cilPeople} customClassName="nav-icon !text-violet-400" />
-          banner
+          <CIcon icon={cilBell} customClassName="nav-icon !text-[#D6B56D]" />
+          <span className="!text-white group-hover:!text-[#D6B56D]">Banner</span>
         </CNavItem>
         <CNavItem
           href="/brandAndCategory"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
-          <CIcon icon={cilTags} customClassName="nav-icon !text-violet-400" />
-          Brand & Category
+          <CIcon icon={cilTags} customClassName="nav-icon !text-[#D6B56D]" />
+          <span className="!text-white group-hover:!text-[#D6B56D]">Brand & Category</span>
         </CNavItem>
 
         {/* ---------- FINANCE ---------- */}
@@ -216,9 +215,9 @@ function Sidebar({ visible, setVisible }) {
 
         <CNavItem
           href="/transactions"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
-          <CIcon icon={cilMoney} customClassName="nav-icon !text-violet-400" />
+          <CIcon icon={cilMoney} customClassName="nav-icon !text-[#D6B56D]" />
           Transactions
         </CNavItem>
 
@@ -238,9 +237,9 @@ function Sidebar({ visible, setVisible }) {
 
         <CNavItem
           href="/profile"
-          className="!text-slate-300 font-medium text-base rounded-lg hover:!bg-[#241A42] hover:!text-white transition duration-200 mb-1"
+          className="!text-white font-medium text-base rounded-lg hover:!bg-[#D6B56D]/20 hover:!text-[#D6B56D] transition duration-200 mb-1"
         >
-          <CIcon icon={cilUser} customClassName="nav-icon !text-violet-400" />
+          <CIcon icon={cilUser} customClassName="nav-icon !text-[#D6B56D]" />
           Profile
         </CNavItem>
 

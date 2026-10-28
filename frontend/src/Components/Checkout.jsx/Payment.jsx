@@ -171,7 +171,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
       },
 
       theme: {
-        color: "#5f63b8",
+        color: "#173D35",
       },
     };
 
@@ -230,7 +230,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
             <div className="status hidden sm:flex my-6 w-full items-center justify-between gap-1 overflow-hidden sm:my-10 sm:gap-2">
               {/* Address */}
               <div className="address flex gap-3 items-center">
-                <div className="bg-[#6C3BFF] px-3 py-2 rounded-[50%] border-2 font-[inter] text-[#FFFFFF] font-bold text-xs border-[#6C3BFF]">
+                <div className="bg-[#173D35] px-3 py-2 rounded-[50%] border-2 font-[inter] text-[#FFFFFF] font-bold text-xs border-[#173D35]">
                   <i className="fa-solid fa-check"></i>
                 </div>
                 <div>
@@ -245,7 +245,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
 
               {/* Payment */}
               <div className="Delivery flex gap-3 items-center">
-                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] border-2 font-[inter] font-bold text-xs text-[#6C3BFF] border-[#6C3BFF]">
+                <div className="bg-[#e8f0ee] px-3 py-2 rounded-[50%] border-2 font-[inter] font-bold text-xs text-[#173D35] border-[#173D35]">
                   2
                 </div>
                 <div>
@@ -260,7 +260,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
 
               {/* Confirmation */}
               <div className="Delivery flex gap-3 items-center">
-                <div className="bg-[#E9E5FC] px-3 py-2 rounded-[50%] font-[inter] font-bold text-xs text-[#6B7280]">
+                <div className="bg-[#e8f0ee] px-3 py-2 rounded-[50%] font-[inter] font-bold text-xs text-[#6B7280]">
                   3
                 </div>
                 <div>
@@ -310,7 +310,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
                     <button
                       type="button"
                       onClick={() => setStep(1)}
-                      className="shrink-0 text-sm font-bold text-[#6C3BFF] hover:text-[#421db3]"
+                      className="shrink-0 text-sm font-bold text-[#173D35] hover:text-[#0f2a24]"
                     >
                       Change
                     </button>
@@ -340,7 +340,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
                                   checked={String(selectedCouriers[String(vendorQuote.vendorId)] || "") === String(courier.courierCompanyId)}
                                   onChange={() => selectCourier(vendorQuote, courier)}
                                   disabled={isBusy || paymentVerified}
-                                  className="mt-1 accent-[#6C3BFF]"
+                                  className="mt-1 accent-[#173D35]"
                                 />
                                 <span className="min-w-0">
                                 <p className="font-semibold text-[#111827]">
@@ -379,7 +379,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
                         ? "border-green-200 bg-green-50 text-green-800"
                         : paymentState === "processing" ||
                             paymentState === "initiating"
-                          ? "border-[#d9ceff] bg-[#F7F5FF] text-[#4b2aa8]"
+                          ? "border-[#e8f0ee] bg-[#e8f0ee] text-[#173D35]"
                           : "border-amber-200 bg-amber-50 text-amber-900"
                     }`}
                   >
@@ -416,7 +416,7 @@ const Payment = ({ setStep, orderData, onPlaceOrder, onPreparePayment, onCourier
                     type="button"
                     onClick={handlePayNow}
                     disabled={!canPay || isBusy}
-                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#6C3BFF] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#5a2ee0] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-48"
+                    className="flex min-h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#173D35] px-5 py-3 text-center text-sm font-bold text-white transition duration-300 hover:bg-[#173D35] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:min-w-48"
                   >
                     {isBusy ? (
                       <>

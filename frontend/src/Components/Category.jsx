@@ -9,40 +9,40 @@ const Category = () => {
 
           <Link
             to="/products?category=electronics"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-regular fa-camera text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-regular fa-camera text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 font-[inter] text-sm font-bold">Electronics</p>
           </Link>
 
           <Link
             to="/products?category=fashion"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-shirt text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-solid fa-shirt text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 font-[inter] text-sm font-bold">Fashion</p>
           </Link>
 
           <Link
             to="/products?category=shoes"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-shoe-prints text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-solid fa-shoe-prints text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 font-[inter] text-sm font-bold">Shoes</p>
           </Link>
 
           <Link
             to="/products?category=home-living"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-house text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-solid fa-house text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 text-center font-[inter] text-sm font-bold">Home & Living</p>
           </Link>
@@ -51,20 +51,20 @@ const Category = () => {
 
           <Link
             to="/products?category=sports"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-dumbbell text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-solid fa-dumbbell text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 font-[inter] text-sm font-bold">Sports</p>
           </Link>
 
           <Link
             to="/products?category=accessories"
-            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#6C3BFF] hover:bg-[#EFEEFC] transition-colors duration-200"
+            className="ctgry-1 group flex w-full flex-col items-center justify-center rounded-3xl border border-[#afb3c2] bg-[#FFFFFF] px-4 py-4 hover:border-[#173D35] hover:bg-[#e8f0ee] transition-colors duration-200"
           >
-            <div className="rounded-2xl bg-[#EFEEFC] p-3 transition-colors duration-100 group-hover:bg-[#6C3BFF]">
-              <i className="fa-solid fa-ring text-xl font-extralight text-[#6C3BFF] transition-colors duration-100 group-hover:text-white"></i>
+            <div className="rounded-2xl bg-[#e8f0ee] p-3 transition-colors duration-100 group-hover:bg-[#173D35]">
+              <i className="fa-solid fa-ring text-xl font-extralight text-[#173D35] transition-colors duration-100 group-hover:text-white"></i>
             </div>
             <p className="mt-2 font-[inter] text-sm font-bold">Accessories</p>
           </Link>

@@ -43,17 +43,17 @@ export default Loader;
 //         Array.from({ length: 4 }).map((_, index) => (
 //           <div
 //             key={index}
-//             className="flex h-64 w-full animate-pulse flex-col gap-4 rounded-xl bg-[#F7F5FF] p-4"
+//             className="flex h-64 w-full animate-pulse flex-col gap-4 rounded-xl bg-[#e8f0ee] p-4"
 //           >
 //             {/* Image */}
-//             <div className="h-32 w-full rounded-md bg-[#E9E3FF]" />
+//             <div className="h-32 w-full rounded-md bg-[#e8f0ee]" />
 
 //             {/* Content */}
 //             <div className="flex flex-col gap-2">
-//               <div className="h-4 w-full rounded-md bg-[#DDD4FF]" />
-//               <div className="h-4 w-4/5 rounded-md bg-[#E9E3FF]" />
-//               <div className="h-4 w-full rounded-md bg-[#DDD4FF]" />
-//               <div className="h-4 w-2/4 rounded-md bg-[#E9E3FF]" />
+//               <div className="h-4 w-full rounded-md bg-[#e8f0ee]" />
+//               <div className="h-4 w-4/5 rounded-md bg-[#e8f0ee]" />
+//               <div className="h-4 w-full rounded-md bg-[#e8f0ee]" />
+//               <div className="h-4 w-2/4 rounded-md bg-[#e8f0ee]" />
 //             </div>
 //           </div>
 //         ))

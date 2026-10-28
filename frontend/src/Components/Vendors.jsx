@@ -23,7 +23,7 @@ const Vendors = () => {
           <div className="shrink-0">
             <Link
               to="/"
-              className="font-[inter] text-xs font-semibold text-[#6C3BFF] transition duration-150 hover:text-[#421db3] sm:text-sm"
+              className="font-[inter] text-xs font-semibold text-[#173D35] transition duration-150 hover:text-[#0f2a24] sm:text-sm"
             >
               Explore All Vendors&nbsp;
               <i className="fa-solid fa-arrow-right"></i>
@@ -37,13 +37,13 @@ const Vendors = () => {
           {vendors.map((vendor) => (
             <div
               key={vendor}
-              className="product-card w-full rounded-2xl border border-[#dde3f0] bg-white px-3 transition duration-150 hover:border-[#b6a5e7]"
+              className="product-card w-full rounded-2xl border border-[#dde3f0] bg-white px-3 transition duration-150 hover:border-[#D6B56D]"
             >
               {/* Vendor Header */}
               <div className="my-5 flex w-full items-center justify-start gap-3">
                 
-                <div className="logo shrink-0 rounded-3xl bg-[#F0EBFF] px-3 py-2">
-                  <p className="font-[inter] text-lg font-bold text-[#6C3BFF]">
+                <div className="logo shrink-0 rounded-3xl bg-[#e8f0ee] px-3 py-2">
+                  <p className="font-[inter] text-lg font-bold text-[#173D35]">
                     K
                   </p>
                 </div>

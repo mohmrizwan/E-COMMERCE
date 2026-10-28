@@ -8,7 +8,7 @@ import axios from "axios";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import { API_ORIGIN } from "../utils/productsApi";
-
+import { AuthShell } from "./AuthShell.jsx";
 
 const CreateAccount = () => {
   const storefront = useStorefront();
@@ -33,11 +33,7 @@ const CreateAccount = () => {
     setIsLoading(true);
 
     try {
-
-      const response = await axios.post(
-        `${API_ORIGIN}/user/create`,
-        data
-      );
+      const response = await axios.post(`${API_ORIGIN}/user/create`, data);
 
       setMessage(response.data.message);
       setErrorMessage("");
@@ -51,10 +47,7 @@ const CreateAccount = () => {
         });
       }, 1500);
     } catch (error) {
-
-      setErrorMessage(
-        error.response?.data?.message || "Something went wrong"
-      );
+      setErrorMessage(error.response?.data?.message || "Something went wrong");
 
       setMessage("");
     } finally {
@@ -63,7 +56,7 @@ const CreateAccount = () => {
   };
 
   return (
-    <>
+    <AuthShell>
       <div className="auth-heading">
         <p className="auth-eyebrow">JOIN THE STORE</p>
 
@@ -235,8 +228,7 @@ const CreateAccount = () => {
           autoComplete="new-password"
           {...register("confirmPassword", {
             required: "Confirm your password",
-            validate: (value) =>
-              value === password || "Passwords do not match",
+            validate: (value) => value === password || "Passwords do not match",
           })}
         />
 
@@ -256,8 +248,7 @@ const CreateAccount = () => {
           />
 
           <span>
-            I agree to the{" "}
-            <Link to="/term&condition">Terms & Conditions</Link>{" "}
+            I agree to the <Link to="/term&condition">Terms & Conditions</Link>{" "}
             and <Link to="/term&condition">Privacy Policy</Link>
           </span>
         </label>
@@ -281,7 +272,7 @@ const CreateAccount = () => {
       <p className="auth-switch">
         Already have an account? <Link to="/login">Login</Link>
       </p>
-    </>
+    </AuthShell>
   );
 };
 

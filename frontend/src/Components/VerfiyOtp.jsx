@@ -195,7 +195,7 @@ const VerifyOtp = () => {
         <p>
           We’ve sent a 6-digit verification code to
           <br />
-          <strong className="text-[#6C3BFF] font-[inter]">
+          <strong className="text-[#173D35] font-[inter]">
             {email || "your email address"}
           </strong>
         </p>
@@ -236,9 +236,9 @@ const VerifyOtp = () => {
                 outline-none
                 transition
                 duration-200
-                focus:border-[#6C3BFF]
+                focus:border-[#173D35]
                 focus:ring-2
-                focus:ring-[#6C3BFF]/20
+                focus:ring-[#173D35]/20
                 bg-white
               "
               autoFocus={index === 0}
@@ -257,7 +257,7 @@ const VerifyOtp = () => {
           {timeLeft > 0 ? (
             <p className="text-sm text-gray-500 font-[inter]">
               Code expires in{" "}
-              <span className="font-bold text-[#6C3BFF]">
+              <span className="font-bold text-[#173D35]">
                 00:{String(timeLeft).padStart(2, "0")}
               </span>
             </p>
@@ -305,7 +305,7 @@ const VerifyOtp = () => {
               ${
                 timeLeft > 0
                   ? "text-gray-400 cursor-not-allowed"
-                  : "text-[#6C3BFF] hover:text-[#8c6cec]"
+                  : "text-[#173D35] hover:text-[#D6B56D]"
               }
             `}
           >
@@ -329,7 +329,7 @@ const VerifyOtp = () => {
             font-bold
             font-[inter]
             text-gray-500
-            hover:text-[#6C3BFF]
+            hover:text-[#173D35]
             transition
             duration-200
           "

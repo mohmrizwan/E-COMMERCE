@@ -77,13 +77,13 @@ const FavoriteCard = () => {
                   aria-hidden="true"
                   className="flex animate-pulse flex-col overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white"
                 >
-                  <div className="h-56 w-full bg-[#E9E5FC] sm:h-64" />
+                  <div className="h-56 w-full bg-[#e8f0ee] sm:h-64" />
                   <div className="flex flex-1 flex-col gap-3 p-4">
-                    <div className="h-3 w-1/3 rounded bg-[#E9E5FC]" />
-                    <div className="h-4 w-4/5 rounded bg-[#E9E5FC]" />
-                    <div className="h-3 w-1/2 rounded bg-[#E9E5FC]" />
-                    <div className="mt-2 h-5 w-2/5 rounded bg-[#E9E5FC]" />
-                    <div className="mt-1 h-9 w-full rounded-lg bg-[#E9E5FC]" />
+                    <div className="h-3 w-1/3 rounded bg-[#e8f0ee]" />
+                    <div className="h-4 w-4/5 rounded bg-[#e8f0ee]" />
+                    <div className="h-3 w-1/2 rounded bg-[#e8f0ee]" />
+                    <div className="mt-2 h-5 w-2/5 rounded bg-[#e8f0ee]" />
+                    <div className="mt-1 h-9 w-full rounded-lg bg-[#e8f0ee]" />
                   </div>
                 </div>
               ))}

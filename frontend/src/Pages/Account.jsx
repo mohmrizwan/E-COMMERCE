@@ -8,7 +8,6 @@ import Dotter from "../Components/Dotter";
 import { API_ORIGIN } from "../utils/productsApi";
 import { STORE_NAME } from "../config/brand.js";
 
-
 // simple function to get auth header, using token from localStorage
 const getAuthConfig = () => {
   return {
@@ -44,7 +43,7 @@ const orderDefaults = [];
 
 const statusStyles = {
   Pending: "bg-slate-50 text-slate-700 ring-slate-200",
-  Confirmed: "bg-indigo-50 text-indigo-700 ring-indigo-100",
+  Confirmed: "bg-[#e8f0ee] text-[#173D35] ring-[#e8f0ee]",
   Delivered: "bg-emerald-50 text-emerald-700 ring-emerald-100",
   Processing: "bg-amber-50 text-amber-700 ring-amber-100",
   Shipped: "bg-sky-50 text-sky-700 ring-sky-100",
@@ -52,7 +51,7 @@ const statusStyles = {
 };
 
 const inputClass =
-  "mt-2 w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-[#6C3BFF] focus:ring-4 focus:ring-[#eeeaff]";
+  "mt-2 w-full rounded-lg border border-slate-200 px-3.5 py-3 text-sm outline-none focus:border-[#173D35] focus:ring-4 focus:ring-[#eeeaff]";
 
 const money = (value) => {
   if (!value) return "Rs. 0";
@@ -62,7 +61,7 @@ const money = (value) => {
 function PageIntro({ eyebrow, title, children }) {
   return (
     <div className="mb-6">
-      <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#6C3BFF]">
+      <p className="mb-1 text-xs font-bold uppercase tracking-[0.16em] text-[#173D35]">
         {eyebrow}
       </p>
       <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
@@ -105,10 +104,16 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
     <>
       <PageIntro
         eyebrow="My account"
-        title={`Welcome back, ${profile.name || "User"}`}
+        title={
+          <>
+            Welcome back,{" "}
+            <span className="text-[#D6B56D]">{profile.name || "User"}</span>
+          </>
+        }
       >
         Manage your profile and delivery details.
       </PageIntro>
+
       <section className="rounded-xl border border-slate-200 bg-white p-5 shadow-[0_10px_30px_rgba(26,37,63,0.04)] sm:p-7">
         <div className="flex items-center justify-between gap-4 border-b border-slate-100 pb-4">
           <div>
@@ -120,7 +125,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
           {!editing && (
             <button
               onClick={onEdit}
-              className="text-sm font-bold text-[#6C3BFF]"
+              className="text-sm font-bold text-[#173D35]"
             >
               Edit Details
             </button>
@@ -160,7 +165,7 @@ function ProfilePage({ profile, editing, onEdit, onSave, onCancel, isSaving }) {
               <button
                 type="submit"
                 disabled={isSaving}
-                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
+                className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#173D35] px-4 text-sm font-bold text-white"
               >
                 {isSaving ? (
                   <>
@@ -235,7 +240,7 @@ function AddressForm({ address, profile, onSave, onCancel, isSaving }) {
         event.preventDefault();
         onSave(form);
       }}
-      className="mb-5 rounded-xl border border-[#d9ceff] bg-[#faf9ff] p-5 sm:p-7"
+      className="mb-5 rounded-xl border border-[#e8f0ee] bg-[#e8f0ee] p-5 sm:p-7"
     >
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -292,7 +297,7 @@ function AddressForm({ address, profile, onSave, onCancel, isSaving }) {
         <button
           type="submit"
           disabled={isSaving}
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
+          className="inline-flex min-h-10 items-center gap-2 rounded-lg bg-[#173D35] px-4 text-sm font-bold text-white"
         >
           {isSaving ? (
             <>
@@ -338,7 +343,7 @@ function AddressesPage({
         </PageIntro>
         <button
           onClick={onAdd}
-          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#6C3BFF] px-4 text-sm font-bold text-white"
+          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#173D35] px-4 text-sm font-bold text-white"
         >
           <i className="fa-solid fa-plus" /> Add Address
         </button>
@@ -361,7 +366,7 @@ function AddressesPage({
           >
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2">
-                <span className="rounded-md bg-[#f1edff] px-2.5 py-1 text-xs font-bold text-[#6C3BFF]">
+                <span className="rounded-md bg-[#e8f0ee] px-2.5 py-1 text-xs font-bold text-[#173D35]">
                   {address.type}
                 </span>
                 {address.default && (
@@ -377,7 +382,7 @@ function AddressesPage({
                 className="inline-flex h-8 w-8 items-center justify-center text-slate-400"
               >
                 {deletingAddressId === address._id ? (
-                  <Dotter dotClassName="size-1.5 bg-[#6C3BFF]" />
+                  <Dotter dotClassName="size-1.5 bg-[#173D35]" />
                 ) : (
                   <i className="fa-regular fa-trash-can" />
                 )}
@@ -392,7 +397,7 @@ function AddressesPage({
             </address>
             <button
               onClick={() => onEdit(address)}
-              className="mt-5 text-sm font-bold text-[#6C3BFF]"
+              className="mt-5 text-sm font-bold text-[#173D35]"
             >
               <i className="fa-regular fa-pen-to-square mr-2" />
               Edit Address
@@ -413,7 +418,7 @@ function OrderTracking({ order, tracking, isLoading, onClose }) {
   const steps = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered"];
   const currentStep = steps.indexOf(order.status);
   return (
-    <div className="mt-5 rounded-xl border border-[#d9ceff] bg-[#faf9ff] p-4 text-sm text-slate-600">
+    <div className="mt-5 rounded-xl border border-[#e8f0ee] bg-[#e8f0ee] p-4 text-sm text-slate-600">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="font-bold text-slate-800">{order.id} order update</p>
@@ -432,7 +437,7 @@ function OrderTracking({ order, tracking, isLoading, onClose }) {
                   className="flex items-center gap-2 text-xs font-semibold sm:block"
                 >
                   <span
-                    className={`grid h-7 w-7 place-items-center rounded-full ${complete ? "bg-[#6C3BFF] text-white" : "bg-slate-100 text-slate-400"}`}
+                    className={`grid h-7 w-7 place-items-center rounded-full ${complete ? "bg-[#173D35] text-white" : "bg-slate-100 text-slate-400"}`}
                   >
                     {complete ? <i className="fa-solid fa-check" /> : index + 1}
                   </span>{" "}
@@ -442,23 +447,42 @@ function OrderTracking({ order, tracking, isLoading, onClose }) {
             })}
           </div>
           {isLoading && (
-            <p className="mt-4 text-xs text-slate-500">Loading live tracking...</p>
+            <p className="mt-4 text-xs text-slate-500">
+              Loading live tracking...
+            </p>
           )}
           {tracking && (
             <div className="mt-4 border-t border-slate-200 pt-4">
               <div className="grid gap-2 sm:grid-cols-2">
-                <p>Status: <strong>{tracking.currentStatus || order.status}</strong></p>
-                <p>Courier: <strong>{tracking.courierName || "Not assigned"}</strong></p>
-                <p>AWB: <strong>{tracking.awbCode || "Not assigned"}</strong></p>
+                <p>
+                  Status:{" "}
+                  <strong>{tracking.currentStatus || order.status}</strong>
+                </p>
+                <p>
+                  Courier:{" "}
+                  <strong>{tracking.courierName || "Not assigned"}</strong>
+                </p>
+                <p>
+                  AWB: <strong>{tracking.awbCode || "Not assigned"}</strong>
+                </p>
                 {tracking.estimatedDelivery && (
-                  <p>Estimated delivery: <strong>{tracking.estimatedDelivery}</strong></p>
+                  <p>
+                    Estimated delivery:{" "}
+                    <strong>{tracking.estimatedDelivery}</strong>
+                  </p>
                 )}
               </div>
               {tracking.history?.length > 0 && (
                 <ul className="mt-3 space-y-2">
                   {tracking.history.map((event, index) => (
-                    <li key={`${event.date || event.activity || "event"}-${index}`}>
-                      {[event.activity || event.status, event.location, event.date]
+                    <li
+                      key={`${event.date || event.activity || "event"}-${index}`}
+                    >
+                      {[
+                        event.activity || event.status,
+                        event.location,
+                        event.date,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </li>
@@ -480,7 +504,14 @@ function OrderTracking({ order, tracking, isLoading, onClose }) {
   );
 }
 
-function OrdersPage({ orders, selectedOrder, tracking, isTracking, onTrack, onClose }) {
+function OrdersPage({
+  orders,
+  selectedOrder,
+  tracking,
+  isTracking,
+  onTrack,
+  onClose,
+}) {
   return (
     <>
       <PageIntro eyebrow="Purchase history" title="My Orders">
@@ -576,7 +607,7 @@ function Sidebar({ activePage, profile, onChange }) {
             <button
               key={item.id}
               onClick={() => onChange(item.id)}
-              className={`flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold ${activePage === item.id ? "bg-[#6C3BFF] text-white" : "text-slate-600 hover:bg-[#f4f1ff] hover:text-[#6C3BFF]"}`}
+              className={`flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold ${activePage === item.id ? "bg-[#173D35] text-white" : "text-slate-600 hover:bg-[#e8f0ee] hover:text-[#173D35]"}`}
             >
               <i className={`${item.icon} w-4 text-center`} />
               {item.label}
@@ -752,7 +783,10 @@ function Account() {
   const deleteAddress = async (id) => {
     setLoadingAction(`delete-address-${id}`);
     try {
-      await axios.delete(`${API_ORIGIN}/profile/address/${id}`, getAuthConfig());
+      await axios.delete(
+        `${API_ORIGIN}/profile/address/${id}`,
+        getAuthConfig(),
+      );
       setAddresses(addresses.filter((item) => item._id !== id));
       showNotice("Address removed");
     } catch (error) {
@@ -852,7 +886,7 @@ function Account() {
       <main className="min-h-[70vh] bg-[#f7f8fc] py-7 font-[inter] sm:py-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-5 flex items-center gap-2 text-xs text-slate-500">
-            <Link to="/" className="hover:text-[#6C3BFF]">
+            <Link to="/" className="hover:text-[#173D35]">
               Home
             </Link>
             <i className="fa-solid fa-chevron-right text-[9px] text-slate-300" />

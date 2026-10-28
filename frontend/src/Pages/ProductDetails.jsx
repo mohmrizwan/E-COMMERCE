@@ -40,7 +40,7 @@ export default function ProductDetails() {
         <Header />
         <main className="mx-auto max-w-6xl px-5 py-16">
           <p className="text-red-600">{error || "Product not found."}</p>
-          <Link to="/products" className="mt-4 inline-block font-semibold text-violet-700">Browse products</Link>
+          <Link to="/products" className="mt-4 inline-block font-semibold text-[#173D35]">Browse products</Link>
         </main>
         <Footer />
       </>
@@ -56,9 +56,9 @@ export default function ProductDetails() {
       <Header />
       <main className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <nav className="mb-6 text-sm text-slate-500">
-          <Link to="/" className="hover:text-violet-700">Home</Link>
+          <Link to="/" className="hover:text-[#173D35]">Home</Link>
           <span className="mx-2">/</span>
-          <Link to="/products" className="hover:text-violet-700">Products</Link>
+          <Link to="/products" className="hover:text-[#173D35]">Products</Link>
           <span className="mx-2">/</span>
           <span className="text-slate-800">{product.name}</span>
         </nav>
@@ -69,7 +69,7 @@ export default function ProductDetails() {
             {images.length > 1 && (
               <div className="grid grid-cols-4 gap-2 border-t border-slate-200 p-3 sm:grid-cols-5">
                 {images.map((image, index) => (
-                  <button key={index} type="button" onClick={() => setSelectedImage(image)} className={`overflow-hidden rounded-xl border-2 ${selectedImage === image ? "border-violet-700" : "border-slate-200"}`}>
+                  <button key={index} type="button" onClick={() => setSelectedImage(image)} className={`overflow-hidden rounded-xl border-2 ${selectedImage === image ? "border-[#173D35]" : "border-slate-200"}`}>
                     <img src={image} alt={`${product.name} ${index + 1}`} className="h-20 w-full object-contain" />
                   </button>
                 ))}
@@ -79,7 +79,7 @@ export default function ProductDetails() {
 
           <div className="flex flex-col justify-center">
             <div className="flex flex-wrap gap-2">
-              {product.brand && <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">{product.brand}</span>}
+              {product.brand && <span className="rounded-full bg-[#e8f0ee] px-3 py-1 text-xs font-semibold text-[#173D35]">{product.brand}</span>}
               {product.category && <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-700">{product.category}</span>}
               {product.status && <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">{product.status}</span>}
             </div>
@@ -107,13 +107,13 @@ export default function ProductDetails() {
                 type="button"
                 onClick={() => addToCart({ ...product, quantity })}
                 disabled={!product.inStock}
-                className="rounded-xl bg-violet-700 px-6 py-3 font-semibold text-white transition hover:bg-violet-800 disabled:cursor-not-allowed disabled:bg-gray-400"
+                className="rounded-xl bg-[#173D35] px-6 py-3 font-semibold text-white transition hover:bg-[#0f2a24] disabled:cursor-not-allowed disabled:bg-gray-400"
               >
                 Add to cart
               </button>
             </div>
 
-            <Link to="/products" className="mt-8 inline-flex items-center gap-2 font-semibold text-violet-700 hover:underline">
+            <Link to="/products" className="mt-8 inline-flex items-center gap-2 font-semibold text-[#173D35] hover:underline">
               <i className="fa-solid fa-arrow-left" />
               Browse more products
             </Link>

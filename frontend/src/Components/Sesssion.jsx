@@ -8,8 +8,8 @@
 //         <div className="cards flex flex-col gap-5 md:flex-row md:justify-between">
 
 //           {/* Electronics Card */}
-//           <div className="electronics w-full rounded-2xl bg-[#6C3BFF] p-6 sm:p-7 md:w-[48%]">
-//             <p className="font-[inter] text-sm font-semibold text-[#D5C8FF]">
+//           <div className="electronics w-full rounded-2xl bg-[#173D35] p-6 sm:p-7 md:w-[48%]">
+//             <p className="font-[inter] text-sm font-semibold text-[#e8f0ee]">
 //               New Sessions
 //             </p>
 
@@ -17,7 +17,7 @@
 //               Tech that keeps up with you
 //             </h2>
 
-//             <p className="w-full font-[inter] text-sm font-semibold leading-6 text-[#D5C8FF] sm:w-[85%] md:w-[75%]">
+//             <p className="w-full font-[inter] text-sm font-semibold leading-6 text-[#e8f0ee] sm:w-[85%] md:w-[75%]">
 //               Audio, wearables and cameras from top-rated vendors — now with
 //               extended warranty.
 //             </p>
@@ -25,7 +25,7 @@
 //             <div className="mt-5">
 //               <Link
 //                 to="/products?category=electronics"
-//                 className="inline-flex items-center rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-[#6C3BFF] transition-all duration-300 hover:translate-x-1 sm:px-6"
+//                 className="inline-flex items-center rounded-3xl bg-white px-5 py-3 text-sm font-semibold text-[#173D35] transition-all duration-300 hover:translate-x-1 sm:px-6"
 //               >
 //                 Shop Electronics
 //                 <i className="fa-solid fa-arrow-right ml-3"></i>
@@ -35,7 +35,7 @@
 
 //           {/* Home Card */}
 //           <div className="electronics w-full rounded-2xl bg-[#00B8A9] p-6 sm:p-7 md:w-[48%]">
-//             <p className="font-[inter] text-sm font-semibold text-[#D5C8FF]">
+//             <p className="font-[inter] text-sm font-semibold text-[#e8f0ee]">
 //               Refresh your space
 //             </p>
 
@@ -43,7 +43,7 @@
 //               Home essentials, beautifully made
 //             </h2>
 
-//             <p className="w-full font-[inter] text-sm font-semibold leading-6 text-[#D5C8FF] sm:w-[85%] md:w-[75%]">
+//             <p className="w-full font-[inter] text-sm font-semibold leading-6 text-[#e8f0ee] sm:w-[85%] md:w-[75%]">
 //               Lighting, decor and everyday goods from independent makers
 //               you'll love.
 //             </p>

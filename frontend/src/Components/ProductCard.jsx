@@ -8,13 +8,13 @@ const ProductCard = ({ product, onRemoveFavorite }) => {
   const discount = Number(product.discount) || 0;
 
   return (
-    <article className="group relative overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white transition duration-150 hover:-translate-y-1 hover:border-[#b6a5e7] hover:shadow-lg hover:shadow-[#6c3bff]/10">
+    <article className="group relative overflow-hidden rounded-[20px] border border-[#dde3f0] bg-white transition duration-150 hover:-translate-y-1 hover:border-[#D6B56D] hover:shadow-lg hover:shadow-[#173D35]/10">
       <Link to={`/product/${product._id || product.id}`} className="block">
         <div className="relative overflow-hidden bg-[#f5f5f5]">
           <img src={product.image} alt={product.name} className="h-56 w-full object-contain transition duration-500 group-hover:scale-105 sm:h-64" />
           <div className="absolute left-3 top-3 flex flex-col gap-2">
-          <span className="w-fit rounded-full bg-[#6c3bff] px-3 py-1 text-[11px] font-semibold text-white">{product.status}</span>
-          {discount > 0 && <span className="w-fit rounded-full bg-[#ffb020] px-3 py-1 text-[11px] font-semibold text-black">{discount}% OFF</span>}
+           <span className="w-fit rounded-full bg-[#173D35] px-3 py-1 text-[11px] font-semibold !text-white">{product.status}</span>
+           {discount > 0 && <span className="w-fit rounded-full bg-[#D6B56D] px-3 py-1 text-[11px] font-semibold !text-[#173D35]">{discount}% OFF</span>}
           </div>
           <FavoriteButton
             product={product}
@@ -25,7 +25,7 @@ const ProductCard = ({ product, onRemoveFavorite }) => {
       </Link>
       <div className="p-4">
         <p className="text-xs text-[#6b7280]">{product.store || "Store"}</p>
-        <Link to={`/product/${product._id || product.id}`} className="mt-1 block min-h-10 text-sm font-bold leading-5 transition hover:text-[#6c3bff]">{product.name}</Link>
+        <Link to={`/product/${product._id || product.id}`} className="mt-1 block min-h-10 text-sm font-bold leading-5 transition hover:text-[#173D35]">{product.name}</Link>
         <div className="mt-2 text-xs text-[#6b7280]">
           No reviews yet
         </div>
@@ -36,7 +36,7 @@ const ProductCard = ({ product, onRemoveFavorite }) => {
             onClick={() => addToCart(product)}
             disabled={!product.inStock}
             aria-label={`Add ${product.name} to cart`}
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#6c3bff] text-white transition hover:bg-[#5427d6] disabled:cursor-not-allowed disabled:bg-gray-400"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#173D35] text-white transition hover:bg-[#0f2a24] disabled:cursor-not-allowed disabled:bg-gray-400"
           >
             <i className="fa-solid fa-bag-shopping text-sm" />
           </button>

@@ -1,4 +1,4 @@
-const Dotter = ({ className = "", dotClassName = "bg-indigo-600" }) => {
+const Dotter = ({ className = "", dotClassName = "bg-[#173D35]" }) => {
   return (
     <span
       className={`inline-flex items-center gap-1.5 ${className}`}

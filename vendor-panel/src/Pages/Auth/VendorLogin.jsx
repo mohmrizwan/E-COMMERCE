@@ -40,6 +40,14 @@ const VendorLogin = () => {
       setErrorMessage("");
 
       localStorage.setItem("vendorToken", response.data.token);
+      localStorage.setItem(
+        "vendorData",
+        JSON.stringify({
+          id: response.data.vendorFind?.id || response.data.vendorId,
+          name: response.data.vendorFind?.name || response.data.vendorFind?.businessName || values.email,
+          email: response.data.vendorFind?.email || values.email,
+        }),
+      );
       // Wait for Snackbar to show, then go to OTP page
       setTimeout(() => {
         navigate("/dashboard", {

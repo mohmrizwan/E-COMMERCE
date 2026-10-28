@@ -93,7 +93,7 @@ const TermsAndConditions = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-[Inter]">
       <header className="border-b border-gray-200 bg-white p-6 text-center shadow-sm">
-        <h1 className="text-2xl font-bold text-[#6C3BFF] md:text-3xl">Terms & Conditions</h1>
+        <h1 className="text-2xl font-bold text-[#173D35] md:text-3xl">Terms & Conditions</h1>
         <p className="mt-2 text-gray-600">Terms for shopping with {storeName}.</p>
         <p className="mt-1 text-sm text-gray-500">Last updated: {lastUpdated}</p>
       </header>
@@ -104,7 +104,7 @@ const TermsAndConditions = () => {
             <button
               type="button"
               onClick={() => setMobileMenuOpen((open) => !open)}
-              className="w-full rounded-md border bg-white px-4 py-2 font-medium text-[#6C3BFF] shadow-sm"
+              className="w-full rounded-md border bg-white px-4 py-2 font-medium text-[#173D35] shadow-sm"
             >
               {mobileMenuOpen ? "Close Menu" : "Table of Contents"}
             </button>
@@ -112,7 +112,7 @@ const TermsAndConditions = () => {
               <ul className="mt-2 rounded-md border bg-white shadow-md">
                 {sections.map(({ title }) => (
                   <li key={title}>
-                    <button type="button" onClick={() => handleScroll(title)} className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${activeSection === title ? "font-semibold text-[#6C3BFF]" : ""}`}>
+                    <button type="button" onClick={() => handleScroll(title)} className={`w-full px-4 py-2 text-left hover:bg-gray-100 ${activeSection === title ? "font-semibold text-[#173D35]" : ""}`}>
                       {title}
                     </button>
                   </li>
@@ -123,7 +123,7 @@ const TermsAndConditions = () => {
           <ul className="sticky top-20 hidden space-y-2 rounded-md border bg-white p-4 shadow-sm md:block">
             {sections.map(({ title }) => (
               <li key={title}>
-                <button type="button" onClick={() => handleScroll(title)} className={`text-left hover:text-[#6C3BFF] ${activeSection === title ? "font-semibold text-[#6C3BFF]" : "text-gray-700"}`}>
+                <button type="button" onClick={() => handleScroll(title)} className={`text-left hover:text-[#173D35] ${activeSection === title ? "font-semibold text-[#173D35]" : "text-gray-700"}`}>
                   {title}
                 </button>
               </li>
@@ -134,27 +134,27 @@ const TermsAndConditions = () => {
         <main className="space-y-6 md:w-3/4">
           {sections.map(({ title, paragraphs }) => (
             <section key={title} id={title} className="scroll-mt-24 rounded-md border bg-white p-6 shadow-sm">
-              <h2 className="mb-3 text-xl font-bold text-[#6C3BFF]">{title}</h2>
+              <h2 className="mb-3 text-xl font-bold text-[#173D35]">{title}</h2>
               <div className="space-y-3 leading-relaxed text-gray-700">
                 {paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
               </div>
               {title === "Contact Us" && (
                 <div className="mt-4 flex flex-wrap gap-4">
-                  {storefront?.contactEmail && <a className="text-[#6C3BFF] hover:underline" href={`mailto:${storefront.contactEmail}`}>{storefront.contactEmail}</a>}
-                  {storefront?.contactPhone && <a className="text-[#6C3BFF] hover:underline" href={`tel:${storefront.contactPhone}`}>{storefront.contactPhone}</a>}
-                  {!storefront?.contactEmail && !storefront?.contactPhone && <Link className="text-[#6C3BFF] hover:underline" to="/contact">Contact support</Link>}
+                  {storefront?.contactEmail && <a className="text-[#173D35] hover:underline" href={`mailto:${storefront.contactEmail}`}>{storefront.contactEmail}</a>}
+                  {storefront?.contactPhone && <a className="text-[#173D35] hover:underline" href={`tel:${storefront.contactPhone}`}>{storefront.contactPhone}</a>}
+                  {!storefront?.contactEmail && !storefront?.contactPhone && <Link className="text-[#173D35] hover:underline" to="/contact">Contact support</Link>}
                 </div>
               )}
             </section>
           ))}
           <div className="rounded-md border bg-white p-6 text-center shadow-sm">
             <p className="mb-4 text-gray-700">By placing an order with {storeName}, you acknowledge these terms and the policies shown for your order.</p>
-            <Link to="/contact" className="inline-block rounded-md bg-[#6C3BFF] px-6 py-2 text-white shadow transition hover:bg-[#5a2fe0]">Contact Support</Link>
+            <Link to="/contact" className="inline-block rounded-md bg-[#173D35] px-6 py-2 text-white shadow transition hover:bg-[#5a2fe0]">Contact Support</Link>
           </div>
         </main>
       </div>
 
-      <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="fixed bottom-6 right-6 rounded-full bg-[#6C3BFF] px-4 py-2 text-white shadow transition hover:bg-[#5a2fe0]">
+      <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })} className="fixed bottom-6 right-6 rounded-full bg-[#173D35] px-4 py-2 text-white shadow transition hover:bg-[#5a2fe0]">
         ↑ Top
       </button>
     </div>
