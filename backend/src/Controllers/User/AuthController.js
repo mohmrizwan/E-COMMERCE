@@ -234,7 +234,11 @@ export const LoginAccount = async (req, res) => {
     }
 
     // If account is currently locked, reject with generic error
-    if (userFind.lockUntil && userFind.lockUntil > new Date()) {
+    if (
+      userFind.lockUntil &&
+      userFind.lockUntil > new Date() &&
+      (userFind.failedLoginAttempts || 0) >= MAX_FAILED_ATTEMPTS
+    ) {
       return res.status(401).json({ success: false, message: GENERIC_AUTH_ERROR });
     }
 
