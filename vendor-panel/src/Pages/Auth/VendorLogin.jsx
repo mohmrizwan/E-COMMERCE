@@ -128,13 +128,13 @@ const VendorLogin = () => {
           <div className="flex items-center justify-between">
             <label
               htmlFor="password"
-              className="text-xs font-bold text-slate-700"
+              className="text-xs font-bold text-[#173D35]"
             >
               Password
             </label>
             <Link
               to="/vendor/forgot-password"
-              className="text-xs font-bold text-violet-700 no-underline hover:underline"
+              className="text-xs font-bold text-[#173D35] no-underline hover:text-[#D6B56D]"
             >
               Forgot password?
             </Link>
@@ -142,7 +142,7 @@ const VendorLogin = () => {
           <div className="relative">
             <input
               id="password"
-              className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 pr-20 text-sm text-[#17112B] outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-violet-600 focus:bg-white focus:ring-4 focus:ring-violet-600/10 aria-invalid:border-red-600"
+              className="min-h-12 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 py-3 pr-20 text-sm text-[#173D35] outline-none transition placeholder:text-slate-400 hover:border-slate-300 focus:border-[#173D35] focus:bg-white focus:ring-4 focus:ring-[#173D35]/10 aria-invalid:border-red-600"
               type={showPassword ? "text" : "password"}
               autoComplete="current-password"
               placeholder="Enter your password"
@@ -158,7 +158,7 @@ const VendorLogin = () => {
             />
             <button
               type="button"
-              className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-xs font-extrabold text-violet-700"
+              className="absolute right-3 top-1/2 -translate-y-1/2 border-0 bg-transparent text-xs font-extrabold text-[#173D35] hover:text-[#D6B56D]"
               onClick={() => setShowPassword((visible) => !visible)}
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
@@ -187,7 +187,7 @@ const VendorLogin = () => {
 
         <button
           type="submit"
-          className="min-h-13 rounded-xl border-0 bg-violet-700 px-5 font-extrabold text-white transition hover:bg-violet-800 disabled:cursor-wait disabled:opacity-60"
+          className="min-h-13 rounded-xl border-0 bg-[#173D35] px-5 font-extrabold text-white transition hover:bg-[#0f2a24] disabled:cursor-wait disabled:opacity-60"
           disabled={isSubmitting}
         >
           {isSubmitting ? "Signing in..." : "Sign in"}
@@ -197,7 +197,7 @@ const VendorLogin = () => {
       <p className="mt-6 text-center text-sm text-slate-500">
         Don&apos;t have an account?{" "}
         <Link
-          className="font-bold text-violet-700 no-underline hover:underline"
+          className="font-bold text-[#173D35] no-underline hover:text-[#D6B56D] hover:underline"
           to="/vendor/signup"
         >
           Sign up

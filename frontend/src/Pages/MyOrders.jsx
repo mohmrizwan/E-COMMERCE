@@ -152,7 +152,7 @@ const MyOrders = () => {
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">My Orders</h1>
               <p className="mt-2 text-sm text-slate-500">Review your order details and track deliveries.</p>
             </div>
-            <Link to="/products" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#173D35] px-4 text-sm font-bold text-white hover:bg-[#173D35]">
+            <Link to="/products" className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#173D35] px-4 text-sm font-bold !text-white hover:bg-[#173D35]">
               <i className="fa-solid fa-bag-shopping" /> Continue shopping
             </Link>
           </div>

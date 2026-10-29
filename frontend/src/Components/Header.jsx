@@ -99,7 +99,7 @@ const Header = () => {
       >
         <div className="mx-auto flex flex-wrap items-center gap-4 px-4 py-4 sm:px-6 lg:flex-nowrap lg:gap-8 lg:px-10 lg:py-4">
           <Link to="/" className="shrink-0">
-            {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storefront.businessName || STORE_NAME} className="h-10 w-auto max-w-[160px] object-contain" /> : <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight !text-white sm:text-2xl">{storefront?.businessName || STORE_NAME}</p>}
+            {storefront?.websiteLogo ? <img src={storefront.websiteLogo} alt={storefront.businessName || STORE_NAME} className="h-10 w-auto max-w-[160px] object-cover" /> : <p className="whitespace-nowrap font-[inter] text-xl font-bold tracking-tight !text-white sm:text-2xl">{storefront?.businessName || STORE_NAME}</p>}
           </Link>
 
           <div className="order-3 flex w-full items-center rounded-full border border-[#D6B56D]/40 bg-white/95 px-4 py-2.5 transition-all duration-300 focus-within:border-[#D6B56D] focus-within:bg-white focus-within:ring-4 focus-within:ring-[#D6B56D]/15 lg:order-none lg:mx-auto lg:max-w-4xl">

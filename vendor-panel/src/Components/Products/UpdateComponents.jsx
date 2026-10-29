@@ -167,7 +167,9 @@ const UpadteProduct = () => {
     }
 
     setSelectedImages(Array.from(e.target.files));
-    setImagePreviews(Array.from(e.target.files).map((file) => URL.createObjectURL(file)));
+    setImagePreviews(
+      Array.from(e.target.files).map((file) => URL.createObjectURL(file)),
+    );
     setImage(URL.createObjectURL(file));
   };
 
@@ -393,8 +395,12 @@ const UpadteProduct = () => {
                         >
                           <option value="">Select category</option>
                           {product.category &&
-                            !categories.some((item) => item.name === product.category) && (
-                              <option value={product.category}>{product.category}</option>
+                            !categories.some(
+                              (item) => item.name === product.category,
+                            ) && (
+                              <option value={product.category}>
+                                {product.category}
+                              </option>
                             )}
                           {categories.map((category) => (
                             <option key={category.id} value={category.name}>
@@ -421,8 +427,12 @@ const UpadteProduct = () => {
                         >
                           <option value="">Select brand</option>
                           {product.brand &&
-                            !brands.some((item) => item.name === product.brand) && (
-                              <option value={product.brand}>{product.brand}</option>
+                            !brands.some(
+                              (item) => item.name === product.brand,
+                            ) && (
+                              <option value={product.brand}>
+                                {product.brand}
+                              </option>
                             )}
                           {brands.map((brand) => (
                             <option key={brand.id} value={brand.name}>
@@ -432,7 +442,6 @@ const UpadteProduct = () => {
                         </CFormSelect>
                       </div>
                     </CCol>
-
                   </CRow>
                 </CCardBody>
               </CCard>
@@ -589,9 +598,9 @@ const UpadteProduct = () => {
                 <CCardHeader className="bg-transparent border-0 px-4 pt-4">
                   <h5 className="fw-bold mb-1">Product Image</h5>
 
-                    <small className="text-body-secondary">
-                      Upload one or more product images
-                    </small>
+                  <small className="text-body-secondary">
+                    Upload one or more product images
+                  </small>
                 </CCardHeader>
 
                 <CCardBody className="px-4 pb-4">
@@ -661,7 +670,12 @@ const UpadteProduct = () => {
                           key={index}
                           src={src}
                           alt={`Preview ${index + 1}`}
-                          style={{ width: 64, height: 64, objectFit: "cover", borderRadius: 8 }}
+                          style={{
+                            width: 64,
+                            height: 64,
+                            objectFit: "cover",
+                            borderRadius: 8,
+                          }}
                         />
                       ))}
                     </div>
@@ -722,9 +736,8 @@ const UpadteProduct = () => {
             </CButton>
 
             <CButton
-              color="primary"
+              className="!bg-[#173D35] !text-white px-4"
               type="submit"
-              className="px-4"
               disabled={updating}
             >
               <CIcon icon={cilPlus} className="me-2" />
@@ -739,7 +752,6 @@ const UpadteProduct = () => {
 
       <Snackbar
         open={!!message}
-
         onClose={() => setMessage("")}
         anchorOrigin={{
           vertical: "top",
@@ -760,7 +772,6 @@ const UpadteProduct = () => {
 
       <Snackbar
         open={!!errorMessage}
-
         onClose={() => setErrorMessage("")}
         anchorOrigin={{
           vertical: "top",

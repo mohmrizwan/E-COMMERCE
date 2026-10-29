@@ -164,9 +164,7 @@ const BrandAndCategoryManagement = () => {
       await fetchBrands();
       closeModal();
     } catch (error) {
-      setErrorMessage(
-        error?.response?.data?.message || "Could not add brand.",
-      );
+      setErrorMessage(error?.response?.data?.message || "Could not add brand.");
     }
   };
 
@@ -359,14 +357,23 @@ const BrandAndCategoryManagement = () => {
 
         <div className="d-flex gap-2 mb-3">
           <CButton
-            color={tab === "categories" ? "primary" : "light"}
+            // color={tab === "categories" ? "success" : "light"}
+            className={
+              tab === "categories"
+                ? "!bg-[#173D35] !text-white !border-[#173D35]"
+                : ""
+            }
             onClick={() => setTab("categories")}
           >
             Categories
           </CButton>
 
           <CButton
-            color={tab === "brands" ? "primary" : "light"}
+            className={
+              tab === "brands"
+                ? "!bg-[#173D35] !text-white !border-[#173D35]"
+                : ""
+            }
             onClick={() => setTab("brands")}
           >
             Brands
@@ -377,7 +384,7 @@ const BrandAndCategoryManagement = () => {
           <CCardHeader className="d-flex justify-content-between align-items-center">
             <strong>{isBrand ? "Brands" : "Categories"}</strong>
 
-            <CButton color="primary" onClick={openAdd}>
+            <CButton className="!bg-[#173D35] !text-white" onClick={openAdd}>
               + Add {isBrand ? "Brand" : "Category"}
             </CButton>
           </CCardHeader>

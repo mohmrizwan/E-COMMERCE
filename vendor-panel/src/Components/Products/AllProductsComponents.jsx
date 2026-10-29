@@ -43,7 +43,7 @@ const AllProducts = () => {
           </p>
         </div>
 
-        <CButton color="primary" href="/products/add">
+        <CButton className="!bg-[#173D35] !text-white" href="/products/add">
           <CIcon icon={cilPlus} className="me-2" />
           Add Product
         </CButton>

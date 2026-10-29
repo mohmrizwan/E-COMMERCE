@@ -202,7 +202,9 @@ const VendorProfile = () => {
     setIsSavingProfile(true);
     try {
       const payload = new FormData();
-      Object.entries(formData).forEach(([key, value]) => payload.append(key, value ?? ""));
+      Object.entries(formData).forEach(([key, value]) =>
+        payload.append(key, value ?? ""),
+      );
       if (websiteLogoFile) payload.append("websiteLogo", websiteLogoFile);
       const response = await axios.put(apiUrl("vendor/myProfile"), payload, {
         headers: {
@@ -228,13 +230,15 @@ const VendorProfile = () => {
       }));
       setWebsiteLogoFile(null);
       setWebsiteLogoPreview("");
-      window.dispatchEvent(new CustomEvent("storefront:settings-updated", {
-        detail: {
-          websiteLogo: vendorProfile.websiteLogo || "",
-          businessName: vendorProfile.businessName || "",
-          footerText: vendorProfile.footerText || "",
-        },
-      }));
+      window.dispatchEvent(
+        new CustomEvent("storefront:settings-updated", {
+          detail: {
+            websiteLogo: vendorProfile.websiteLogo || "",
+            businessName: vendorProfile.businessName || "",
+            footerText: vendorProfile.footerText || "",
+          },
+        }),
+      );
       setMessage(response.data.message || "Profile changes saved.");
       setEditMode(false);
     } catch (error) {
@@ -358,7 +362,7 @@ const VendorProfile = () => {
 
         <CCol xs="auto">
           {!editMode && (
-            <CButton color="primary" onClick={() => setEditMode(true)}>
+            <CButton className="!bg-[#173D35] !text-white" onClick={() => setEditMode(true)}>
               Edit Profile
             </CButton>
           )}
@@ -494,7 +498,7 @@ const VendorProfile = () => {
         <CCol xl={4}>
           <CCard className="h-100 border-0 shadow-sm">
             {/* Profile Header */}
-            <div className="bg-primary text-white p-4">
+            <div className="bg-[#173D35]  text-white p-4">
               <div className="d-flex justify-content-between align-items-start gap-3">
                 <div>
                   <div className="small text-white-50 mb-1">Vendor Account</div>
@@ -667,26 +671,48 @@ const VendorProfile = () => {
                 {/* Storefront logo */}
                 <CCol xs={12}>
                   <div className="mb-3">
-                    <CFormLabel>Website Logo (storefront and vendor panel)</CFormLabel>
-                    {(websiteLogoPreview || formData.websiteLogo) && <div className="mb-2"><img src={websiteLogoPreview || formData.websiteLogo} alt="Website logo preview" style={{ width: 160, height: 72, objectFit: "contain" }} /></div>}
-                    <CFormInput type="file" accept="image/png,image/jpeg,image/webp" name="websiteLogo" onChange={handleChange} disabled={!editMode} />
-                    <small className="text-body-secondary">PNG, JPG or WEBP, up to 5 MB.</small>
+                    <CFormLabel>
+                      Website Logo (storefront and vendor panel)
+                    </CFormLabel>
+                    {(websiteLogoPreview || formData.websiteLogo) && (
+                      <div className="mb-2">
+                        <img
+                          src={websiteLogoPreview || formData.websiteLogo}
+                          alt="Website logo preview"
+                          style={{
+                            width: 160,
+                            height: 72,
+                            objectFit: "contain",
+                          }}
+                        />
+                      </div>
+                    )}
+                    <CFormInput
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      name="websiteLogo"
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
+                    <small className="text-body-secondary">
+                      PNG, JPG or WEBP, up to 5 MB.
+                    </small>
                   </div>
                 </CCol>
 
                 {/* Footer Copyright */}
                 <CCol xs={12}>
-                <div className="mb-3">
-                  <CFormLabel>
-                    Footer Copyright / All Rights Reserved
-                  </CFormLabel>
-                  <CFormInput
-                    name="footerText"
-                    value={formData.footerText}
-                    onChange={handleChange}
-                    disabled={!editMode}
-                  />
-                </div>
+                  <div className="mb-3">
+                    <CFormLabel>
+                      Footer Copyright / All Rights Reserved
+                    </CFormLabel>
+                    <CFormInput
+                      name="footerText"
+                      value={formData.footerText}
+                      onChange={handleChange}
+                      disabled={!editMode}
+                    />
+                  </div>
                 </CCol>
               </CRow>
             </CCardBody>
@@ -808,7 +834,7 @@ const VendorProfile = () => {
                   </CButton>
 
                   <CButton
-                    color="primary"
+                    className="!bg-[#173D35] !text-white"
                     onClick={handleSave}
                     disabled={isSavingProfile}
                   >

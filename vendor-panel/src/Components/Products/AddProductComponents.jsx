@@ -514,7 +514,7 @@ const AddProduct = () => {
                   ) : (
                     <div className="p-4">
                       <div
-                        className="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
+                        className="rounded-circle !bg-[#173D35] bg-opacity-10 d-inline-flex align-items-center justify-content-center mb-3"
                         style={{
                           width: "64px",
                           height: "64px",
@@ -523,7 +523,7 @@ const AddProduct = () => {
                         <CIcon
                           icon={cilCloudUpload}
                           size="xl"
-                          className="text-primary"
+                          className="text-white"
                         />
                       </div>
 
@@ -606,7 +606,7 @@ const AddProduct = () => {
             Cancel
           </CButton>
 
-          <CButton type="submit" color="primary" disabled={loading}>
+          <CButton type="submit" color="primary" className="!bg-[#173D35]"  disabled={loading}>
             {loading ? "Adding..." : "Add Product"}
           </CButton>
         </div>

@@ -18,10 +18,12 @@ import { FavoritesProvider } from "./Components/FavoritesContext";
 import { CartProvider } from "./Components/CartContext";
 import ProductDetails from "./Pages/ProductDetails";
 import NotFound from "./Pages/NotFound";
+import ScrollToTop from "./Components/ScrollToTop";
 const App = () => {
   return (
     <>
       <CartProvider>
+        <ScrollToTop />
         <Routes>
           <Route path="/otpVerfiy" element={<Verify />} />
           <Route path="/create" element={<CreateAccount />} />

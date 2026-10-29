@@ -616,7 +616,7 @@ function Sidebar({ activePage, profile, onChange }) {
           <button
             type="button"
             onClick={handleLogout}
-            className="flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-rose-500"
+            className="flex min-w-max items-center gap-3 rounded-lg px-3 py-3 text-sm font-semibold text-rose-500 backdrop-blur-md transition-all duration-300 hover:border-rose-500/40 hover:bg-rose-500/20 hover:text-rose-600"
           >
             <i className="fa-solid fa-arrow-right-from-bracket w-4 text-center" />
             Logout

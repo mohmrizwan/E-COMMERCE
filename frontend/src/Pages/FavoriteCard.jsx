@@ -92,7 +92,7 @@ const FavoriteCard = () => {
             <div className="my-12 text-center">
               <p className="text-lg font-semibold text-[#111827]">Your wishlist is empty</p>
               <p className="mt-2 text-sm text-[#6B7280]">Products you save will appear here.</p>
-              <Link to="/products" className="mt-5 inline-flex rounded-lg bg-[#111827] px-4 py-2.5 text-sm font-semibold text-white">
+              <Link to="/products" className="mt-5 inline-flex rounded-lg bg-[#111827] px-4 py-2.5 text-sm font-semibold !text-white">
                 Explore products
               </Link>
             </div>
